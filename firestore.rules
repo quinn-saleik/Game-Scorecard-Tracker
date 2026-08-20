@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // The app signs everyone in anonymously in the background (no login
+    // screen). These rules just require *some* Firebase Auth session to
+    // exist, which keeps the database from being wide open to anyone who
+    // finds the public API key in the deployed JS bundle (that key is not a
+    // secret by design — Firestore rules are the actual gate).
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
