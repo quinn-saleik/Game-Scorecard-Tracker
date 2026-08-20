@@ -6,6 +6,7 @@ import {
   doc,
   addDoc,
   updateDoc,
+  deleteDoc,
   onSnapshot,
   query,
   where,
@@ -50,6 +51,13 @@ export async function completeSession(sessionId, { winnerIds, totals }) {
     totals,
     completedAt: serverTimestamp(),
   });
+}
+
+// Hard delete — used by the "quit game" option on an in-progress session.
+// Completed games are never deleted this way (there's no UI path to it).
+export async function deleteSession(sessionId) {
+  await authReady;
+  await deleteDoc(doc(sessionsCol, sessionId));
 }
 
 export function subscribeToSession(sessionId, callback) {

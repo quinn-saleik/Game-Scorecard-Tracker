@@ -133,6 +133,12 @@ export default function ThreePlayerPlay() {
   );
 
   if (scoringIdx >= session.players.length) {
+    const pointsTotal = session.players.reduce((sum, p) => {
+      const r = results[p.id];
+      return r?.type === "points" ? sum + r.value : sum;
+    }, 0);
+    const pointsMismatch = pointsTotal !== 5;
+
     async function saveRound() {
       setSaving(true);
       try {
@@ -154,10 +160,36 @@ export default function ThreePlayerPlay() {
       <div>
         <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
         <div className="card-surface">
-          <h2>Hand {rounds.length + 1} scored — saving…</h2>
-          <button className="btn primary" onClick={saveRound} disabled={saving}>
-            {saving ? "Saving…" : "Save hand & continue"}
-          </button>
+          <h2>Hand {rounds.length + 1} scored</h2>
+          <table className="score-table">
+            <thead><tr><th>Player</th><th>Result</th></tr></thead>
+            <tbody>
+              {session.players.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.name}</td>
+                  <td>{results[p.id]?.type === "set" ? "SET (+5)" : `${results[p.id]?.value ?? 0} pts`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {pointsMismatch && (
+            <div className="warning-banner">
+              ⚠️ Warning: doesn't add up. Points total {pointsTotal}, but should be 5 per hand. Double-check before saving.
+            </div>
+          )}
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ color: "#2b2117", border: "2px solid #6b4226" }}
+              onClick={() => setScoringIdx((i) => i - 1)}
+            >
+              ← Edit last result
+            </button>
+            <button className="btn primary" onClick={saveRound} disabled={saving}>
+              {saving ? "Saving…" : "Save hand & continue"}
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
+import OngoingGames from "../../../components/OngoingGames";
 
 export default function Flip7Setup() {
   const [players, setPlayers] = useState([]);
@@ -44,6 +45,7 @@ export default function Flip7Setup() {
       <h1 className="page-title">
         <span className="suit red">🔥</span> Flip7 — Who's playing?
       </h1>
+      <OngoingGames gameType="flip7" />
 
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>

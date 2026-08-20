@@ -281,6 +281,16 @@ table.score-table td.leader {
   padding: 24px 0;
 }
 
+.warning-banner {
+  background: #fbeadb;
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #6b4226;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
 .field {
   display: flex;
   flex-direction: column;

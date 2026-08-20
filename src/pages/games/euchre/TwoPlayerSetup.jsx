@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
+import OngoingGames from "../../../components/OngoingGames";
 
 export default function TwoPlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -46,6 +47,7 @@ export default function TwoPlayerSetup() {
       <h1 className="page-title">
         <span className="suit black">♣</span> Euchre (2-player) — Who's playing?
       </h1>
+      <OngoingGames gameType="euchre-2p" />
 
       <div className="card-surface">
         <h2>Select 2 players ({seated.length}/2)</h2>

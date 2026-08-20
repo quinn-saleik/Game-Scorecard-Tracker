@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import OngoingGames from "../components/OngoingGames";
 
 const GAMES = [
   { icon: "🂡", label: "Oh Heck!", path: "/oh-heck/setup", soon: false },
@@ -13,6 +14,7 @@ export default function Home() {
       <h1 className="page-title">
         <span className="suit black">♠</span> Pick a game
       </h1>
+      <OngoingGames />
       <div className="game-grid">
         {GAMES.map((g) =>
           g.soon ? (

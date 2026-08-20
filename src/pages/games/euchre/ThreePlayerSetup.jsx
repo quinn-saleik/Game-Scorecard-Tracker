@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
+import OngoingGames from "../../../components/OngoingGames";
 
 export default function ThreePlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -48,6 +49,7 @@ export default function ThreePlayerSetup() {
       <h1 className="page-title">
         <span className="suit black">♣</span> Euchre (3-player) — Who's playing?
       </h1>
+      <OngoingGames gameType="euchre-3p" />
 
       <div className="card-surface">
         <h2>Select 3 players ({seated.length}/3)</h2>

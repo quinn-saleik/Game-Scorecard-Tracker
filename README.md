@@ -72,7 +72,11 @@ Requires `.env` to be filled in (step 3 above) for the app to talk to Firestore.
 ## How data is structured
 
 - **`players`** collection — one doc per player (`{ name, active, isDefault }`). The 13 default players are seeded automatically on first load of the Players tab. "Removing" a player just flips `active: false` so past game stats still resolve their name.
-- **`gameSessions`** collection — one doc per game played, shared by every game type: `{ gameType, players, config, rounds, totals, status: 'in_progress' | 'completed', winnerIds }`. Stats are computed client-side from completed sessions.
+- **`gameSessions`** collection — one doc per game played, shared by every game type: `{ gameType, players, config, rounds, totals, status: 'in_progress' | 'completed', winnerIds }`. Every round/hand is written to Firestore as it's scored (not just at the end), so nothing is lost if someone closes the tab mid-game.
+
+## Resuming in-progress games
+
+`src/components/OngoingGames.jsx` shows any game(s) still `in_progress`: on the Home screen it shows every ongoing game across all types (so nothing gets lost if you wander off to Stats mid-game); on each game's Setup screen it's scoped to just that game type, so picking a game you're already mid-way through offers to resume it. Each entry shows a live players/scores summary and has **Resume** (jumps back into the Play screen) and **Quit & delete** (hard-deletes the session — used for a game that was abandoned or started by mistake) buttons.
 
 ## Access
 

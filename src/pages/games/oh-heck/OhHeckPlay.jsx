@@ -282,7 +282,13 @@ export default function OhHeckPlay() {
   // --- Scoring phase ---------------------------------------------------
   if (phase === "scoring") {
     if (scoringIdx >= bidOrder.length) {
-      // All players scored — save the round.
+      // All players scored — check the tricks add up, then save the round.
+      const totalTricksWon = bidOrder.reduce(
+        (sum, p) => sum + (results[p.id]?.tricksWon || 0),
+        0
+      );
+      const tricksMismatch = totalTricksWon !== cardsThisRound;
+
       async function saveRound() {
         setSaving(true);
         try {
@@ -313,10 +319,33 @@ export default function OhHeckPlay() {
         <div>
           {header}
           <div className="card-surface">
-            <h2>Round {roundIndex + 1} scored — saving…</h2>
-            <button className="btn primary" onClick={saveRound} disabled={saving}>
-              {saving ? "Saving…" : "Save round & continue"}
-            </button>
+            <h2>Round {roundIndex + 1} scored</h2>
+            <table className="score-table">
+              <thead><tr><th>Player</th><th>Tricks won</th></tr></thead>
+              <tbody>
+                {bidOrder.map((p) => (
+                  <tr key={p.id}><td>{p.name}</td><td>{results[p.id]?.tricksWon ?? 0}</td></tr>
+                ))}
+              </tbody>
+            </table>
+            {tricksMismatch && (
+              <div className="warning-banner">
+                ⚠️ Warning: doesn't add up. Tricks won total {totalTricksWon}, but {cardsThisRound} cards were dealt this round. Double-check before saving.
+              </div>
+            )}
+            <div className="btn-row">
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ color: "#2b2117", border: "2px solid #6b4226" }}
+                onClick={() => setScoringIdx((i) => i - 1)}
+              >
+                ← Edit last score
+              </button>
+              <button className="btn primary" onClick={saveRound} disabled={saving}>
+                {saving ? "Saving…" : "Save round & continue"}
+              </button>
+            </div>
           </div>
         </div>
       );

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
+import OngoingGames from "../../../components/OngoingGames";
 
 const MIN_PLAYERS = 3;
 
@@ -58,6 +59,7 @@ export default function OhHeckSetup() {
       <h1 className="page-title">
         <span className="suit black">🂡</span> Oh Heck! — Who's playing?
       </h1>
+      <OngoingGames gameType="oh-heck" />
 
       <div className="card-surface">
         <h2>Select players ({seatedPlayers.length} selected)</h2>

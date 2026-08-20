@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
+import OngoingGames from "../../../components/OngoingGames";
 
 export default function TraditionalSetup() {
   const [players, setPlayers] = useState([]);
@@ -53,6 +54,7 @@ export default function TraditionalSetup() {
       <h1 className="page-title">
         <span className="suit black">♣</span> Euchre (traditional) — Teams
       </h1>
+      <OngoingGames gameType="euchre-traditional" />
 
       <div className="card-surface">
         <h2>Tap players to assign teams</h2>
