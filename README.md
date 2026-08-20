@@ -2,14 +2,19 @@
 
 A family card-game score tracker: pick a game, pick players, keep score, see stats. Built with React + Vite, synced live across devices with Firebase Firestore, deployed free on GitHub Pages.
 
-Live games in this build: **Flip7** and **Oh Heck!**. Euchre (2-player / 3-player / traditional) and Other are on the roadmap — see `ScorecardAppAgents.docx` in the project for the full spec.
+Live games in this build: **Flip7**, **Oh Heck!**, and **Euchre** (2-player / 3-player / traditional). Euchre's 15-card and pick-your-partner variants, plus **Other**, are on the roadmap — see `ScorecardAppAgents.docx` in the project for the full spec.
 
 ### Oh Heck! rules as implemented
 - Config at game start: starting card count (default 8), and a bid-rule toggle — **Traditional** (dealer can't bid the number that would make total bids exactly equal the cards dealt) or **Bang 'em** (no restriction, bids just labeled over/under/even).
-- Round progression: a single arc down to 1 card, then back up to the starting count, then the game ends (e.g. 8→7→...→1→2→...→8).
+- Round progression: down to 1 card, the 1-card round is played twice, then back up to the starting count, then the game ends (e.g. 5→4→3→2→1→1→2→3→4→5).
 - Dealer rotates one seat per round in the order players were selected at setup; bidding goes in turn order starting left of the dealer, dealer bids last.
 - Scoring: hit your bid exactly → bid + 10. Miss it → however many tricks you actually won, no bonus.
 - Like Flip7, the final round's win doesn't lock in until you tap "Confirm winner & finish" — there's an undo-last-round option first.
+
+### Euchre rules as implemented
+- **2-player**: pick 2 players (order sets who deals first), configurable win threshold (default 50). Each hand you enter both players' points, added cumulatively; dealer alternates automatically each hand (shown as a badge). Same confirm-before-locking pattern as Flip7.
+- **3-player**: pick 3 players, configurable starting score (default 15). Each hand, every player gets an outcome: 1-5 points (subtracted from their score) or **SET** (+5, moves them further from the goal). First to 0 or below wins.
+- **Traditional (2v2)**: tap players to assign Team 1 / Team 2 (2 each), configurable win threshold (default 10). Each hand you enter each team's points, added cumulatively to a shared team score. The winning team's individual players each get credited with a win in Stats, same as every other game.
 
 ## One-time setup (~15 minutes)
 

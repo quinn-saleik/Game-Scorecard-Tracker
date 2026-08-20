@@ -18,7 +18,9 @@ const sessionsCol = collection(db, "gameSessions");
 
 // players: [{id, name}]
 // gameType: 'flip7' | 'oh-heck' | 'euchre-2p' | 'euchre-3p' | 'euchre-traditional' | 'other'
-export async function createSession({ gameType, gameLabel, players, config }) {
+// initialTotals: optional override for the starting totals map (e.g. Euchre
+// 3-player starts everyone at 15 and counts down instead of up from 0).
+export async function createSession({ gameType, gameLabel, players, config, initialTotals }) {
   await authReady;
   const ref = await addDoc(sessionsCol, {
     gameType,
@@ -26,7 +28,7 @@ export async function createSession({ gameType, gameLabel, players, config }) {
     players,
     config: config || {},
     rounds: [],
-    totals: Object.fromEntries(players.map((p) => [p.id, 0])),
+    totals: initialTotals || Object.fromEntries(players.map((p) => [p.id, 0])),
     status: "in_progress",
     winnerIds: [],
     startedAt: serverTimestamp(),

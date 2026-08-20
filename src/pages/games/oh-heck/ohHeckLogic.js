@@ -1,14 +1,14 @@
 // Pure helper functions for Oh Heck! round/dealer/bid math — kept separate
 // from the UI so the rules are easy to re-check without wading through JSX.
 
-// Single up-down arc: start down to 1, then back up to start.
-// e.g. buildRoundSequence(8) -> [8,7,6,5,4,3,2,1,2,3,4,5,6,7,8] (15 rounds)
+// Down to 1, play the 1-card round twice, then back up to start.
+// e.g. buildRoundSequence(5) -> [5,4,3,2,1,1,2,3,4,5] (10 rounds)
 export function buildRoundSequence(startingCards) {
   const down = [];
   for (let c = startingCards; c >= 1; c--) down.push(c);
   const up = [];
   for (let c = 2; c <= startingCards; c++) up.push(c);
-  return [...down, ...up];
+  return [...down, 1, ...up];
 }
 
 // Dealer rotates one seat per round, starting with players[0] on round 0.
