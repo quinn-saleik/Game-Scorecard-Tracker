@@ -11,6 +11,7 @@ import {
   getBidLabel,
   getForbiddenBid,
 } from "./ohHeckLogic";
+import PlayerDot from "../../../components/PlayerDot";
 
 function NumberPicker({ max, disabledValue, onSelect }) {
   const options = Array.from({ length: max + 1 }, (_, i) => i);
@@ -133,7 +134,7 @@ export default function OhHeckPlay() {
                 .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
                 .map((p) => (
                   <tr key={p.id}>
-                    <td>{p.name}</td>
+                    <td><PlayerDot color={p.color} />{p.name}</td>
                     <td className={(totals[p.id] || 0) === maxTotal ? "leader" : ""}>{totals[p.id] || 0}</td>
                   </tr>
                 ))}
@@ -182,7 +183,7 @@ export default function OhHeckPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td>{p.name}{p.id === dealer.id ? " 🃏" : ""}</td>
+              <td><PlayerDot color={p.color} />{p.name}{p.id === dealer.id ? " 🃏" : ""}</td>
               <td>{totals[p.id] || 0}</td>
             </tr>
           ))}
@@ -207,7 +208,7 @@ export default function OhHeckPlay() {
         {header}
         {undoButton}
         <div className="card-surface">
-          <h2>Bidding — {currentBidder.name}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
+          <h2>Bidding — <PlayerDot color={currentBidder.color} />{currentBidder.name}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
           <p>Bids so far this round: {bidsSoFar} of {cardsThisRound} cards</p>
           {forbidden !== null && (
             <p style={{ color: "#b3352c" }}>
@@ -257,7 +258,7 @@ export default function OhHeckPlay() {
             <thead><tr><th>Player</th><th>Bid</th></tr></thead>
             <tbody>
               {bidOrder.map((p) => (
-                <tr key={p.id}><td>{p.name}</td><td>{bids[p.id]}</td></tr>
+                <tr key={p.id}><td><PlayerDot color={p.color} />{p.name}</td><td>{bids[p.id]}</td></tr>
               ))}
             </tbody>
           </table>
@@ -324,7 +325,7 @@ export default function OhHeckPlay() {
               <thead><tr><th>Player</th><th>Tricks won</th></tr></thead>
               <tbody>
                 {bidOrder.map((p) => (
-                  <tr key={p.id}><td>{p.name}</td><td>{results[p.id]?.tricksWon ?? 0}</td></tr>
+                  <tr key={p.id}><td><PlayerDot color={p.color} />{p.name}</td><td>{results[p.id]?.tricksWon ?? 0}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -358,7 +359,7 @@ export default function OhHeckPlay() {
       <div>
         {header}
         <div className="card-surface">
-          <h2>{currentScorer.name} bid {theirBid}. What did they get?</h2>
+          <h2><PlayerDot color={currentScorer.color} />{currentScorer.name} bid {theirBid}. What did they get?</h2>
           <div className="btn-row" style={{ marginBottom: 14 }}>
             <button
               className="btn primary"

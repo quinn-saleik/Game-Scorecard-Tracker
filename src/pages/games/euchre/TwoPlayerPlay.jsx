@@ -5,6 +5,7 @@ import {
   updateSession,
   completeSession,
 } from "../../../data/gameSessions";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function TwoPlayerPlay() {
   const { sessionId } = useParams();
@@ -95,7 +96,7 @@ export default function TwoPlayerPlay() {
           <tbody>
             {session.players.map((p) => (
               <tr key={p.id}>
-                <td>{p.name}{!pendingFinish && p.id === dealer.id ? " 🃏" : ""}</td>
+                <td><PlayerDot color={p.color} />{p.name}{!pendingFinish && p.id === dealer.id ? " 🃏" : ""}</td>
                 <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                   {totals[p.id] || 0}
                 </td>
@@ -125,7 +126,7 @@ export default function TwoPlayerPlay() {
           <form onSubmit={submitRound}>
             {session.players.map((p) => (
               <div className="field" key={p.id}>
-                <label htmlFor={`pt-${p.id}`}>{p.name}{p.id === dealer.id ? " (dealer)" : ""}</label>
+                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} />{p.name}{p.id === dealer.id ? " (dealer)" : ""}</label>
                 <input
                   id={`pt-${p.id}`}
                   className="input"

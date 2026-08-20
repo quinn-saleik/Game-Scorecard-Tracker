@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function TraditionalSetup() {
   const [players, setPlayers] = useState([]);
@@ -31,8 +32,8 @@ export default function TraditionalSetup() {
     if (!ready) return;
     setStarting(true);
     try {
-      const aPlayers = teamAPlayers.map((p) => ({ id: p.id, name: p.name }));
-      const bPlayers = teamBPlayers.map((p) => ({ id: p.id, name: p.name }));
+      const aPlayers = teamAPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
+      const bPlayers = teamBPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
       const id = await createSession({
         gameType: "euchre-traditional",
         gameLabel: "Euchre (traditional)",
@@ -75,6 +76,7 @@ export default function TraditionalSetup() {
                   onClick={() => toggle(p.id)}
                 >
                   {onA ? "① " : onB ? "② " : ""}
+                  <PlayerDot color={p.color} />
                   {p.name}
                 </span>
               );
@@ -85,9 +87,27 @@ export default function TraditionalSetup() {
 
       <div className="card-surface">
         <h2>Team 1</h2>
-        <p>{teamAPlayers.length ? teamAPlayers.map((p) => p.name).join(" & ") : "—"}</p>
+        <p>
+          {teamAPlayers.length
+            ? teamAPlayers.map((p, i) => (
+                <span key={p.id}>
+                  {i > 0 && " & "}
+                  <PlayerDot color={p.color} />{p.name}
+                </span>
+              ))
+            : "—"}
+        </p>
         <h2>Team 2</h2>
-        <p>{teamBPlayers.length ? teamBPlayers.map((p) => p.name).join(" & ") : "—"}</p>
+        <p>
+          {teamBPlayers.length
+            ? teamBPlayers.map((p, i) => (
+                <span key={p.id}>
+                  {i > 0 && " & "}
+                  <PlayerDot color={p.color} />{p.name}
+                </span>
+              ))
+            : "—"}
+        </p>
       </div>
 
       <div className="card-surface">

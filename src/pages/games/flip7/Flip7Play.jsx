@@ -5,6 +5,7 @@ import {
   updateSession,
   completeSession,
 } from "../../../data/gameSessions";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function Flip7Play() {
   const { sessionId } = useParams();
@@ -111,7 +112,7 @@ export default function Flip7Play() {
           <tbody>
             {session.players.map((p) => (
               <tr key={p.id}>
-                <td>{p.name}</td>
+                <td><PlayerDot color={p.color} />{p.name}</td>
                 <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                   {totals[p.id] || 0}
                 </td>
@@ -140,7 +141,7 @@ export default function Flip7Play() {
           <form onSubmit={submitRound}>
             {session.players.map((p) => (
               <div className="field" key={p.id}>
-                <label htmlFor={`pt-${p.id}`}>{p.name}</label>
+                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} />{p.name}</label>
                 <input
                   id={`pt-${p.id}`}
                   className="input"

@@ -78,6 +78,11 @@ export async function setPlayerActive(playerId, active) {
   await updateDoc(doc(playersCol, playerId), { active });
 }
 
+export async function setPlayerColor(playerId, color) {
+  await authReady;
+  await updateDoc(doc(playersCol, playerId), { color });
+}
+
 export function subscribeToPlayers(callback) {
   const q = query(playersCol, orderBy("name"));
   return onSnapshot(q, (snap) => {

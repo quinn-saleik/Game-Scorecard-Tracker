@@ -5,6 +5,16 @@ import {
   updateSession,
   completeSession,
 } from "../../../data/gameSessions";
+import PlayerDot from "../../../components/PlayerDot";
+
+function TeamNames({ players }) {
+  return players.map((p, i) => (
+    <span key={p.id}>
+      {i > 0 && " & "}
+      <PlayerDot color={p.color} />{p.name}
+    </span>
+  ));
+}
 
 export default function TraditionalPlay() {
   const { sessionId } = useParams();
@@ -93,11 +103,11 @@ export default function TraditionalPlay() {
           <thead><tr><th>Team</th><th>Total</th></tr></thead>
           <tbody>
             <tr>
-              <td>{teamAPlayers.map((p) => p.name).join(" & ")}</td>
+              <td><TeamNames players={teamAPlayers} /></td>
               <td className={teamATotal >= teamBTotal && teamATotal > 0 ? "leader" : ""}>{teamATotal}</td>
             </tr>
             <tr>
-              <td>{teamBPlayers.map((p) => p.name).join(" & ")}</td>
+              <td><TeamNames players={teamBPlayers} /></td>
               <td className={teamBTotal >= teamATotal && teamBTotal > 0 ? "leader" : ""}>{teamBTotal}</td>
             </tr>
           </tbody>
@@ -122,11 +132,11 @@ export default function TraditionalPlay() {
           <h2>Add hand {rounds.length + 1} points</h2>
           <form onSubmit={submitRound}>
             <div className="field">
-              <label htmlFor="teamA">{teamAPlayers.map((p) => p.name).join(" & ")}</label>
+              <label htmlFor="teamA"><TeamNames players={teamAPlayers} /></label>
               <input id="teamA" className="input" type="number" placeholder="0" value={inputA} onChange={(e) => setInputA(e.target.value)} />
             </div>
             <div className="field">
-              <label htmlFor="teamB">{teamBPlayers.map((p) => p.name).join(" & ")}</label>
+              <label htmlFor="teamB"><TeamNames players={teamBPlayers} /></label>
               <input id="teamB" className="input" type="number" placeholder="0" value={inputB} onChange={(e) => setInputB(e.target.value)} />
             </div>
             <div className="btn-row">

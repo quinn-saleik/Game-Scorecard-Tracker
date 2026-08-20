@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function TwoPlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -29,7 +30,7 @@ export default function TwoPlayerSetup() {
     if (seated.length !== 2) return;
     setStarting(true);
     try {
-      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name }));
+      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
       const id = await createSession({
         gameType: "euchre-2p",
         gameLabel: "Euchre (2-player)",
@@ -67,6 +68,7 @@ export default function TwoPlayerSetup() {
                   onClick={() => toggle(p.id)}
                 >
                   {seatNum > -1 ? `${seatNum + 1}. ` : ""}
+                  <PlayerDot color={p.color} />
                   {p.name}
                 </span>
               );

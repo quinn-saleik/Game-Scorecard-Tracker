@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
 import OngoingGames from "../../../components/OngoingGames";
+import PlayerDot from "../../../components/PlayerDot";
 
 const MIN_PLAYERS = 3;
 
@@ -37,7 +38,7 @@ export default function OhHeckSetup() {
     if (seatedPlayers.length < MIN_PLAYERS) return;
     setStarting(true);
     try {
-      const sessionPlayers = seatedPlayers.map((p) => ({ id: p.id, name: p.name }));
+      const sessionPlayers = seatedPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
       const id = await createSession({
         gameType: "oh-heck",
         gameLabel: "Oh Heck!",
@@ -81,6 +82,7 @@ export default function OhHeckSetup() {
                   onClick={() => toggle(p.id)}
                 >
                   {seatNum > -1 ? `${seatNum + 1}. ` : ""}
+                  <PlayerDot color={p.color} />
                   {p.name}
                 </span>
               );

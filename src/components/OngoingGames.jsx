@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToInProgressSessions, deleteSession } from "../data/gameSessions";
 import { GAME_LABELS } from "../data/stats";
+import PlayerDot from "./PlayerDot";
 
 const PLAY_ROUTE = {
   flip7: (id) => `/flip7/play/${id}`,
@@ -70,7 +71,12 @@ export default function OngoingGames({ gameType }) {
               {label} — {unit} {(session.rounds?.length || 0) + 1}
             </p>
             <p style={{ margin: "0 0 10px", color: "#6f6455" }}>
-              {ranked.map((p) => `${p.name}: ${totals[p.id] ?? 0}`).join("  •  ")}
+              {ranked.map((p, i) => (
+                <span key={p.id}>
+                  {i > 0 && "  •  "}
+                  <PlayerDot color={p.color} />{p.name}: {totals[p.id] ?? 0}
+                </span>
+              ))}
             </p>
             <div className="btn-row">
               <button

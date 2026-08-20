@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function Flip7Setup() {
   const [players, setPlayers] = useState([]);
@@ -27,7 +28,7 @@ export default function Flip7Setup() {
     try {
       const sessionPlayers = active
         .filter((p) => selected.includes(p.id))
-        .map((p) => ({ id: p.id, name: p.name }));
+        .map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
       const id = await createSession({
         gameType: "flip7",
         gameLabel: "Flip7",
@@ -61,6 +62,7 @@ export default function Flip7Setup() {
                 className={`player-chip ${selected.includes(p.id) ? "selected" : ""}`}
                 onClick={() => toggle(p.id)}
               >
+                <PlayerDot color={p.color} />
                 {p.name}
               </span>
             ))}

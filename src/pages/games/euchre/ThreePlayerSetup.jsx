@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
+import PlayerDot from "../../../components/PlayerDot";
 
 export default function ThreePlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -29,7 +30,7 @@ export default function ThreePlayerSetup() {
     if (seated.length !== 3) return;
     setStarting(true);
     try {
-      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name }));
+      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
       const start = Number(startingScore) || 15;
       const id = await createSession({
         gameType: "euchre-3p",
@@ -63,6 +64,7 @@ export default function ThreePlayerSetup() {
                 className={`player-chip ${selected.includes(p.id) ? "selected" : ""}`}
                 onClick={() => toggle(p.id)}
               >
+                <PlayerDot color={p.color} />
                 {p.name}
               </span>
             ))}

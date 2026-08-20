@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computePlayerStats, computeGameStats } from "../data/stats";
+import PlayerDot from "../components/PlayerDot";
+import { formatLastPlayed } from "../data/format";
 
 export default function Stats() {
   const [players, setPlayers] = useState([]);
@@ -59,6 +62,7 @@ export default function Stats() {
                   <th>Win %</th>
                   <th>Avg score</th>
                   <th>Favorite</th>
+                  <th>Last played</th>
                 </tr>
               </thead>
               <tbody>
@@ -66,11 +70,16 @@ export default function Stats() {
                   .filter((p) => p.gamesPlayed > 0)
                   .map((p) => (
                     <tr key={p.playerId}>
-                      <td>{p.name}</td>
+                      <td>
+                        <Link to={`/players/${p.playerId}`} style={{ color: "#2b2117", fontWeight: 600 }}>
+                          <PlayerDot color={p.color} />{p.name}
+                        </Link>
+                      </td>
                       <td>{p.gamesPlayed}</td>
                       <td>{p.winPct}%</td>
                       <td>{p.avgScore}</td>
                       <td>{p.favoriteGame}</td>
+                      <td>{formatLastPlayed(p.lastPlayedAt)}</td>
                     </tr>
                   ))}
               </tbody>

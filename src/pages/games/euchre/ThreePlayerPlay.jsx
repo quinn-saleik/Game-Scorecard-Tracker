@@ -5,6 +5,7 @@ import {
   updateSession,
   completeSession,
 } from "../../../data/gameSessions";
+import PlayerDot from "../../../components/PlayerDot";
 
 function PointsPicker({ onSelect }) {
   return (
@@ -87,7 +88,7 @@ export default function ThreePlayerPlay() {
             <tbody>
               {session.players.slice().sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0)).map((p) => (
                 <tr key={p.id}>
-                  <td>{p.name}</td>
+                  <td><PlayerDot color={p.color} />{p.name}</td>
                   <td className={(totals[p.id] ?? 0) <= 0 ? "leader" : ""}>{totals[p.id] ?? 0}</td>
                 </tr>
               ))}
@@ -115,7 +116,7 @@ export default function ThreePlayerPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td>{p.name}</td>
+              <td><PlayerDot color={p.color} />{p.name}</td>
               <td className={(totals[p.id] ?? 0) === lowestTotal ? "leader" : ""}>{totals[p.id] ?? 0}</td>
             </tr>
           ))}
@@ -166,7 +167,7 @@ export default function ThreePlayerPlay() {
             <tbody>
               {session.players.map((p) => (
                 <tr key={p.id}>
-                  <td>{p.name}</td>
+                  <td><PlayerDot color={p.color} />{p.name}</td>
                   <td>{results[p.id]?.type === "set" ? "SET (+5)" : `${results[p.id]?.value ?? 0} pts`}</td>
                 </tr>
               ))}
@@ -202,7 +203,7 @@ export default function ThreePlayerPlay() {
       <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
       {undoButton}
       <div className="card-surface">
-        <h2>{currentPlayer.name} — what happened?</h2>
+        <h2><PlayerDot color={currentPlayer.color} />{currentPlayer.name} — what happened?</h2>
         <div className="btn-row" style={{ marginBottom: 14 }}>
           <button
             className="btn danger"
