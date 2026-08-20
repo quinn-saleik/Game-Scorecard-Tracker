@@ -52,10 +52,8 @@ export default function RoyalRumPlay() {
     );
   }
 
-  const mode = session.config?.mode || "fixed";
   const totals = session.totals || {};
   const rounds = session.rounds || [];
-  const currentTarget = mode === "fixed" ? GOALS[rounds.length % GOALS.length] : null;
 
   const checklists = Object.fromEntries(
     session.players.map((p) => [p.id, completedGoalsFor(p.id, rounds)])
@@ -112,14 +110,12 @@ export default function RoyalRumPlay() {
       const points = {};
       const newTotals = { ...totals };
       for (const p of session.players) {
-        const val = goalPicks[p.id] ? 0 : Number(pointsInput[p.id]) || 0;
+        const val = Number(pointsInput[p.id]) || 0;
         points[p.id] = val;
         newTotals[p.id] = (newTotals[p.id] ?? 0) + val;
       }
       const newRound = {
         roundNumber: rounds.length + 1,
-        mode,
-        target: currentTarget,
         goals: goalPicks,
         points,
       };
@@ -205,9 +201,6 @@ export default function RoyalRumPlay() {
       {phase === "goals" && (
         <div className="card-surface">
           <h2>What did anyone get this hand?</h2>
-          {mode === "fixed" && (
-            <p style={{ color: "var(--muted)", fontSize: 14 }}>Reminder: the table's aiming for {currentTarget}s this hand.</p>
-          )}
           {session.players.map((p) => {
             const remaining = GOALS.filter((g) => !checklists[p.id].has(g));
             return (
@@ -244,30 +237,31 @@ export default function RoyalRumPlay() {
       {phase === "scores" && (
         <div className="card-surface">
           <h2>Leftover points</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13 }}>Only for players who didn't check off a goal this hand.</p>
-          {session.players
-            .filter((p) => !goalPicks[p.id])
-            .map((p) => (
-              <div className="field" key={p.id}>
-                <label htmlFor={`pts-${p.id}`}><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</label>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <input
-                    id={`pts-${p.id}`}
-                    className="input"
-                    type="number"
-                    placeholder="0"
-                    value={pointsInput[p.id] ?? ""}
-                    onChange={(e) => setPointsInput((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                  />
-                  <VoiceInputButton
-                    onResult={(v) => setPointsInput((prev) => ({ ...prev, [p.id]: v }))}
-                  />
-                </div>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>
+            Everyone enters their points for this hand — checking off a goal doesn't zero it out,
+            it just checks off the goal. Missing a goal usually means a lot more points.
+          </p>
+          {session.players.map((p) => (
+            <div className="field" key={p.id}>
+              <label htmlFor={`pts-${p.id}`}>
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                {goalPicks[p.id] ? ` — checked off ${goalPicks[p.id]}` : ""}
+              </label>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input
+                  id={`pts-${p.id}`}
+                  className="input"
+                  type="number"
+                  placeholder="0"
+                  value={pointsInput[p.id] ?? ""}
+                  onChange={(e) => setPointsInput((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                />
+                <VoiceInputButton
+                  onResult={(v) => setPointsInput((prev) => ({ ...prev, [p.id]: v }))}
+                />
               </div>
-            ))}
-          {session.players.every((p) => goalPicks[p.id]) && (
-            <p className="empty-state">Everyone checked off a goal this hand — nothing to score.</p>
-          )}
+            </div>
+          ))}
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={() => setPhase("goals")}>
               ← Back
@@ -285,7 +279,7 @@ export default function RoyalRumPlay() {
             <tbody>
               {session.players.map((p) => {
                 const g = goalPicks[p.id];
-                const pts = g ? 0 : Number(pointsInput[p.id]) || 0;
+                const pts = Number(pointsInput[p.id]) || 0;
                 return (
                   <tr key={p.id}>
                     <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>

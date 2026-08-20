@@ -8,7 +8,6 @@ import PlayerDot from "../../../components/PlayerDot";
 export default function RoyalRumSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [mode, setMode] = useState("fixed");
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -31,7 +30,7 @@ export default function RoyalRumSetup() {
         gameType: "royal-rum",
         gameLabel: "Royal Rum",
         players: sessionPlayers,
-        config: { mode },
+        config: {},
       });
       navigate(`/royal-rum/play/${id}`);
     } finally {
@@ -67,22 +66,14 @@ export default function RoyalRumSetup() {
       </div>
 
       <div className="card-surface">
-        <h2>Goal order</h2>
-        <div className="chip-row">
-          <span className={`player-chip ${mode === "fixed" ? "selected" : ""}`} onClick={() => setMode("fixed")}>
-            Fixed — same goal for the table each hand
-          </span>
-          <span className={`player-chip ${mode === "free" ? "selected" : ""}`} onClick={() => setMode("free")}>
-            Free — everyone picks their own
-          </span>
-        </div>
-        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: 10 }}>
-          Everyone's checking off 6 through 12. In fixed mode the app shows a reminder of which
-          number the table's aiming for each hand (cycling 6→12, then back to 6 for anyone who
-          missed one). Either way, mark whatever goal a player actually completes that hand — no
-          hand's target is locked in stone if someone gets something else. Miss a goal and you
-          enter your leftover points instead. First to check off all 7 ends the game; lowest
-          score among anyone who's done that wins.
+        <h2>How it works</h2>
+        <p style={{ color: "var(--muted)", fontSize: 14 }}>
+          Everyone's checking off 6 through 12, in whatever order they get them — no fixed order
+          for the table. Each hand, mark whatever goal (if any) a player completes; every player
+          also enters their leftover points for the hand, whether they completed a goal or not —
+          completing a goal doesn't zero your points, it just checks it off. Not completing a
+          goal usually means you're stuck with a lot more points. First to check off all 7 ends
+          the game; lowest score among anyone who's done that wins.
         </p>
       </div>
 

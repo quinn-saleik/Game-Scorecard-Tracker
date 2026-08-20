@@ -1,34 +1,39 @@
+import { lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import Players from "./pages/Players";
-import PlayerDetail from "./pages/PlayerDetail";
-import Stats from "./pages/Stats";
-import HallOfFame from "./pages/HallOfFame";
-import Recap from "./pages/Recap";
-import Flip7Setup from "./pages/games/flip7/Flip7Setup";
-import Flip7Play from "./pages/games/flip7/Flip7Play";
-import OhHeckSetup from "./pages/games/oh-heck/OhHeckSetup";
-import OhHeckPlay from "./pages/games/oh-heck/OhHeckPlay";
-import EuchreVariationSelect from "./pages/games/euchre/EuchreVariationSelect";
-import TwoPlayerSetup from "./pages/games/euchre/TwoPlayerSetup";
-import TwoPlayerPlay from "./pages/games/euchre/TwoPlayerPlay";
-import ThreePlayerSetup from "./pages/games/euchre/ThreePlayerSetup";
-import ThreePlayerPlay from "./pages/games/euchre/ThreePlayerPlay";
-import TraditionalSetup from "./pages/games/euchre/TraditionalSetup";
-import TraditionalPlay from "./pages/games/euchre/TraditionalPlay";
-import Euchre15Setup from "./pages/games/euchre/Euchre15Setup";
-import Euchre15Play from "./pages/games/euchre/Euchre15Play";
-import PartnerSetup from "./pages/games/euchre/PartnerSetup";
-import PartnerPlay from "./pages/games/euchre/PartnerPlay";
-import OtherSetup from "./pages/games/other/OtherSetup";
-import OtherPlay from "./pages/games/other/OtherPlay";
-import CatchphraseSetup from "./pages/games/catchphrase/CatchphraseSetup";
-import CatchphrasePlay from "./pages/games/catchphrase/CatchphrasePlay";
-import ThirtyOneSetup from "./pages/games/thirty-one/ThirtyOneSetup";
-import ThirtyOnePlay from "./pages/games/thirty-one/ThirtyOnePlay";
-import RoyalRumSetup from "./pages/games/royal-rum/RoyalRumSetup";
-import RoyalRumPlay from "./pages/games/royal-rum/RoyalRumPlay";
+
+// Code-split everything except Home: a given visit only ever plays one game,
+// so there's no reason to ship every game's Setup/Play bundle up front.
+// Layout's <Suspense> around <Outlet/> covers the load gap.
+const Players = lazy(() => import("./pages/Players"));
+const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
+const Stats = lazy(() => import("./pages/Stats"));
+const HallOfFame = lazy(() => import("./pages/HallOfFame"));
+const Recap = lazy(() => import("./pages/Recap"));
+const Flip7Setup = lazy(() => import("./pages/games/flip7/Flip7Setup"));
+const Flip7Play = lazy(() => import("./pages/games/flip7/Flip7Play"));
+const OhHeckSetup = lazy(() => import("./pages/games/oh-heck/OhHeckSetup"));
+const OhHeckPlay = lazy(() => import("./pages/games/oh-heck/OhHeckPlay"));
+const EuchreVariationSelect = lazy(() => import("./pages/games/euchre/EuchreVariationSelect"));
+const TwoPlayerSetup = lazy(() => import("./pages/games/euchre/TwoPlayerSetup"));
+const TwoPlayerPlay = lazy(() => import("./pages/games/euchre/TwoPlayerPlay"));
+const ThreePlayerSetup = lazy(() => import("./pages/games/euchre/ThreePlayerSetup"));
+const ThreePlayerPlay = lazy(() => import("./pages/games/euchre/ThreePlayerPlay"));
+const TraditionalSetup = lazy(() => import("./pages/games/euchre/TraditionalSetup"));
+const TraditionalPlay = lazy(() => import("./pages/games/euchre/TraditionalPlay"));
+const Euchre15Setup = lazy(() => import("./pages/games/euchre/Euchre15Setup"));
+const Euchre15Play = lazy(() => import("./pages/games/euchre/Euchre15Play"));
+const PartnerSetup = lazy(() => import("./pages/games/euchre/PartnerSetup"));
+const PartnerPlay = lazy(() => import("./pages/games/euchre/PartnerPlay"));
+const OtherSetup = lazy(() => import("./pages/games/other/OtherSetup"));
+const OtherPlay = lazy(() => import("./pages/games/other/OtherPlay"));
+const CatchphraseSetup = lazy(() => import("./pages/games/catchphrase/CatchphraseSetup"));
+const CatchphrasePlay = lazy(() => import("./pages/games/catchphrase/CatchphrasePlay"));
+const ThirtyOneSetup = lazy(() => import("./pages/games/thirty-one/ThirtyOneSetup"));
+const ThirtyOnePlay = lazy(() => import("./pages/games/thirty-one/ThirtyOnePlay"));
+const RoyalRumSetup = lazy(() => import("./pages/games/royal-rum/RoyalRumSetup"));
+const RoyalRumPlay = lazy(() => import("./pages/games/royal-rum/RoyalRumPlay"));
 
 function App() {
   return (

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 
@@ -13,7 +14,12 @@ export default function Layout() {
         <SettingsMenu />
       </div>
       <main className="app-main">
-        <Outlet />
+        {/* Every route except Home is code-split (see App.jsx) — this
+            fallback covers the brief gap while a game's chunk downloads.
+            Top bar and nav stay put so it doesn't feel like a full reload. */}
+        <Suspense fallback={<p className="empty-state">Loading…</p>}>
+          <Outlet />
+        </Suspense>
       </main>
       <nav className="nav-bar">
         <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>

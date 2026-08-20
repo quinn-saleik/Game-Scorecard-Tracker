@@ -32,7 +32,7 @@ function gameGroupKey(session) {
   return session.gameType;
 }
 
-function gameGroupLabel(session) {
+export function gameGroupLabel(session) {
   if (session.gameType === "other") {
     return session.config?.customName || "Other";
   }

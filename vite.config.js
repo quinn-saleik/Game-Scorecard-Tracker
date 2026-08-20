@@ -7,4 +7,10 @@ export default defineConfig({
   // Relative base so the built assets resolve correctly no matter what path
   // GitHub Pages serves the app from (e.g. https://user.github.io/repo-name/).
   base: './',
+  // Pure-logic tests (scoring math, stats aggregation) — no DOM needed, so
+  // the default 'node' environment is enough and keeps runs fast.
+  test: {
+    environment: 'node',
+    globals: true,
+  },
 })
