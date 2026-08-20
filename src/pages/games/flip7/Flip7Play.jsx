@@ -6,6 +6,10 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import RoundHistory from "../../../components/RoundHistory";
+import ScorePresets from "../../../components/ScorePresets";
+import VoiceInputButton from "../../../components/VoiceInputButton";
+import { recomputeTotals } from "../../../data/rounds";
 
 export default function Flip7Play() {
   const { sessionId } = useParams();
@@ -81,6 +85,17 @@ export default function Flip7Play() {
     }
   }
 
+  async function deleteRound(index) {
+    setSaving(true);
+    try {
+      const newRounds = rounds.filter((_, i) => i !== index);
+      const newTotals = recomputeTotals("flip7", session, newRounds);
+      await updateSession(sessionId, { rounds: newRounds, totals: newTotals });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function confirmFinish() {
     setSaving(true);
     try {
@@ -88,7 +103,7 @@ export default function Flip7Play() {
         winnerIds: potentialWinners.map((p) => p.id),
         totals,
       });
-      navigate("/stats");
+      navigate(`/recap/${sessionId}`);
     } finally {
       setSaving(false);
     }
@@ -112,7 +127,7 @@ export default function Flip7Play() {
           <tbody>
             {session.players.map((p) => (
               <tr key={p.id}>
-                <td><PlayerDot color={p.color} />{p.name}</td>
+                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
                 <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                   {totals[p.id] || 0}
                 </td>
@@ -127,7 +142,7 @@ export default function Flip7Play() {
           <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "#2b2117", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last round
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -141,16 +156,25 @@ export default function Flip7Play() {
           <form onSubmit={submitRound}>
             {session.players.map((p) => (
               <div className="field" key={p.id}>
-                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} />{p.name}</label>
-                <input
-                  id={`pt-${p.id}`}
-                  className="input"
-                  type="number"
-                  placeholder="0"
-                  value={inputs[p.id] ?? ""}
-                  onChange={(e) =>
-                    setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
-                  }
+                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</label>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <input
+                    id={`pt-${p.id}`}
+                    className="input"
+                    type="number"
+                    placeholder="0"
+                    value={inputs[p.id] ?? ""}
+                    onChange={(e) =>
+                      setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
+                    }
+                  />
+                  <VoiceInputButton
+                    onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
+                  />
+                </div>
+                <ScorePresets
+                  values={[0]}
+                  onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
                 />
               </div>
             ))}
@@ -159,7 +183,7 @@ export default function Flip7Play() {
                 <button
                   type="button"
                   className="btn ghost"
-                  style={{ color: "#2b2117", border: "2px solid #6b4226" }}
+                  style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
                   onClick={undoLastRound}
                   disabled={saving}
                 >
@@ -173,6 +197,15 @@ export default function Flip7Play() {
           </form>
         </div>
       )}
+
+      <RoundHistory
+        session={session}
+        rounds={rounds}
+        gameType="flip7"
+        unitLabel="Round"
+        onDelete={deleteRound}
+        busy={saving}
+      />
     </div>
   );
 }

@@ -4,8 +4,8 @@ const VARIATIONS = [
   { icon: "👥", label: "2-Person", path: "/euchre/2p/setup", soon: false },
   { icon: "🧑‍🤝‍🧑", label: "3-Person", path: "/euchre/3p/setup", soon: false },
   { icon: "♣️", label: "Traditional (2v2)", path: "/euchre/traditional/setup", soon: false },
-  { icon: "🃏", label: "15-Card", path: null, soon: true },
-  { icon: "🤝", label: "Pick Your Partner", path: null, soon: true },
+  { icon: "🃏", label: "15-Card", path: "/euchre/15card/setup", soon: false },
+  { icon: "🤝", label: "Pick Your Partner", path: "/euchre/partner/setup", soon: false },
 ];
 
 export default function EuchreVariationSelect() {

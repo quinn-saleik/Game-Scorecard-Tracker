@@ -5,7 +5,10 @@ const GAMES = [
   { icon: "🂡", label: "Oh Heck!", path: "/oh-heck/setup", soon: false },
   { icon: "🔥", label: "Flip7", path: "/flip7/setup", soon: false },
   { icon: "♣", label: "Euchre", path: "/euchre", soon: false },
-  { icon: "🃏", label: "Other", path: null, soon: true },
+  { icon: "♦", label: "Royal Rum", path: "/royal-rum/setup", soon: false },
+  { icon: "🎤", label: "Catchphrase", path: "/catchphrase/setup", soon: false },
+  { icon: "🂱", label: "31", path: "/thirty-one/setup", soon: false },
+  { icon: "🃏", label: "Other", path: "/other/setup", soon: false },
 ];
 
 export default function Home() {

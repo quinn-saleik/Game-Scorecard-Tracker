@@ -30,7 +30,7 @@ export default function TwoPlayerSetup() {
     if (seated.length !== 2) return;
     setStarting(true);
     try {
-      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
+      const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const id = await createSession({
         gameType: "euchre-2p",
         gameLabel: "Euchre (2-player)",
@@ -52,7 +52,7 @@ export default function TwoPlayerSetup() {
 
       <div className="card-surface">
         <h2>Select 2 players ({seated.length}/2)</h2>
-        <p style={{ color: "#6f6455", fontSize: 14, marginTop: -6 }}>
+        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
           Tap in order — the first player picked deals first.
         </p>
         {active.length === 0 ? (
@@ -68,7 +68,7 @@ export default function TwoPlayerSetup() {
                   onClick={() => toggle(p.id)}
                 >
                   {seatNum > -1 ? `${seatNum + 1}. ` : ""}
-                  <PlayerDot color={p.color} />
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                   {p.name}
                 </span>
               );

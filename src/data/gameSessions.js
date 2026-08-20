@@ -14,11 +14,14 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db, authReady } from "../firebase";
+import { getInitialTotals } from "./rounds";
 
 const sessionsCol = collection(db, "gameSessions");
 
 // players: [{id, name}]
-// gameType: 'flip7' | 'oh-heck' | 'euchre-2p' | 'euchre-3p' | 'euchre-traditional' | 'other'
+// gameType: 'flip7' | 'oh-heck' | 'euchre-2p' | 'euchre-3p' | 'euchre-traditional'
+//         | 'euchre-15card' | 'euchre-partner' | 'catchphrase' | 'thirty-one'
+//         | 'royal-rum' | 'other'
 // initialTotals: optional override for the starting totals map (e.g. Euchre
 // 3-player starts everyone at 15 and counts down instead of up from 0).
 export async function createSession({ gameType, gameLabel, players, config, initialTotals }) {
@@ -51,6 +54,29 @@ export async function completeSession(sessionId, { winnerIds, totals }) {
     totals,
     completedAt: serverTimestamp(),
   });
+}
+
+// "Play again" from a finished game's Recap screen: same game type, same
+// lineup (frozen as of that game, same as the finished session's own
+// scoreboard), same config (teams/threshold/lives/etc.) — reuses
+// getInitialTotals so each game type's starting totals rule (e.g. "31"
+// starts at its configured lives, Euchre 3-player at its starting score)
+// only has to live in one place. Skips Setup entirely.
+export async function rematchSession(session) {
+  await authReady;
+  const ref = await addDoc(sessionsCol, {
+    gameType: session.gameType,
+    gameLabel: session.gameLabel || session.gameType,
+    players: session.players,
+    config: session.config || {},
+    rounds: [],
+    totals: getInitialTotals(session.gameType, session),
+    status: "in_progress",
+    winnerIds: [],
+    startedAt: serverTimestamp(),
+    completedAt: null,
+  });
+  return ref.id;
 }
 
 // Hard delete — used by the "quit game" option on an in-progress session.

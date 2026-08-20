@@ -6,11 +6,11 @@ import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 
-export default function TraditionalSetup() {
+export default function Euchre15Setup() {
   const [players, setPlayers] = useState([]);
   const [teamA, setTeamA] = useState([]);
   const [teamB, setTeamB] = useState([]);
-  const [threshold, setThreshold] = useState(10);
+  const [threshold, setThreshold] = useState(50);
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -25,9 +25,6 @@ export default function TraditionalSetup() {
     if (teamB.length < 2) return setTeamB((s) => [...s, id]);
   }
 
-  // Re-randomize which 2 players end up on which team. Works off whoever's
-  // already tapped in if that's already 4; otherwise tops up from the rest
-  // of the active roster first, so one tap can build the whole matchup.
   function shuffleTeams() {
     const assigned = [...teamA, ...teamB];
     const rest = active.map((p) => p.id).filter((id) => !assigned.includes(id));
@@ -51,16 +48,16 @@ export default function TraditionalSetup() {
       const aPlayers = teamAPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const bPlayers = teamBPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const id = await createSession({
-        gameType: "euchre-traditional",
-        gameLabel: "Euchre (traditional)",
+        gameType: "euchre-15card",
+        gameLabel: "Euchre (15-card)",
         players: [...aPlayers, ...bPlayers],
         config: {
-          winThreshold: Number(threshold) || 10,
+          winThreshold: Number(threshold) || 50,
           teamA: aPlayers.map((p) => p.id),
           teamB: bPlayers.map((p) => p.id),
         },
       });
-      navigate(`/euchre/traditional/play/${id}`);
+      navigate(`/euchre/15card/play/${id}`);
     } finally {
       setStarting(false);
     }
@@ -69,9 +66,9 @@ export default function TraditionalSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">♣</span> Euchre (traditional) — Teams
+        <span className="suit black">🃏</span> Euchre (15-card) — Teams
       </h1>
-      <OngoingGames gameType="euchre-traditional" />
+      <OngoingGames gameType="euchre-15card" />
 
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -144,6 +141,11 @@ export default function TraditionalSetup() {
             onChange={(e) => setThreshold(e.target.value)}
           />
         </div>
+        <p style={{ color: "var(--muted)", fontSize: 14 }}>
+          Each hand, both teams bid how many of the 15 tricks they'll take. Whoever bids
+          higher names trump. After play: a team that makes its bid scores the tricks it
+          actually won; a team that falls short goes negative by its bid amount instead.
+        </p>
       </div>
 
       <button className="btn primary" disabled={!ready || starting} onClick={handleStart}>

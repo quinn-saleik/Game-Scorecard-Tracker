@@ -2,18 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToInProgressSessions, deleteSession } from "../data/gameSessions";
 import { GAME_LABELS } from "../data/stats";
+import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "./PlayerDot";
 
-const PLAY_ROUTE = {
-  flip7: (id) => `/flip7/play/${id}`,
-  "oh-heck": (id) => `/oh-heck/play/${id}`,
-  "euchre-2p": (id) => `/euchre/2p/play/${id}`,
-  "euchre-3p": (id) => `/euchre/3p/play/${id}`,
-  "euchre-traditional": (id) => `/euchre/traditional/play/${id}`,
-};
-
-// Euchre 3-player counts DOWN to 0 (lower is better); everything else counts up.
-const LOWER_IS_BETTER = new Set(["euchre-3p"]);
+// Euchre 3-player and Royal Rum count DOWN (lower is better); everything
+// else — including "31" lives, where more is safer — counts up.
+const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum"]);
 
 const UNIT_LABEL = {
   flip7: "Round",
@@ -21,6 +15,12 @@ const UNIT_LABEL = {
   "euchre-2p": "Hand",
   "euchre-3p": "Hand",
   "euchre-traditional": "Hand",
+  "euchre-15card": "Hand",
+  "euchre-partner": "Hand",
+  catchphrase: "Round",
+  "thirty-one": "Round",
+  "royal-rum": "Hand",
+  other: "Round",
 };
 
 // Shows any in-progress game(s) so nothing gets lost when you navigate away
@@ -39,8 +39,13 @@ export default function OngoingGames({ gameType }) {
 
   if (filtered.length === 0) return null;
 
+  function labelFor(session) {
+    if (session.gameType === "other") return session.config?.customName || "Other";
+    return GAME_LABELS[session.gameType] || session.gameType;
+  }
+
   async function handleQuit(session) {
-    const label = GAME_LABELS[session.gameType] || session.gameType;
+    const label = labelFor(session);
     if (!window.confirm(`Quit and delete this ${label} game? This can't be undone.`)) return;
     setBusyId(session.id);
     try {
@@ -55,7 +60,7 @@ export default function OngoingGames({ gameType }) {
       <h2>Ongoing game{filtered.length > 1 ? "s" : ""}</h2>
       {filtered.map((session) => {
         const totals = session.totals || {};
-        const label = GAME_LABELS[session.gameType] || session.gameType;
+        const label = labelFor(session);
         const unit = UNIT_LABEL[session.gameType] || "Round";
         const sortAsc = LOWER_IS_BETTER.has(session.gameType);
         const ranked = session.players
@@ -66,15 +71,15 @@ export default function OngoingGames({ gameType }) {
               : (totals[b.id] ?? 0) - (totals[a.id] ?? 0)
           );
         return (
-          <div key={session.id} style={{ borderTop: "1px solid #eee2c8", paddingTop: 12, marginTop: 12 }}>
+          <div key={session.id} style={{ borderTop: "1px solid var(--divider)", paddingTop: 12, marginTop: 12 }}>
             <p style={{ margin: "0 0 6px", fontWeight: 700 }}>
               {label} — {unit} {(session.rounds?.length || 0) + 1}
             </p>
-            <p style={{ margin: "0 0 10px", color: "#6f6455" }}>
+            <p style={{ margin: "0 0 10px", color: "var(--muted)" }}>
               {ranked.map((p, i) => (
                 <span key={p.id}>
                   {i > 0 && "  •  "}
-                  <PlayerDot color={p.color} />{p.name}: {totals[p.id] ?? 0}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}: {totals[p.id] ?? 0}
                 </span>
               ))}
             </p>

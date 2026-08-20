@@ -1,4 +1,5 @@
 import { NavLink, Link, Outlet } from "react-router-dom";
+import SettingsMenu from "./SettingsMenu";
 
 export default function Layout() {
   return (
@@ -9,6 +10,7 @@ export default function Layout() {
           <span className="suit black">♠</span>
           Scorecard
         </Link>
+        <SettingsMenu />
       </div>
       <main className="app-main">
         <Outlet />
@@ -25,6 +27,10 @@ export default function Layout() {
         <NavLink to="/stats" className={({ isActive }) => (isActive ? "active" : "")}>
           <span className="nav-icon">📊</span>
           Stats
+        </NavLink>
+        <NavLink to="/hall-of-fame" className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="nav-icon">🏆</span>
+          Hall of Fame
         </NavLink>
       </nav>
     </>

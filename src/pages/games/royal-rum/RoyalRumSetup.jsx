@@ -5,10 +5,10 @@ import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 
-export default function ThreePlayerSetup() {
+export default function RoyalRumSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [startingScore, setStartingScore] = useState(15);
+  const [mode, setMode] = useState("fixed");
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -17,29 +17,23 @@ export default function ThreePlayerSetup() {
   const active = players.filter((p) => p.active);
 
   function toggle(id) {
-    setSelected((s) => {
-      if (s.includes(id)) return s.filter((x) => x !== id);
-      if (s.length >= 3) return s;
-      return [...s, id];
-    });
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
 
   const seated = selected.map((id) => active.find((p) => p.id === id)).filter(Boolean);
 
   async function handleStart() {
-    if (seated.length !== 3) return;
+    if (seated.length < 2) return;
     setStarting(true);
     try {
       const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
-      const start = Number(startingScore) || 15;
       const id = await createSession({
-        gameType: "euchre-3p",
-        gameLabel: "Euchre (3-player)",
+        gameType: "royal-rum",
+        gameLabel: "Royal Rum",
         players: sessionPlayers,
-        config: { startingScore: start },
-        initialTotals: Object.fromEntries(sessionPlayers.map((p) => [p.id, start])),
+        config: { mode },
       });
-      navigate(`/euchre/3p/play/${id}`);
+      navigate(`/royal-rum/play/${id}`);
     } finally {
       setStarting(false);
     }
@@ -48,12 +42,12 @@ export default function ThreePlayerSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">♣</span> Euchre (3-player) — Who's playing?
+        <span className="suit black">♦</span> Royal Rum — Who's playing?
       </h1>
-      <OngoingGames gameType="euchre-3p" />
+      <OngoingGames gameType="royal-rum" />
 
       <div className="card-surface">
-        <h2>Select 3 players ({seated.length}/3)</h2>
+        <h2>Select players ({seated.length})</h2>
         {active.length === 0 ? (
           <p className="empty-state">No active players. Add some on the Players tab first.</p>
         ) : (
@@ -73,27 +67,29 @@ export default function ThreePlayerSetup() {
       </div>
 
       <div className="card-surface">
-        <h2>Starting score</h2>
-        <div className="field">
-          <label htmlFor="startingScore">Everyone starts at</label>
-          <input
-            id="startingScore"
-            className="input"
-            type="number"
-            min="1"
-            value={startingScore}
-            onChange={(e) => setStartingScore(e.target.value)}
-          />
+        <h2>Goal order</h2>
+        <div className="chip-row">
+          <span className={`player-chip ${mode === "fixed" ? "selected" : ""}`} onClick={() => setMode("fixed")}>
+            Fixed — same goal for the table each hand
+          </span>
+          <span className={`player-chip ${mode === "free" ? "selected" : ""}`} onClick={() => setMode("free")}>
+            Free — everyone picks their own
+          </span>
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Each hand: a player gets 1-5 points (subtracted from their score) or SET (+5, moves them further from 0). First to 0 or below wins.
+        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: 10 }}>
+          Everyone's checking off 6 through 12. In fixed mode the app shows a reminder of which
+          number the table's aiming for each hand (cycling 6→12, then back to 6 for anyone who
+          missed one). Either way, mark whatever goal a player actually completes that hand — no
+          hand's target is locked in stone if someone gets something else. Miss a goal and you
+          enter your leftover points instead. First to check off all 7 ends the game; lowest
+          score among anyone who's done that wins.
         </p>
       </div>
 
-      <button className="btn primary" disabled={seated.length !== 3 || starting} onClick={handleStart}>
+      <button className="btn primary" disabled={seated.length < 2 || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
       </button>
-      {seated.length !== 3 && <p className="empty-state">Pick exactly 3 players to start.</p>}
+      {seated.length < 2 && <p className="empty-state">Pick at least 2 players to start.</p>}
     </div>
   );
 }

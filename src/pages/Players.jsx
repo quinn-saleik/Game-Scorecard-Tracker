@@ -5,11 +5,15 @@ import {
   addPlayer,
   setPlayerActive,
   setPlayerColor,
+  setPlayerAvatar,
+  setPlayerPhoto,
   subscribeToPlayers,
 } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computePlayerStats } from "../data/stats";
 import { PLAYER_COLORS } from "../data/playerColors";
+import { PLAYER_AVATARS } from "../data/playerAvatars";
+import { fileToPlayerPhoto } from "../data/photo";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 
@@ -20,6 +24,7 @@ export default function Players() {
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
   const [colorPickerFor, setColorPickerFor] = useState(null);
+  const [avatarPickerFor, setAvatarPickerFor] = useState(null);
 
   useEffect(() => {
     seedDefaultPlayers().catch((err) =>
@@ -69,6 +74,37 @@ export default function Players() {
     }
   }
 
+  async function pickAvatar(playerId, emoji) {
+    setBusy(true);
+    try {
+      await setPlayerAvatar(playerId, emoji);
+    } finally {
+      setBusy(false);
+      setAvatarPickerFor(null);
+    }
+  }
+
+  async function pickPhoto(playerId, file) {
+    setBusy(true);
+    try {
+      const dataUrl = await fileToPlayerPhoto(file);
+      await setPlayerPhoto(playerId, dataUrl);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function clearPhoto(playerId) {
+    setBusy(true);
+    try {
+      await setPlayerPhoto(playerId, null);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const active = players.filter((p) => p.active);
   const inactive = players.filter((p) => !p.active);
   const stats = computePlayerStats(active, sessions);
@@ -99,8 +135,9 @@ export default function Players() {
 
       <div className="card-surface">
         <h2>Roster ({active.length})</h2>
-        <p style={{ color: "#6f6455", fontSize: 14, marginTop: -6 }}>
-          Tap a player's dot to set their color — it shows up next to their name in every game.
+        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
+          Tap a player's dot to set their color, their avatar to pick an emoji, or the camera to
+          add a photo — a photo takes over from the emoji wherever they show up in the app.
         </p>
         {loading ? (
           <p className="empty-state">Loading…</p>
@@ -110,6 +147,8 @@ export default function Players() {
           <table className="score-table">
             <thead>
               <tr>
+                <th></th>
+                <th></th>
                 <th></th>
                 <th>Player</th>
                 <th>Played</th>
@@ -123,13 +162,17 @@ export default function Players() {
               {active.map((p) => {
                 const s = statsById.get(p.id);
                 const pickerOpen = colorPickerFor === p.id;
+                const avatarOpen = avatarPickerFor === p.id;
                 return (
                   <Fragment key={p.id}>
                     <tr>
                       <td>
                         <button
                           type="button"
-                          onClick={() => setColorPickerFor(pickerOpen ? null : p.id)}
+                          onClick={() => {
+                            setColorPickerFor(pickerOpen ? null : p.id);
+                            setAvatarPickerFor(null);
+                          }}
                           title="Set color"
                           style={{
                             background: "none",
@@ -142,7 +185,66 @@ export default function Players() {
                         </button>
                       </td>
                       <td>
-                        <Link to={`/players/${p.id}`} style={{ color: "#2b2117", fontWeight: 600 }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAvatarPickerFor(avatarOpen ? null : p.id);
+                            setColorPickerFor(null);
+                          }}
+                          title="Set avatar"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            padding: 4,
+                            cursor: "pointer",
+                            fontSize: 16,
+                          }}
+                        >
+                          {p.avatar || "＋"}
+                        </button>
+                      </td>
+                      <td>
+                        <label
+                          htmlFor={`photo-input-${p.id}`}
+                          title={p.photo ? "Change photo" : "Add a photo"}
+                          style={{ display: "inline-flex", cursor: busy ? "default" : "pointer" }}
+                        >
+                          {p.photo ? (
+                            <img
+                              src={p.photo}
+                              alt=""
+                              style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <span style={{ fontSize: 16 }}>📷</span>
+                          )}
+                        </label>
+                        <input
+                          id={`photo-input-${p.id}`}
+                          type="file"
+                          accept="image/*"
+                          disabled={busy}
+                          style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (file) pickPhoto(p.id, file);
+                          }}
+                        />
+                        {p.photo && (
+                          <button
+                            type="button"
+                            onClick={() => clearPhoto(p.id)}
+                            disabled={busy}
+                            title="Remove photo"
+                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "var(--muted)", display: "block", padding: 0 }}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </td>
+                      <td>
+                        <Link to={`/players/${p.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                           {p.name}
                         </Link>
                       </td>
@@ -163,7 +265,7 @@ export default function Players() {
                     </tr>
                     {pickerOpen && (
                       <tr>
-                        <td colSpan={7} style={{ background: "#fbf6e9" }}>
+                        <td colSpan={9} style={{ background: "var(--card-white)" }}>
                           <div className="chip-row" style={{ padding: "10px 4px" }}>
                             {PLAYER_COLORS.map((c) => {
                               const takenBy = active.find(
@@ -197,7 +299,7 @@ export default function Players() {
                                       border: "1px solid rgba(0,0,0,0.15)",
                                     }}
                                   />
-                                  <span style={{ fontSize: 11, color: "#6f6455" }}>
+                                  <span style={{ fontSize: 11, color: "var(--muted)" }}>
                                     {takenBy ? `${c.name} (${takenBy.name})` : c.name}
                                   </span>
                                 </button>
@@ -206,11 +308,46 @@ export default function Players() {
                             <button
                               type="button"
                               className="btn ghost small"
-                              style={{ color: "#2b2117", border: "2px solid #6b4226", alignSelf: "center" }}
+                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", alignSelf: "center" }}
                               onClick={() => pickColor(p.id, null)}
                               disabled={busy}
                             >
                               No color
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {avatarOpen && (
+                      <tr>
+                        <td colSpan={9} style={{ background: "var(--card-white)" }}>
+                          <div className="chip-row" style={{ padding: "10px 4px" }}>
+                            {PLAYER_AVATARS.map((emoji) => (
+                              <button
+                                type="button"
+                                key={emoji}
+                                onClick={() => pickAvatar(p.id, emoji)}
+                                disabled={busy}
+                                style={{
+                                  background: "none",
+                                  border: p.avatar === emoji ? "2px solid #6b4226" : "2px solid transparent",
+                                  borderRadius: 10,
+                                  padding: 6,
+                                  fontSize: 20,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                            <button
+                              type="button"
+                              className="btn ghost small"
+                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", alignSelf: "center" }}
+                              onClick={() => pickAvatar(p.id, null)}
+                              disabled={busy}
+                            >
+                              No avatar
                             </button>
                           </div>
                         </td>

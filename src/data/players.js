@@ -83,6 +83,18 @@ export async function setPlayerColor(playerId, color) {
   await updateDoc(doc(playersCol, playerId), { color });
 }
 
+export async function setPlayerAvatar(playerId, avatar) {
+  await authReady;
+  await updateDoc(doc(playersCol, playerId), { avatar });
+}
+
+// photo: a small data: URI (already resized/cropped client-side — see
+// src/data/photo.js) or null to remove it and fall back to color/avatar.
+export async function setPlayerPhoto(playerId, photo) {
+  await authReady;
+  await updateDoc(doc(playersCol, playerId), { photo });
+}
+
 export function subscribeToPlayers(callback) {
   const q = query(playersCol, orderBy("name"));
   return onSnapshot(q, (snap) => {

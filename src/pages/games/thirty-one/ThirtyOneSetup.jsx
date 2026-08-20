@@ -5,10 +5,10 @@ import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 
-export default function ThreePlayerSetup() {
+export default function ThirtyOneSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [startingScore, setStartingScore] = useState(15);
+  const [startingLives, setStartingLives] = useState(3);
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -17,29 +17,25 @@ export default function ThreePlayerSetup() {
   const active = players.filter((p) => p.active);
 
   function toggle(id) {
-    setSelected((s) => {
-      if (s.includes(id)) return s.filter((x) => x !== id);
-      if (s.length >= 3) return s;
-      return [...s, id];
-    });
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
 
   const seated = selected.map((id) => active.find((p) => p.id === id)).filter(Boolean);
 
   async function handleStart() {
-    if (seated.length !== 3) return;
+    if (seated.length < 2) return;
     setStarting(true);
     try {
       const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
-      const start = Number(startingScore) || 15;
+      const lives = Number(startingLives) || 3;
       const id = await createSession({
-        gameType: "euchre-3p",
-        gameLabel: "Euchre (3-player)",
+        gameType: "thirty-one",
+        gameLabel: "31",
         players: sessionPlayers,
-        config: { startingScore: start },
-        initialTotals: Object.fromEntries(sessionPlayers.map((p) => [p.id, start])),
+        config: { startingLives: lives },
+        initialTotals: Object.fromEntries(sessionPlayers.map((p) => [p.id, lives])),
       });
-      navigate(`/euchre/3p/play/${id}`);
+      navigate(`/thirty-one/play/${id}`);
     } finally {
       setStarting(false);
     }
@@ -48,12 +44,12 @@ export default function ThreePlayerSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">♣</span> Euchre (3-player) — Who's playing?
+        <span className="suit red">🂱</span> 31 — Who's playing?
       </h1>
-      <OngoingGames gameType="euchre-3p" />
+      <OngoingGames gameType="thirty-one" />
 
       <div className="card-surface">
-        <h2>Select 3 players ({seated.length}/3)</h2>
+        <h2>Select players ({seated.length})</h2>
         {active.length === 0 ? (
           <p className="empty-state">No active players. Add some on the Players tab first.</p>
         ) : (
@@ -73,27 +69,28 @@ export default function ThreePlayerSetup() {
       </div>
 
       <div className="card-surface">
-        <h2>Starting score</h2>
+        <h2>Starting lives</h2>
         <div className="field">
-          <label htmlFor="startingScore">Everyone starts at</label>
+          <label htmlFor="lives">Everyone starts with</label>
           <input
-            id="startingScore"
+            id="lives"
             className="input"
             type="number"
             min="1"
-            value={startingScore}
-            onChange={(e) => setStartingScore(e.target.value)}
+            value={startingLives}
+            onChange={(e) => setStartingLives(e.target.value)}
           />
         </div>
         <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Each hand: a player gets 1-5 points (subtracted from their score) or SET (+5, moves them further from 0). First to 0 or below wins.
+          At the end of each round, mark who lost a life. Once a player hits 0 they're out. Last
+          player standing wins.
         </p>
       </div>
 
-      <button className="btn primary" disabled={seated.length !== 3 || starting} onClick={handleStart}>
+      <button className="btn primary" disabled={seated.length < 2 || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
       </button>
-      {seated.length !== 3 && <p className="empty-state">Pick exactly 3 players to start.</p>}
+      {seated.length < 2 && <p className="empty-state">Pick at least 2 players to start.</p>}
     </div>
   );
 }

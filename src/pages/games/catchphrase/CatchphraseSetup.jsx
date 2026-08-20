@@ -6,11 +6,11 @@ import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 
-export default function TraditionalSetup() {
+export default function CatchphraseSetup() {
   const [players, setPlayers] = useState([]);
   const [teamA, setTeamA] = useState([]);
   const [teamB, setTeamB] = useState([]);
-  const [threshold, setThreshold] = useState(10);
+  const [threshold, setThreshold] = useState(7);
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -18,31 +18,35 @@ export default function TraditionalSetup() {
 
   const active = players.filter((p) => p.active);
 
-  function toggle(id) {
-    if (teamA.includes(id)) return setTeamA((s) => s.filter((x) => x !== id));
-    if (teamB.includes(id)) return setTeamB((s) => s.filter((x) => x !== id));
-    if (teamA.length <= teamB.length && teamA.length < 2) return setTeamA((s) => [...s, id]);
-    if (teamB.length < 2) return setTeamB((s) => [...s, id]);
+  // Unlike Traditional Euchre, teams don't need to match in size — tap a
+  // player to cycle unassigned -> Team 1 -> Team 2 -> unassigned.
+  function cycle(id) {
+    if (teamA.includes(id)) {
+      setTeamA((s) => s.filter((x) => x !== id));
+      setTeamB((s) => [...s, id]);
+      return;
+    }
+    if (teamB.includes(id)) {
+      setTeamB((s) => s.filter((x) => x !== id));
+      return;
+    }
+    setTeamA((s) => [...s, id]);
   }
 
-  // Re-randomize which 2 players end up on which team. Works off whoever's
-  // already tapped in if that's already 4; otherwise tops up from the rest
-  // of the active roster first, so one tap can build the whole matchup.
+  // Shuffles whoever's already assigned into new random teams; if nobody's
+  // been tapped yet, shuffles the whole active roster instead so one tap
+  // sets up the whole game. Split as evenly as possible either way.
   function shuffleTeams() {
     const assigned = [...teamA, ...teamB];
-    const rest = active.map((p) => p.id).filter((id) => !assigned.includes(id));
-    const pool =
-      assigned.length >= 4
-        ? assigned.slice(0, 4)
-        : [...assigned, ...shuffleArray(rest)].slice(0, 4);
-    const shuffled = shuffleArray(pool);
-    setTeamA(shuffled.slice(0, 2));
-    setTeamB(shuffled.slice(2, 4));
+    const pool = shuffleArray(assigned.length >= 2 ? assigned : active.map((p) => p.id));
+    const mid = Math.ceil(pool.length / 2);
+    setTeamA(pool.slice(0, mid));
+    setTeamB(pool.slice(mid));
   }
 
   const teamAPlayers = teamA.map((id) => active.find((p) => p.id === id)).filter(Boolean);
   const teamBPlayers = teamB.map((id) => active.find((p) => p.id === id)).filter(Boolean);
-  const ready = teamAPlayers.length === 2 && teamBPlayers.length === 2;
+  const ready = teamAPlayers.length >= 1 && teamBPlayers.length >= 1;
 
   async function handleStart() {
     if (!ready) return;
@@ -51,16 +55,16 @@ export default function TraditionalSetup() {
       const aPlayers = teamAPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const bPlayers = teamBPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const id = await createSession({
-        gameType: "euchre-traditional",
-        gameLabel: "Euchre (traditional)",
+        gameType: "catchphrase",
+        gameLabel: "Catchphrase",
         players: [...aPlayers, ...bPlayers],
         config: {
-          winThreshold: Number(threshold) || 10,
+          winThreshold: Number(threshold) || 7,
           teamA: aPlayers.map((p) => p.id),
           teamB: bPlayers.map((p) => p.id),
         },
       });
-      navigate(`/euchre/traditional/play/${id}`);
+      navigate(`/catchphrase/play/${id}`);
     } finally {
       setStarting(false);
     }
@@ -69,19 +73,19 @@ export default function TraditionalSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">♣</span> Euchre (traditional) — Teams
+        <span className="suit red">🎤</span> Catchphrase — Teams
       </h1>
-      <OngoingGames gameType="euchre-traditional" />
+      <OngoingGames gameType="catchphrase" />
 
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <h2>Tap players to assign teams</h2>
-          <button type="button" className="btn small" onClick={shuffleTeams} disabled={active.length < 4}>
+          <button type="button" className="btn small" onClick={shuffleTeams} disabled={active.length < 2}>
             🎲 Shuffle teams
           </button>
         </div>
         <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
-          First 2 taps go to Team 1, next 2 to Team 2 — or let Shuffle pick for you.
+          Team sizes don't need to match. Tap a player to cycle Team 1 → Team 2 → unassigned, or let Shuffle split everyone up.
         </p>
         {active.length === 0 ? (
           <p className="empty-state">No active players. Add some on the Players tab first.</p>
@@ -94,7 +98,7 @@ export default function TraditionalSetup() {
                 <span
                   key={p.id}
                   className={`player-chip ${onA || onB ? "selected" : ""}`}
-                  onClick={() => toggle(p.id)}
+                  onClick={() => cycle(p.id)}
                 >
                   {onA ? "① " : onB ? "② " : ""}
                   <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
@@ -149,7 +153,7 @@ export default function TraditionalSetup() {
       <button className="btn primary" disabled={!ready || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
       </button>
-      {!ready && <p className="empty-state">Assign exactly 2 players to each team to start.</p>}
+      {!ready && <p className="empty-state">Put at least 1 player on each team to start.</p>}
     </div>
   );
 }

@@ -11,8 +11,51 @@
   --muted: #6f6455;
   --radius: 16px;
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+
+  /* Semantic "text on a card-surface" colors, kept separate from --ink and
+     --wood-dark above: those two also color things that must NOT flip in
+     dark mode (black-suit icons, primary-button text, the nav bar), so
+     card-surface text gets its own variables instead of reusing them. */
+  --text-on-surface: var(--ink);
+  --heading-on-surface: var(--wood-dark);
+  --divider: #eee2c8;
+  --border-soft: #e3d5b8;
+
   font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
   color-scheme: light;
+}
+
+/* Dark mode — only card/game-tile surfaces and their text actually flip;
+   the felt table background, nav bar, and gold/cream accents already read
+   fine at night and stay the same in both themes. Toggled via a "dark"
+   class on <html> (src/data/preferences.js), not prefers-color-scheme,
+   since it's an explicit in-app setting. */
+html.dark {
+  --card-white: #2a2015;
+  --text-on-surface: #f0e6d2;
+  --heading-on-surface: #e0b25a;
+  --muted: #b7a687;
+  --divider: #4a3c28;
+  --border-soft: #5a4a32;
+  --red-suit: #e2695c;
+  color-scheme: dark;
+}
+
+/* Text size — applied as a page zoom (not per-rule font-size math) so
+   spacing and tap targets scale along with the text, not just the type.
+   `zoom` reflows properly (unlike transform: scale) and is supported on
+   the WebKit/Blink engines this app actually runs on (iOS/Android); it's
+   a no-op on browsers that lack it, which just means text stays normal
+   size there instead of erroring. */
+html.text-lg .app-main,
+html.text-lg .top-bar,
+html.text-lg .nav-bar {
+  zoom: 1.15;
+}
+html.text-xl .app-main,
+html.text-xl .top-bar,
+html.text-xl .nav-bar {
+  zoom: 1.3;
 }
 
 * {
@@ -28,7 +71,7 @@ body,
 body {
   margin: 0;
   background: radial-gradient(ellipse at top, var(--felt) 0%, var(--felt-dark) 70%);
-  color: var(--ink);
+  color: var(--text-on-surface);
   min-height: 100vh;
 }
 
@@ -66,7 +109,7 @@ h1,
 h2,
 h3 {
   margin-top: 0;
-  color: var(--wood-dark);
+  color: var(--heading-on-surface);
 }
 
 .page-title {
@@ -161,7 +204,7 @@ h3 {
   border: 3px solid transparent;
   transition: transform 0.1s ease, border-color 0.15s ease;
   text-decoration: none;
-  color: var(--ink);
+  color: var(--text-on-surface);
 }
 .game-tile:hover {
   transform: translateY(-2px);
@@ -262,10 +305,10 @@ table.score-table th,
 table.score-table td {
   padding: 8px 6px;
   text-align: center;
-  border-bottom: 1px solid #eee2c8;
+  border-bottom: 1px solid var(--divider);
 }
 table.score-table th {
-  color: var(--wood-dark);
+  color: var(--heading-on-surface);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -300,14 +343,16 @@ table.score-table td.leader {
 .field label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--wood-dark);
+  color: var(--heading-on-surface);
 }
 .field input,
 .field select,
 .input {
   padding: 10px 12px;
   border-radius: 10px;
-  border: 2px solid #e3d5b8;
+  border: 2px solid var(--border-soft);
   font-size: 16px;
   font-family: inherit;
+  background: var(--card-white);
+  color: var(--text-on-surface);
 }

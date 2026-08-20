@@ -5,10 +5,10 @@ import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 
-export default function Flip7Setup() {
+export default function OtherSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [threshold, setThreshold] = useState(200);
+  const [gameName, setGameName] = useState("");
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
@@ -17,25 +17,25 @@ export default function Flip7Setup() {
   const active = players.filter((p) => p.active);
 
   function toggle(id) {
-    setSelected((s) =>
-      s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
-    );
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
 
+  const ready = gameName.trim().length > 0 && selected.length >= 2;
+
   async function handleStart() {
-    if (selected.length < 2) return;
+    if (!ready) return;
     setStarting(true);
     try {
       const sessionPlayers = active
         .filter((p) => selected.includes(p.id))
         .map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const id = await createSession({
-        gameType: "flip7",
-        gameLabel: "Flip7",
+        gameType: "other",
+        gameLabel: gameName.trim(),
         players: sessionPlayers,
-        config: { winThreshold: Number(threshold) || 200 },
+        config: { customName: gameName.trim() },
       });
-      navigate(`/flip7/play/${id}`);
+      navigate(`/other/play/${id}`);
     } finally {
       setStarting(false);
     }
@@ -44,16 +44,31 @@ export default function Flip7Setup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit red">🔥</span> Flip7 — Who's playing?
+        <span className="suit black">🃏</span> Other — Set up
       </h1>
-      <OngoingGames gameType="flip7" />
+      <OngoingGames gameType="other" />
+
+      <div className="card-surface">
+        <h2>Game name</h2>
+        <div className="field">
+          <label htmlFor="gameName">What are you playing?</label>
+          <input
+            id="gameName"
+            className="input"
+            placeholder="e.g. Poker, Yahtzee, Rummy…"
+            value={gameName}
+            onChange={(e) => setGameName(e.target.value)}
+          />
+        </div>
+        <p style={{ color: "var(--muted)", fontSize: 13 }}>
+          Games with the same name (any capitalization) are grouped together in Stats.
+        </p>
+      </div>
 
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>
         {active.length === 0 ? (
-          <p className="empty-state">
-            No active players. Add some on the Players tab first.
-          </p>
+          <p className="empty-state">No active players. Add some on the Players tab first.</p>
         ) : (
           <div className="chip-row">
             {active.map((p) => (
@@ -70,30 +85,17 @@ export default function Flip7Setup() {
         )}
       </div>
 
-      <div className="card-surface">
-        <h2>Winning score</h2>
-        <div className="field">
-          <label htmlFor="threshold">Points to win</label>
-          <input
-            id="threshold"
-            className="input"
-            type="number"
-            min="1"
-            value={threshold}
-            onChange={(e) => setThreshold(e.target.value)}
-          />
-        </div>
-      </div>
+      <p style={{ color: "var(--muted)", fontSize: 14 }}>
+        No win threshold here — add scores round by round, then hit "Finish game" whenever you're done and pick the winner(s) yourself.
+      </p>
 
-      <button
-        className="btn primary"
-        disabled={selected.length < 2 || starting}
-        onClick={handleStart}
-      >
+      <button className="btn primary" disabled={!ready || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
       </button>
-      {selected.length < 2 && (
-        <p className="empty-state">Pick at least 2 players to start.</p>
+      {!ready && (
+        <p className="empty-state">
+          {gameName.trim() ? "Pick at least 2 players to start." : "Name the game and pick at least 2 players to start."}
+        </p>
       )}
     </div>
   );

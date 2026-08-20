@@ -71,8 +71,8 @@ export default function Stats() {
                   .map((p) => (
                     <tr key={p.playerId}>
                       <td>
-                        <Link to={`/players/${p.playerId}`} style={{ color: "#2b2117", fontWeight: 600 }}>
-                          <PlayerDot color={p.color} />{p.name}
+                        <Link to={`/players/${p.playerId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                          <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
                         </Link>
                       </td>
                       <td>{p.gamesPlayed}</td>

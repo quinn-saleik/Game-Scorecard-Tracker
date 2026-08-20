@@ -38,7 +38,7 @@ export default function OhHeckSetup() {
     if (seatedPlayers.length < MIN_PLAYERS) return;
     setStarting(true);
     try {
-      const sessionPlayers = seatedPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null }));
+      const sessionPlayers = seatedPlayers.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
       const id = await createSession({
         gameType: "oh-heck",
         gameLabel: "Oh Heck!",
@@ -64,7 +64,7 @@ export default function OhHeckSetup() {
 
       <div className="card-surface">
         <h2>Select players ({seatedPlayers.length} selected)</h2>
-        <p style={{ color: "#6f6455", fontSize: 14, marginTop: -6 }}>
+        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
           Tap in seating order — this sets the first dealer and bid order.
         </p>
         {active.length === 0 ? (
@@ -82,7 +82,7 @@ export default function OhHeckSetup() {
                   onClick={() => toggle(p.id)}
                 >
                   {seatNum > -1 ? `${seatNum + 1}. ` : ""}
-                  <PlayerDot color={p.color} />
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                   {p.name}
                 </span>
               );
@@ -105,7 +105,7 @@ export default function OhHeckSetup() {
             onChange={(e) => setStartingCards(e.target.value)}
           />
         </div>
-        <p style={{ color: "#6f6455", fontSize: 14 }}>
+        <p style={{ color: "var(--muted)", fontSize: 14 }}>
           Rounds: {roundSequence.join(" → ")} ({roundSequence.length} rounds,
           back to {startingCards} to end).
         </p>
@@ -123,7 +123,7 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "traditional" ? "primary" : "ghost"}`}
-              style={bidRule !== "traditional" ? { color: "#2b2117", border: "2px solid #6b4226" } : undefined}
+              style={bidRule !== "traditional" ? { color: "var(--text-on-surface)", border: "2px solid #6b4226" } : undefined}
               onClick={() => setBidRule("traditional")}
             >
               Traditional
@@ -131,13 +131,13 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "bang-em" ? "primary" : "ghost"}`}
-              style={bidRule !== "bang-em" ? { color: "#2b2117", border: "2px solid #6b4226" } : undefined}
+              style={bidRule !== "bang-em" ? { color: "var(--text-on-surface)", border: "2px solid #6b4226" } : undefined}
               onClick={() => setBidRule("bang-em")}
             >
               Bang 'em
             </button>
           </div>
-          <p style={{ color: "#6f6455", fontSize: 13 }}>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>
             {bidRule === "traditional"
               ? "Dealer can't bid the number that would make total bids exactly equal the cards dealt."
               : "No restriction on the dealer's bid — bids are just labeled over/under/even for reference."}

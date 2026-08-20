@@ -7,8 +7,6 @@ import {
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import { recomputeTotals } from "../../../data/rounds";
 
 function TeamNames({ players }) {
@@ -20,12 +18,10 @@ function TeamNames({ players }) {
   ));
 }
 
-export default function TraditionalPlay() {
+export default function CatchphrasePlay() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
-  const [inputA, setInputA] = useState("");
-  const [inputB, setInputB] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
@@ -43,7 +39,7 @@ export default function TraditionalPlay() {
     );
   }
 
-  const threshold = session.config?.winThreshold || 10;
+  const threshold = session.config?.winThreshold || 7;
   const teamAIds = session.config?.teamA || [];
   const teamBIds = session.config?.teamB || [];
   const totals = session.totals || {};
@@ -56,19 +52,16 @@ export default function TraditionalPlay() {
   const aWins = teamATotal >= threshold && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
 
-  async function submitRound(e) {
-    e.preventDefault();
+  async function addPoint(team) {
     setSaving(true);
     try {
-      const aPts = Number(inputA) || 0;
-      const bPts = Number(inputB) || 0;
+      const aPts = team === "A" ? 1 : 0;
+      const bPts = team === "B" ? 1 : 0;
       const newTotals = { ...totals };
       for (const id of teamAIds) newTotals[id] = (newTotals[id] || 0) + aPts;
       for (const id of teamBIds) newTotals[id] = (newTotals[id] || 0) + bPts;
       const newRound = { roundNumber: rounds.length + 1, teamAPoints: aPts, teamBPoints: bPts };
       await updateSession(sessionId, { rounds: [...rounds, newRound], totals: newTotals });
-      setInputA("");
-      setInputB("");
     } finally {
       setSaving(false);
     }
@@ -91,7 +84,7 @@ export default function TraditionalPlay() {
     setSaving(true);
     try {
       const newRounds = rounds.filter((_, i) => i !== index);
-      const newTotals = recomputeTotals("euchre-traditional", session, newRounds);
+      const newTotals = recomputeTotals("catchphrase", session, newRounds);
       await updateSession(sessionId, { rounds: newRounds, totals: newTotals });
     } finally {
       setSaving(false);
@@ -110,7 +103,7 @@ export default function TraditionalPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">♣</span> Euchre — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title"><span className="suit red">🎤</span> Catchphrase</h1>
 
       <div className="card-surface">
         <h2>Scores (first to {threshold})</h2>
@@ -132,10 +125,10 @@ export default function TraditionalPlay() {
       {pendingFinish ? (
         <div className="card-surface">
           <h2>🏆 {winningTeamPlayers.map((p) => p.name).join(" & ")} reached {threshold}!</h2>
-          <p>Double-check the last hand before locking it in.</p>
+          <p>Double-check the last point before locking it in.</p>
           <div className="btn-row">
             <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
-              ← Undo last hand
+              ← Undo last point
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
               Confirm winner & finish
@@ -144,41 +137,36 @@ export default function TraditionalPlay() {
         </div>
       ) : (
         <div className="card-surface">
-          <h2>Add hand {rounds.length + 1} points</h2>
-          <form onSubmit={submitRound}>
-            <div className="field">
-              <label htmlFor="teamA"><TeamNames players={teamAPlayers} /></label>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input id="teamA" className="input" type="number" placeholder="0" value={inputA} onChange={(e) => setInputA(e.target.value)} />
-                <VoiceInputButton onResult={(v) => setInputA(v)} />
-              </div>
-              <ScorePresets values={[1, 2, 4]} onPick={(v) => setInputA(String(v))} />
+          <h2>Who guessed it?</h2>
+          <div className="btn-row">
+            <button className="btn primary" style={{ flex: 1 }} onClick={() => addPoint("A")} disabled={saving}>
+              +1 <TeamNames players={teamAPlayers} />
+            </button>
+            <button className="btn primary" style={{ flex: 1 }} onClick={() => addPoint("B")} disabled={saving}>
+              +1 <TeamNames players={teamBPlayers} />
+            </button>
+          </div>
+          {rounds.length > 0 && (
+            <div className="btn-row" style={{ marginTop: 12 }}>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                onClick={undoLastRound}
+                disabled={saving}
+              >
+                ← Undo last point
+              </button>
             </div>
-            <div className="field">
-              <label htmlFor="teamB"><TeamNames players={teamBPlayers} /></label>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input id="teamB" className="input" type="number" placeholder="0" value={inputB} onChange={(e) => setInputB(e.target.value)} />
-                <VoiceInputButton onResult={(v) => setInputB(v)} />
-              </div>
-              <ScorePresets values={[1, 2, 4]} onPick={(v) => setInputB(String(v))} />
-            </div>
-            <div className="btn-row">
-              {rounds.length > 0 && (
-                <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
-                  ← Undo last hand
-                </button>
-              )}
-              <button className="btn primary" type="submit" disabled={saving}>Save hand</button>
-            </div>
-          </form>
+          )}
         </div>
       )}
 
       <RoundHistory
         session={session}
         rounds={rounds}
-        gameType="euchre-traditional"
-        unitLabel="Hand"
+        gameType="catchphrase"
+        unitLabel="Round"
         onDelete={deleteRound}
         busy={saving}
       />

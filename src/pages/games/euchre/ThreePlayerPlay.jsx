@@ -6,6 +6,8 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import RoundHistory from "../../../components/RoundHistory";
+import { recomputeTotals } from "../../../data/rounds";
 
 function PointsPicker({ onSelect }) {
   return (
@@ -68,12 +70,23 @@ export default function ThreePlayerPlay() {
     }
   }
 
+  async function deleteRound(index) {
+    setSaving(true);
+    try {
+      const newRounds = rounds.filter((_, i) => i !== index);
+      const newTotals = recomputeTotals("euchre-3p", session, newRounds);
+      await updateSession(sessionId, { rounds: newRounds, totals: newTotals });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (pendingFinish) {
     async function confirmFinish() {
       setSaving(true);
       try {
         await completeSession(sessionId, { winnerIds: potentialWinners.map((p) => p.id), totals });
-        navigate("/stats");
+        navigate(`/recap/${sessionId}`);
       } finally {
         setSaving(false);
       }
@@ -88,7 +101,7 @@ export default function ThreePlayerPlay() {
             <tbody>
               {session.players.slice().sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0)).map((p) => (
                 <tr key={p.id}>
-                  <td><PlayerDot color={p.color} />{p.name}</td>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
                   <td className={(totals[p.id] ?? 0) <= 0 ? "leader" : ""}>{totals[p.id] ?? 0}</td>
                 </tr>
               ))}
@@ -96,7 +109,7 @@ export default function ThreePlayerPlay() {
           </table>
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "#2b2117", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last hand
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -104,6 +117,14 @@ export default function ThreePlayerPlay() {
             </button>
           </div>
         </div>
+        <RoundHistory
+          session={session}
+          rounds={rounds}
+          gameType="euchre-3p"
+          unitLabel="Hand"
+          onDelete={deleteRound}
+          busy={saving}
+        />
       </div>
     );
   }
@@ -116,7 +137,7 @@ export default function ThreePlayerPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td><PlayerDot color={p.color} />{p.name}</td>
+              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
               <td className={(totals[p.id] ?? 0) === lowestTotal ? "leader" : ""}>{totals[p.id] ?? 0}</td>
             </tr>
           ))}
@@ -167,7 +188,7 @@ export default function ThreePlayerPlay() {
             <tbody>
               {session.players.map((p) => (
                 <tr key={p.id}>
-                  <td><PlayerDot color={p.color} />{p.name}</td>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
                   <td>{results[p.id]?.type === "set" ? "SET (+5)" : `${results[p.id]?.value ?? 0} pts`}</td>
                 </tr>
               ))}
@@ -182,7 +203,7 @@ export default function ThreePlayerPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "#2b2117", border: "2px solid #6b4226" }}
+              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
               onClick={() => setScoringIdx((i) => i - 1)}
             >
               ← Edit last result
@@ -203,7 +224,7 @@ export default function ThreePlayerPlay() {
       <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
       {undoButton}
       <div className="card-surface">
-        <h2><PlayerDot color={currentPlayer.color} />{currentPlayer.name} — what happened?</h2>
+        <h2><PlayerDot color={currentPlayer.color} avatar={currentPlayer.avatar} photo={currentPlayer.photo} />{currentPlayer.name} — what happened?</h2>
         <div className="btn-row" style={{ marginBottom: 14 }}>
           <button
             className="btn danger"
@@ -227,7 +248,7 @@ export default function ThreePlayerPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "#2b2117", border: "2px solid #6b4226" }}
+              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
               onClick={() => setScoringIdx((i) => i - 1)}
             >
               ← Back
@@ -236,6 +257,14 @@ export default function ThreePlayerPlay() {
         )}
       </div>
       {scoreTable}
+      <RoundHistory
+        session={session}
+        rounds={rounds}
+        gameType="euchre-3p"
+        unitLabel="Hand"
+        onDelete={deleteRound}
+        busy={saving}
+      />
     </div>
   );
 }
