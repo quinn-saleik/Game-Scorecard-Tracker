@@ -103,6 +103,11 @@ button {
   box-shadow: var(--shadow);
   padding: 20px;
   margin-bottom: 16px;
+  /* Wide content (mainly the multi-column Stats/Players tables) scrolls
+     within its own card instead of forcing the whole page — including the
+     header and bottom nav — to scroll sideways on a phone. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 h1,
@@ -147,9 +152,6 @@ h3 {
   transition: transform 0.08s ease, background 0.15s ease;
   min-height: 48px;
 }
-.btn:hover {
-  background: var(--wood-dark);
-}
 .btn:active {
   transform: scale(0.97);
 }
@@ -157,8 +159,18 @@ h3 {
   background: var(--gold);
   color: var(--ink);
 }
-.btn.primary:hover {
-  background: #c4932f;
+/* Hover styles only for pointer devices that actually have hover (mouse/
+   trackpad). Touch browsers — this is a phone-first app — fake a "hover"
+   state on tap and then leave it stuck on until something else is tapped,
+   which read as a random gold border stuck on the last game tile you
+   picked. :active above still gives touch its own tap feedback. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--wood-dark);
+  }
+  .btn.primary:hover {
+    background: #c4932f;
+  }
 }
 .btn.danger {
   background: var(--red-suit);
@@ -206,9 +218,11 @@ h3 {
   text-decoration: none;
   color: var(--text-on-surface);
 }
-.game-tile:hover {
-  transform: translateY(-2px);
-  border-color: var(--gold);
+@media (hover: hover) and (pointer: fine) {
+  .game-tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--gold);
+  }
 }
 .game-tile.disabled {
   opacity: 0.55;
@@ -255,7 +269,11 @@ h3 {
 .top-bar {
   max-width: 720px;
   margin: 0 auto;
-  padding: 16px 16px 0;
+  /* iOS's status bar is set to overlay the page (black-translucent, see
+     index.html), so without this the clock/signal/battery icons sit right
+     on top of the brand and settings button. env() falls back to 0 on
+     browsers that don't support it (nothing extra needed there). */
+  padding: calc(16px + env(safe-area-inset-top)) 16px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
