@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function PartnerSetup() {
   const [players, setPlayers] = useState([]);
@@ -50,6 +51,24 @@ export default function PartnerSetup() {
       </h1>
       <OngoingGames gameType="euchre-partner" />
 
+      <GameInstructions players="Exactly 4 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Standard trump-calling euchre, but partners are chosen
+          hand by hand instead of fixed teams.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal and call trump using your usual euchre rules.
+          Whoever calls trump can go alone, or call a partner (often "best card" or a named
+          card) to play with them for that hand only — the rest of the table defends.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> After the hand, mark who was on the bid team (1 player if
+          they went alone, 2 if partnered), enter their points, then enter what everyone else
+          gets. Scores are tracked per player since teams change every hand. First to the
+          target wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select 4 players ({seated.length}/4)</h2>
         {active.length === 0 ? (
@@ -83,11 +102,6 @@ export default function PartnerSetup() {
             onChange={(e) => setThreshold(e.target.value)}
           />
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Partners are called during play, not fixed at setup. Each hand: mark who's on the
-          bid team (1 player going alone, or 2), enter their points, then enter the points
-          everyone else gets. Scores are tracked per player. First to reach the target wins.
-        </p>
       </div>
 
       <button className="btn primary" disabled={seated.length !== 4 || starting} onClick={handleStart}>

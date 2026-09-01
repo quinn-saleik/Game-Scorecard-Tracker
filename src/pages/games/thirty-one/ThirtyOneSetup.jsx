@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function ThirtyOneSetup() {
   const [players, setPlayers] = useState([]);
@@ -48,6 +49,24 @@ export default function ThirtyOneSetup() {
       </h1>
       <OngoingGames gameType="thirty-one" />
 
+      <GameInstructions players="2+ players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Get your hand as close to 31 as possible in a single suit.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Each player is dealt 3 cards, with a discard pile
+          started from the deck. On your turn, draw from the deck or discard pile and discard
+          one card, trying to build the highest total in one suit (aces = 11, face cards = 10,
+          others = face value; three of a kind also counts as 31). Any player can knock instead
+          of drawing to force one more turn for everyone else before the hand is scored.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> After the hand, mark who has the lowest total — they lose a
+          life (or everyone tied for lowest loses one). Lives start at your chosen count; hit 0
+          and you're eliminated. Last player standing wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select players ({seated.length})</h2>
         {active.length === 0 ? (
@@ -81,10 +100,6 @@ export default function ThirtyOneSetup() {
             onChange={(e) => setStartingLives(e.target.value)}
           />
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          At the end of each round, mark who lost a life. Once a player hits 0 they're out. Last
-          player standing wins.
-        </p>
       </div>
 
       <button className="btn primary" disabled={seated.length < 2 || starting} onClick={handleStart}>

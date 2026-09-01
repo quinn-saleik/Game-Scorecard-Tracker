@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function ThreePlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -52,6 +53,25 @@ export default function ThreePlayerSetup() {
       </h1>
       <OngoingGames gameType="euchre-3p" />
 
+      <GameInstructions players="Exactly 3 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Cutthroat 3-handed euchre, played downward toward zero
+          instead of up.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Standard trump-calling and trick-play rules — deal 5
+          cards each, turn up a card, and players in turn order it up or call a different trump
+          suit. Whoever calls trump (the "maker") plays alone against the other two for that
+          hand.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Everyone starts at the same score and counts down. The maker
+          loses 1 to 5 points depending on tricks taken (fewer tricks costs more), or if they're
+          "set" — fail to take at least 3 tricks — they gain 5 points instead, moving further
+          from zero. Enter each player's result after the hand. First to 0 or below wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select 3 players ({seated.length}/3)</h2>
         {active.length === 0 ? (
@@ -85,9 +105,6 @@ export default function ThreePlayerSetup() {
             onChange={(e) => setStartingScore(e.target.value)}
           />
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Each hand: a player gets 1-5 points (subtracted from their score) or SET (+5, moves them further from 0). First to 0 or below wins.
-        </p>
       </div>
 
       <button className="btn primary" disabled={seated.length !== 3 || starting} onClick={handleStart}>

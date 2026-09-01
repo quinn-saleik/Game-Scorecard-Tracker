@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function CanastaSetup() {
   const [players, setPlayers] = useState([]);
@@ -73,6 +74,24 @@ export default function CanastaSetup() {
       </h1>
       <OngoingGames gameType="canasta" />
 
+      <GameInstructions players="Exactly 4 players (2 teams of 2)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Be the first partnership to the target score by melding
+          sets of cards, especially canastas (7-card sets).
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal 11 cards to each player, with a large draw pile
+          and a starting discard. Teams meld sets of the same rank (7 or more cards makes a
+          canasta, worth a large bonus), collect red threes for bonus points, and try to go
+          out by melding all their cards.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Enter each team's net point total for the hand — meld
+          bonuses, red three bonuses, and the going-out bonus, minus any cards left in hand.
+          First team to the target score wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <h2>Tap players to assign teams</h2>
@@ -133,11 +152,6 @@ export default function CanastaSetup() {
 
       <div className="card-surface">
         <h2>Winning score</h2>
-        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
-          Enter each team's net point total for the hand — meld bonuses, red three
-          bonuses, and the going-out bonus, minus any cards left in hand. First
-          team to the target score wins.
-        </p>
         <div className="field">
           <label htmlFor="targetScore">Points to win</label>
           <input

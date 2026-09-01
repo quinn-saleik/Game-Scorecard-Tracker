@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 const MIN_PLAYERS = 3;
 
@@ -61,6 +62,26 @@ export default function OhHeckSetup() {
         <span className="suit black">🂡</span> Oh Heck! — Who's playing?
       </h1>
       <OngoingGames gameType="oh-heck" />
+
+      <GameInstructions players="3+ players (fewer cards each if you're using one 52-card deck)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Bid exactly how many tricks you'll take each round, then
+          hit that number.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Cards per round step down to 1, then back up to your
+          starting count (e.g. 8-7-6…1…6-7-8), with the dealer rotating each round. Starting to
+          the dealer's left, everyone bids how many tricks they think they'll win — the dealer
+          can be blocked from a bid that would make every bid add up exactly to the cards dealt
+          (Traditional rule; turn it off with "Bang 'em" if your house doesn't play that way).
+          Play the hand out trick by trick.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Hitting your bid exactly scores bid + 10; missing it (over
+          or under) scores only the tricks you actually took. Enter each player's tricks won
+          after the hand — the app works out the score. Highest total after the last round wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <h2>Select players ({seatedPlayers.length} selected)</h2>

@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function CatchphraseSetup() {
   const [players, setPlayers] = useState([]);
@@ -76,6 +77,24 @@ export default function CatchphraseSetup() {
         <span className="suit red">🎤</span> Catchphrase — Teams
       </h1>
       <OngoingGames gameType="catchphrase" />
+
+      <GameInstructions players="2+ players (2 teams, any size)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Get your team to guess the word before the buzzer goes
+          off.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Split into two teams and take turns giving clues for the
+          word on the card without saying the word itself, a rhyme, or spelling it, while a
+          timer or buzzer counts down. Correct guesses pass the card or device to the other
+          team's clue-giver. Traditionally, whichever team is holding it when the buzzer sounds
+          loses the point to the other team — adapt that however your group plays.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Tap the team that scores the point on the play screen after
+          each round. First team to the target score wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>

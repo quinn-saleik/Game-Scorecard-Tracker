@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function Flip7Setup() {
   const [players, setPlayers] = useState([]);
@@ -47,6 +48,27 @@ export default function Flip7Setup() {
         <span className="suit red">🔥</span> Flip7 — Who's playing?
       </h1>
       <OngoingGames gameType="flip7" />
+
+      <GameInstructions players="2+ players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Score the most points by flipping unique number cards
+          without busting.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> On your turn, flip the top card of a shared deck into
+          your own row. Number cards run 0-12 — flip one you already have this round and you
+          bust, scoring zero for the round. Modifier cards (+2 through +10, or ×2) boost your
+          total; action cards can force another player to draw three more cards or freeze them
+          into staying immediately. After your first card, you can choose to stay and lock in
+          your total instead of risking another flip. Collecting 7 unique number cards ends
+          your turn with a bonus and ends the round for everyone else too.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Once everyone's busted or stayed, enter each player's round
+          total here (0 if they busted). First to reach the target score after a completed
+          round wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>

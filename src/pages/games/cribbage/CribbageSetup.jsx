@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function CribbageSetup() {
   const [players, setPlayers] = useState([]);
@@ -48,6 +49,24 @@ export default function CribbageSetup() {
       </h1>
       <OngoingGames gameType="cribbage" />
 
+      <GameInstructions players="2+ players (traditionally 2-4)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> First to the target score (traditionally 121, once
+          around the board twice) wins.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal 6 cards each (adjust for more than 2 players),
+          with everyone contributing to a shared "crib" that belongs to the dealer. Peg points
+          during play as cards are laid down (15s, pairs, runs, and 31), then score each hand
+          and the crib against the starter card.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Play your hands on your own cribbage board — pegging, hand,
+          and crib points included. After each deal, enter each player's combined total for
+          the deal. First to the target score wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>
         {active.length === 0 ? (
@@ -83,10 +102,6 @@ export default function CribbageSetup() {
             onChange={(e) => setThreshold(e.target.value)}
           />
         </div>
-        <p className="empty-state">
-          Play your hands on your own cribbage board — pegging, hand, and crib points included.
-          After each deal, enter each player's combined total below. First to {threshold || 121} wins.
-        </p>
       </div>
 
       <button

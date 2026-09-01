@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function GinRummySetup() {
   const [players, setPlayers] = useState([]);
@@ -50,16 +51,24 @@ export default function GinRummySetup() {
       </h1>
       <OngoingGames gameType="gin-rummy" />
 
-      <div className="card-surface">
-        <h2>How it works</h2>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Play the hand for real, then come back here. After each hand, enter who won
-          and their hand score (the deadwood difference, already including any gin or
-          undercut bonus you've worked out yourselves) — the app automatically adds the
-          standard +20 bonus on top for winning the hand. First player to reach the
-          target score wins the game.
+      <GameInstructions players="Exactly 2 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Be the first to reach the target score across a series of
+          hands.
         </p>
-      </div>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal 10 cards each. Draw and discard each turn, building
+          sets and runs; knock once your unmatched cards ("deadwood") total 10 or less, or go
+          gin with no deadwood at all for a bonus.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Play the hand for real, then come back here. After each
+          hand, enter who won and their hand score (the deadwood difference, already including
+          any gin or undercut bonus you've worked out yourselves) — the app automatically adds
+          the standard +20 bonus on top for winning the hand. First player to reach the target
+          score wins the game.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <h2>Select 2 players ({seated.length}/2)</h2>

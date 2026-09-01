@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function RoyalRumSetup() {
   const [players, setPlayers] = useState([]);
@@ -45,6 +46,25 @@ export default function RoyalRumSetup() {
       </h1>
       <OngoingGames gameType="royal-rum" />
 
+      <GameInstructions players="2+ players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Be first to check off all 7 goals (melds numbered 6
+          through 12), then have the lowest leftover points among anyone who's done that.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Everyone works toward the same 7 goals, in whatever
+          order they get dealt into — there's no fixed sequence for the table. Each hand,
+          players try to complete that hand's goal by melding the runs or sets it calls for.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Mark whatever goal (if any) a player completes; every
+          player also enters their leftover points for the hand, whether they completed a
+          goal or not — completing a goal doesn't zero your points, it just checks it off.
+          Not completing a goal usually means you're stuck with a lot more points. First to
+          check off all 7 ends the game; lowest score among anyone who's done that wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select players ({seated.length})</h2>
         {active.length === 0 ? (
@@ -63,18 +83,6 @@ export default function RoyalRumSetup() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="card-surface">
-        <h2>How it works</h2>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Everyone's checking off 6 through 12, in whatever order they get them — no fixed order
-          for the table. Each hand, mark whatever goal (if any) a player completes; every player
-          also enters their leftover points for the hand, whether they completed a goal or not —
-          completing a goal doesn't zero your points, it just checks it off. Not completing a
-          goal usually means you're stuck with a lot more points. First to check off all 7 ends
-          the game; lowest score among anyone who's done that wins.
-        </p>
       </div>
 
       <button className="btn primary" disabled={seated.length < 2 || starting} onClick={handleStart}>

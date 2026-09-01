@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function Euchre15Setup() {
   const [players, setPlayers] = useState([]);
@@ -69,6 +70,23 @@ export default function Euchre15Setup() {
         <span className="suit black">🃏</span> Euchre (15-card) — Teams
       </h1>
       <OngoingGames gameType="euchre-15card" />
+
+      <GameInstructions players="Exactly 4 players (2 teams of 2)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> A bidding variant of euchre played to 15 tricks instead of
+          5.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal out the full deck so 15 tricks are in play for the
+          hand between the two teams. Both teams bid how many of the 15 they think they'll take;
+          whoever bids higher names trump and leads the play.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> A team that makes its bid scores the tricks it actually won;
+          a team that falls short goes negative by its bid amount instead. Enter each team's
+          tricks won (or note that they went short). First team to the target score wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -141,11 +159,6 @@ export default function Euchre15Setup() {
             onChange={(e) => setThreshold(e.target.value)}
           />
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Each hand, both teams bid how many of the 15 tricks they'll take. Whoever bids
-          higher names trump. After play: a team that makes its bid scores the tricks it
-          actually won; a team that falls short goes negative by its bid amount instead.
-        </p>
       </div>
 
       <button className="btn primary" disabled={!ready || starting} onClick={handleStart}>

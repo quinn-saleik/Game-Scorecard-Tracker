@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function PinochleSetup() {
   const [players, setPlayers] = useState([]);
@@ -73,6 +74,26 @@ export default function PinochleSetup() {
       </h1>
       <OngoingGames gameType="pinochle" />
 
+      <GameInstructions players="Exactly 4 players (2 teams of 2)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Bid how many points your partnership will make with meld
+          and tricks, then hit it.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal from a 48-card pinochle deck (two copies of 9
+          through Ace) to 2 teams of 2. Players bid for the right to name trump; the winning
+          bidder's team then lays down meld (matched sets like marriages and runs) before
+          playing tricks to add to their total.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> The winning bidder's team names an amount they think they
+          can make with meld plus tricks. If their meld + tricks don't add up to at least the
+          bid, they're "set" and lose the bid amount instead of scoring it. First team to the
+          target score wins — unless both teams cross it on the very same hand, in which case
+          the team that won the bid on that hand takes the game.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <h2>Tap players to assign teams</h2>
@@ -128,18 +149,6 @@ export default function PinochleSetup() {
                 </span>
               ))
             : "—"}
-        </p>
-      </div>
-
-      <div className="card-surface">
-        <h2>How a hand works</h2>
-        <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
-          Each hand, the winning bidder's team names an amount they think they can
-          make with meld plus tricks. If their meld + tricks don't add up to at
-          least the bid, they're "set" and lose the bid amount instead of scoring
-          it. First team to the target score wins — unless both teams cross it on
-          the very same hand, in which case the team that won the bid on that hand
-          takes the game.
         </p>
       </div>
 

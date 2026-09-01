@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 const HOLE_OPTIONS = [6, 9, 18];
 
@@ -48,6 +49,23 @@ export default function GolfSetup() {
       </h1>
       <OngoingGames gameType="golf" />
 
+      <GameInstructions players="2-6 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Lowest total score after all the holes wins.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Each player gets a grid of face-down cards (commonly 2
+          rows of 3) and peeks at 2 of them to start. On your turn, draw a card and either swap
+          it into your grid — discarding what was there — or discard it, trying to lower your
+          total and complete matching rows or columns.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Each hole, enter your score for that deal — aces are 1,
+          twos are -2, 3 through 10 are face value, jacks and queens are 10, kings are 0, and
+          matching pairs or columns can cancel to zero. Lowest total after all the holes wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select players ({seated.length})</h2>
         {active.length === 0 ? (
@@ -81,11 +99,6 @@ export default function GolfSetup() {
             </span>
           ))}
         </div>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Each hole, enter your score for that deal — aces are 1, twos are -2, 3 through 10 are
-          face value, jacks and queens are 10, kings are 0, and matching pairs or columns can
-          cancel to zero. Lowest total after all the holes wins.
-        </p>
       </div>
 
       <button className="btn primary" disabled={seated.length < 2 || seated.length > 6 || starting} onClick={handleStart}>

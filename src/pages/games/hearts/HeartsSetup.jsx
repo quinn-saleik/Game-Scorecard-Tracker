@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function HeartsSetup() {
   const [players, setPlayers] = useState([]);
@@ -48,6 +49,27 @@ export default function HeartsSetup() {
       </h1>
       <OngoingGames gameType="hearts" />
 
+      <GameInstructions players="3-6 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Avoid taking hearts and the queen of spades — lowest
+          score wins.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal the full deck evenly, passing 3 cards to another
+          player before each hand (rotate the pass direction each time). Whoever holds the 2
+          of clubs leads first; players must follow suit if possible, and hearts can't be led
+          until they've been "broken" (played on another suit).
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Every heart taken is worth 1 point and the queen of spades
+          is worth 13. After each hand, enter what everyone took — the shortcut button below
+          each hand fills in a "shot the moon" result fast (taking every heart and the queen
+          scores you 0 for the hand while everyone else takes 26). Once a player reaches or
+          passes the target score, the hand is over and whoever has the lowest total overall
+          wins.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>
         {active.length === 0 ? (
@@ -83,18 +105,6 @@ export default function HeartsSetup() {
             onChange={(e) => setTargetScore(e.target.value)}
           />
         </div>
-      </div>
-
-      <div className="card-surface">
-        <h2>How it works</h2>
-        <p style={{ color: "var(--muted)", fontSize: 14 }}>
-          Every heart taken is worth 1 point and the queen of spades is worth 13 — lowest score
-          wins. After each hand, enter what everyone took. Once a player reaches (or passes) the
-          target score, the hand is over and whoever has the lowest total overall wins the game.
-          If a player "shoots the moon" (takes every heart and the queen), they score 0 for the
-          hand while everyone else takes 26 — use the shortcut button below each hand to fill
-          that in fast.
-        </p>
       </div>
 
       <button

@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function TwoPlayerSetup() {
   const [players, setPlayers] = useState([]);
@@ -49,6 +50,25 @@ export default function TwoPlayerSetup() {
         <span className="suit black">♣</span> Euchre (2-player) — Who's playing?
       </h1>
       <OngoingGames gameType="euchre-2p" />
+
+      <GameInstructions players="Exactly 2 players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Standard euchre trump-calling and trick-play, head-to-head.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal from a 24-card euchre deck (9 through Ace in each
+          suit). Turn up a card to propose trump — each player can order it up (accept it) or
+          pass; if both pass, a second round lets either player name a different suit. The jack
+          of the trump suit ("right bower") is the top card, and the same-color jack ("left
+          bower") is the second-highest trump. Play out the tricks with whichever two-handed
+          variant you use at your table (many deal a smaller hand or add a dummy hand).
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Enter each player's points for the hand — commonly 1 point
+          for taking the majority of tricks, 2 for a march (all of them). First to the target
+          score wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <h2>Select 2 players ({seated.length}/2)</h2>

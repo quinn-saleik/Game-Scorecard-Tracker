@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function TraditionalSetup() {
   const [players, setPlayers] = useState([]);
@@ -72,6 +73,25 @@ export default function TraditionalSetup() {
         <span className="suit black">♣</span> Euchre (traditional) — Teams
       </h1>
       <OngoingGames gameType="euchre-traditional" />
+
+      <GameInstructions players="Exactly 4 players (2 teams of 2)">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>Objective:</strong> Standard partnership euchre, 2 versus 2.
+        </p>
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>How to play:</strong> Deal from a 24-card euchre deck (9 through Ace). Turn up
+          a card to propose trump — each player in turn orders it up or passes; a second round
+          lets anyone call a different suit. The jack of trump ("right bower") outranks
+          everything, followed by the same-color jack ("left bower"). The calling side needs at
+          least 3 of 5 tricks to score.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> Typical scoring: 1 point for 3-4 tricks, 2 for a march (all
+          5), 4 for winning alone and taking all 5, and 2 to the defending team if the callers
+          are euchred (fail to take 3). Enter each team's points after the hand — use your own
+          house scoring if it differs. First team to the target score wins.
+        </p>
+      </GameInstructions>
 
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>

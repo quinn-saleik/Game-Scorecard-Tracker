@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import GameInstructions from "../../../components/GameInstructions";
 
 export default function OtherSetup() {
   const [players, setPlayers] = useState([]);
@@ -48,6 +49,19 @@ export default function OtherSetup() {
       </h1>
       <OngoingGames gameType="other" />
 
+      <GameInstructions players="2+ players">
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>For any game without a dedicated scorecard.</strong> Name it, pick your
+          players, then add scores round by round however that game keeps score.
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Scoring:</strong> There's no built-in win threshold — hit "Finish game"
+          whenever you're done and choose the winner(s) yourself. Games with the same name
+          (any capitalization) are grouped together in Stats, so use a consistent name each
+          time you play it.
+        </p>
+      </GameInstructions>
+
       <div className="card-surface">
         <h2>Game name</h2>
         <div className="field">
@@ -84,10 +98,6 @@ export default function OtherSetup() {
           </div>
         )}
       </div>
-
-      <p style={{ color: "var(--muted)", fontSize: 14 }}>
-        No win threshold here — add scores round by round, then hit "Finish game" whenever you're done and pick the winner(s) yourself.
-      </p>
 
       <button className="btn primary" disabled={!ready || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
