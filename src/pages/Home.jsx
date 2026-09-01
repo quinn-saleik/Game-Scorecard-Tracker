@@ -8,6 +8,13 @@ const GAMES = [
   { icon: "♦", label: "Royal Rum", path: "/royal-rum/setup", soon: false },
   { icon: "🎤", label: "Catchphrase", path: "/catchphrase/setup", soon: false },
   { icon: "🂱", label: "31", path: "/thirty-one/setup", soon: false },
+  { icon: "♥", label: "Hearts", path: "/hearts/setup", soon: false },
+  { icon: "♠", label: "Spades", path: "/spades/setup", soon: false },
+  { icon: "📍", label: "Cribbage", path: "/cribbage/setup", soon: false },
+  { icon: "🃞", label: "Canasta", path: "/canasta/setup", soon: false },
+  { icon: "🂮", label: "Pinochle", path: "/pinochle/setup", soon: false },
+  { icon: "⛳", label: "Golf", path: "/golf/setup", soon: false },
+  { icon: "🎴", label: "Gin Rummy", path: "/gin-rummy/setup", soon: false },
   { icon: "🃏", label: "Other", path: "/other/setup", soon: false },
 ];
 

@@ -9,6 +9,9 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "flip7":
     case "euchre-2p":
     case "other":
+    case "hearts":
+    case "cribbage":
+    case "golf":
       return round.scores?.[playerId] || 0;
     case "oh-heck":
       return round.results?.[playerId]?.score || 0;
@@ -17,7 +20,10 @@ export function getRoundDelta(gameType, round, playerId, session) {
       return round.deltas?.[playerId] || 0;
     case "euchre-traditional":
     case "euchre-15card":
-    case "catchphrase": {
+    case "catchphrase":
+    case "canasta":
+    case "pinochle":
+    case "spades": {
       const teamA = session?.config?.teamA || [];
       const teamB = session?.config?.teamB || [];
       if (teamA.includes(playerId)) return round.teamAPoints || 0;
@@ -28,6 +34,8 @@ export function getRoundDelta(gameType, round, playerId, session) {
       return round.lostLifeIds?.includes(playerId) ? -1 : 0;
     case "royal-rum":
       return round.points?.[playerId] || 0;
+    case "gin-rummy":
+      return round.winnerId === playerId ? round.pointsAwarded || 0 : 0;
     default:
       return 0;
   }
@@ -48,7 +56,18 @@ export function getInitialTotals(gameType, session) {
   return Object.fromEntries(session.players.map((p) => [p.id, 0]));
 }
 
-// Note: Royal Rum's per-player completed-goal checklist (6-12) isn't a
+// Note: Hearts, Cribbage, and Golf all use the same free-form
+// per-player round.scores shape as Flip7/Other — Hearts and Golf are just
+// lower-is-better (see OngoingGames' LOWER_IS_BETTER set and each Play
+// screen's own end-condition) and Golf ends after a fixed number of holes
+// rather than a score threshold.
+//
+// Canasta, Pinochle, and Spades reuse the teamAPoints/teamBPoints shape —
+// each Play screen precomputes that hand's net point swing (including
+// bid/set math, melds, or nil bonuses) before saving, same as Euchre
+// (traditional/15-card) already does with tricks-vs-bid.
+//
+// Royal Rum's per-player completed-goal checklist (6-12) isn't a
 // running numeric total, so it's derived straight from the rounds array in
 // RoyalRumPlay.jsx rather than through getRoundDelta/recomputeTotals — only
 // its point score (round.points) goes through the normal path above.

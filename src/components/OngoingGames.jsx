@@ -5,9 +5,10 @@ import { GAME_LABELS } from "../data/stats";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "./PlayerDot";
 
-// Euchre 3-player and Royal Rum count DOWN (lower is better); everything
-// else — including "31" lives, where more is safer — counts up.
-const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum"]);
+// Euchre 3-player, Royal Rum, Hearts, and Golf count DOWN (lower is
+// better); everything else — including "31" lives, where more is safer —
+// counts up.
+const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum", "hearts", "golf"]);
 
 const UNIT_LABEL = {
   flip7: "Round",
@@ -21,6 +22,13 @@ const UNIT_LABEL = {
   "thirty-one": "Round",
   "royal-rum": "Hand",
   other: "Round",
+  hearts: "Hand",
+  cribbage: "Hand",
+  canasta: "Hand",
+  pinochle: "Hand",
+  golf: "Hole",
+  spades: "Hand",
+  "gin-rummy": "Hand",
 };
 
 // Shows any in-progress game(s) so nothing gets lost when you navigate away

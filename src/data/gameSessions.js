@@ -103,9 +103,16 @@ export async function restoreSession(sessionId) {
 }
 
 export function subscribeToSession(sessionId, callback) {
-  return onSnapshot(doc(sessionsCol, sessionId), (snap) => {
-    callback(snap.exists() ? { id: snap.id, ...snap.data() } : null);
-  });
+  return onSnapshot(
+    doc(sessionsCol, sessionId),
+    (snap) => {
+      callback(snap.exists() ? { id: snap.id, ...snap.data() } : null);
+    },
+    (err) => {
+      console.error("subscribeToSession failed:", err);
+      callback(null);
+    }
+  );
 }
 
 // Live feed of every completed, non-trashed game, newest first — used
@@ -119,13 +126,24 @@ export function subscribeToCompletedSessions(callback) {
     where("status", "==", "completed"),
     orderBy("completedAt", "desc")
   );
-  return onSnapshot(q, (snap) => {
-    callback(
-      snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((s) => !s.deletedAt)
-    );
-  });
+  return onSnapshot(
+    q,
+    (snap) => {
+      callback(
+        snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((s) => !s.deletedAt)
+      );
+    },
+    (err) => {
+      // Same reasoning as subscribeToPlayers: without an error handler, a
+      // failed listener never calls back at all, and any page gating its
+      // "Loading…" state on this subscription hangs on that message
+      // forever instead of settling into its actual empty state.
+      console.error("subscribeToCompletedSessions failed:", err);
+      callback([]);
+    }
+  );
 }
 
 // The trash: completed games that were soft-deleted, newest-trashed first.
@@ -136,18 +154,32 @@ export function subscribeToTrashedSessions(callback) {
     where("status", "==", "completed"),
     orderBy("completedAt", "desc")
   );
-  return onSnapshot(q, (snap) => {
-    const trashed = snap.docs
-      .map((d) => ({ id: d.id, ...d.data() }))
-      .filter((s) => !!s.deletedAt);
-    trashed.sort((a, b) => (b.deletedAt?.toMillis?.() || 0) - (a.deletedAt?.toMillis?.() || 0));
-    callback(trashed);
-  });
+  return onSnapshot(
+    q,
+    (snap) => {
+      const trashed = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((s) => !!s.deletedAt);
+      trashed.sort((a, b) => (b.deletedAt?.toMillis?.() || 0) - (a.deletedAt?.toMillis?.() || 0));
+      callback(trashed);
+    },
+    (err) => {
+      console.error("subscribeToTrashedSessions failed:", err);
+      callback([]);
+    }
+  );
 }
 
 export function subscribeToInProgressSessions(callback) {
   const q = query(sessionsCol, where("status", "==", "in_progress"));
-  return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(
+    q,
+    (snap) => {
+      callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    },
+    (err) => {
+      console.error("subscribeToInProgressSessions failed:", err);
+      callback([]);
+    }
+  );
 }

@@ -45,6 +45,13 @@ export default function Stats() {
 
   const playerStats = computePlayerStats(players, sessions);
   const gameStats = computeGameStats(sessions);
+  // Show every active player, not just ones with a completed game — a
+  // brand-new player with no history yet should show up with "—"
+  // placeholders, not disappear from the table entirely. A removed
+  // (inactive) player still shows up if they have real history to keep,
+  // but drops off once they have none.
+  const activeIds = new Set(players.filter((p) => p.active).map((p) => p.id));
+  const visiblePlayerStats = playerStats.filter((p) => p.gamesPlayed > 0 || activeIds.has(p.playerId));
 
   async function handleDelete(session) {
     const label = gameGroupLabel(session);
@@ -144,31 +151,24 @@ export default function Stats() {
             </div>
           )}
 
-          {sessions.length === 0 ? (
-            <div className="card-surface">
-              <p className="empty-state">
-                No games logged yet — finish a game and stats will show up here.
-              </p>
-            </div>
-          ) : (
-            <>
           <div className="card-surface">
             <h2>By player</h2>
-            <table className="score-table">
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Played</th>
-                  <th>Win %</th>
-                  <th>Avg score</th>
-                  <th>Favorite</th>
-                  <th>Last played</th>
-                </tr>
-              </thead>
-              <tbody>
-                {playerStats
-                  .filter((p) => p.gamesPlayed > 0)
-                  .map((p) => (
+            {visiblePlayerStats.length === 0 ? (
+              <p className="empty-state">No active players yet — add some on the Players tab.</p>
+            ) : (
+              <table className="score-table">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Played</th>
+                    <th>Win %</th>
+                    <th>Avg score</th>
+                    <th>Favorite</th>
+                    <th>Last played</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visiblePlayerStats.map((p) => (
                     <tr key={p.playerId}>
                       <td>
                         <Link to={`/players/${p.playerId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
@@ -176,76 +176,85 @@ export default function Stats() {
                         </Link>
                       </td>
                       <td>{p.gamesPlayed}</td>
-                      <td>{p.winPct}%</td>
-                      <td>{p.avgScore}</td>
+                      <td>{p.gamesPlayed ? `${p.winPct}%` : "—"}</td>
+                      <td>{p.gamesPlayed ? p.avgScore : "—"}</td>
                       <td>{p.favoriteGame}</td>
                       <td>{formatLastPlayed(p.lastPlayedAt)}</td>
                     </tr>
                   ))}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            )}
           </div>
 
           <div className="card-surface">
             <h2>Recent games</h2>
-            <p style={{ color: "var(--muted)", fontSize: 13 }}>
-              Delete a logged game if it was test data — it drops out of everyone's stats right
-              away, but lands in the Trash below so it's not gone for good.
-            </p>
-            <table className="score-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Game</th>
-                  <th>Winner</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.map((s) => {
-                  const winners = (s.players || []).filter((p) => (s.winnerIds || []).includes(p.id));
-                  return (
-                    <tr key={s.id}>
-                      <td>{formatLastPlayed(s.completedAt?.toDate?.() || null)}</td>
-                      <td>{gameGroupLabel(s)}</td>
-                      <td>{winners.map((p) => p.name).join(" & ") || "—"}</td>
-                      <td>
-                        <button
-                          className="btn danger small"
-                          onClick={() => handleDelete(s)}
-                          disabled={busyId === s.id}
-                        >
-                          {busyId === s.id ? "Moving…" : "🗑️ Delete"}
-                        </button>
-                      </td>
+            {sessions.length === 0 ? (
+              <p className="empty-state">No completed games yet — finish a game and it'll show up here.</p>
+            ) : (
+              <>
+                <p style={{ color: "var(--muted)", fontSize: 13 }}>
+                  Delete a logged game if it was test data — it drops out of everyone's stats
+                  right away, but lands in the Trash above so it's not gone for good.
+                </p>
+                <table className="score-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Game</th>
+                      <th>Winner</th>
+                      <th></th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {sessions.map((s) => {
+                      const winners = (s.players || []).filter((p) => (s.winnerIds || []).includes(p.id));
+                      return (
+                        <tr key={s.id}>
+                          <td>{formatLastPlayed(s.completedAt?.toDate?.() || null)}</td>
+                          <td>{gameGroupLabel(s)}</td>
+                          <td>{winners.map((p) => p.name).join(" & ") || "—"}</td>
+                          <td>
+                            <button
+                              className="btn danger small"
+                              onClick={() => handleDelete(s)}
+                              disabled={busyId === s.id}
+                            >
+                              {busyId === s.id ? "Moving…" : "🗑️ Delete"}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </>
+            )}
           </div>
 
           <div className="card-surface">
             <h2>Games played</h2>
-            <table className="score-table">
-              <thead>
-                <tr>
-                  <th>Game</th>
-                  <th>Times played</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gameStats.map((g) => (
-                  <tr key={g.gameType}>
-                    <td>{g.label}</td>
-                    <td>{g.count}</td>
+            {gameStats.length === 0 ? (
+              <p className="empty-state">No completed games yet.</p>
+            ) : (
+              <table className="score-table">
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Times played</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {gameStats.map((g) => (
+                    <tr key={g.gameType}>
+                      <td>{g.label}</td>
+                      <td>{g.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
-            </>
-          )}
         </>
       )}
     </div>

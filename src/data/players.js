@@ -63,6 +63,22 @@ export async function setPlayerActive(playerId, active) {
   await updateDoc(doc(playersCol, playerId), { active });
 }
 
+// Fix a typo'd name after the fact. Doesn't touch the doc id (generated
+// once at creation from the original name) or any past game snapshot —
+// those keep the name as it was played under, same as color/avatar
+// changes not being retroactive.
+export async function updatePlayerName(playerId, firstName, lastName) {
+  await authReady;
+  const first = (firstName || "").trim();
+  const last = (lastName || "").trim();
+  if (!first || !last) throw new Error("Enter both a first and last name.");
+  await updateDoc(doc(playersCol, playerId), {
+    firstName: first,
+    lastName: last,
+    name: `${first} ${last}`,
+  });
+}
+
 // Hard delete — removes the player doc entirely. Past game sessions keep
 // their own snapshot of the player (name/color/avatar/photo at the time),
 // so old scorecards still display correctly; only this player's own
@@ -100,7 +116,18 @@ export async function setPlayerPhoto(playerId, photo) {
 
 export function subscribeToPlayers(callback) {
   const q = query(playersCol, orderBy("name"));
-  return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(
+    q,
+    (snap) => {
+      callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    },
+    (err) => {
+      // Without this, a permission hiccup (e.g. the anonymous sign-in not
+      // having landed yet) would leave onSnapshot's success callback never
+      // firing at all — which is exactly what makes a page's "Loading…"
+      // gate get stuck forever instead of settling on an empty state.
+      console.error("subscribeToPlayers failed:", err);
+      callback([]);
+    }
+  );
 }

@@ -34,6 +34,20 @@ const ThirtyOneSetup = lazy(() => import("./pages/games/thirty-one/ThirtyOneSetu
 const ThirtyOnePlay = lazy(() => import("./pages/games/thirty-one/ThirtyOnePlay"));
 const RoyalRumSetup = lazy(() => import("./pages/games/royal-rum/RoyalRumSetup"));
 const RoyalRumPlay = lazy(() => import("./pages/games/royal-rum/RoyalRumPlay"));
+const HeartsSetup = lazy(() => import("./pages/games/hearts/HeartsSetup"));
+const HeartsPlay = lazy(() => import("./pages/games/hearts/HeartsPlay"));
+const SpadesSetup = lazy(() => import("./pages/games/spades/SpadesSetup"));
+const SpadesPlay = lazy(() => import("./pages/games/spades/SpadesPlay"));
+const CribbageSetup = lazy(() => import("./pages/games/cribbage/CribbageSetup"));
+const CribbagePlay = lazy(() => import("./pages/games/cribbage/CribbagePlay"));
+const CanastaSetup = lazy(() => import("./pages/games/canasta/CanastaSetup"));
+const CanastaPlay = lazy(() => import("./pages/games/canasta/CanastaPlay"));
+const PinochleSetup = lazy(() => import("./pages/games/pinochle/PinochleSetup"));
+const PinochlePlay = lazy(() => import("./pages/games/pinochle/PinochlePlay"));
+const GolfSetup = lazy(() => import("./pages/games/golf/GolfSetup"));
+const GolfPlay = lazy(() => import("./pages/games/golf/GolfPlay"));
+const GinRummySetup = lazy(() => import("./pages/games/gin-rummy/GinRummySetup"));
+const GinRummyPlay = lazy(() => import("./pages/games/gin-rummy/GinRummyPlay"));
 
 function App() {
   return (
@@ -68,6 +82,20 @@ function App() {
         <Route path="/thirty-one/play/:sessionId" element={<ThirtyOnePlay />} />
         <Route path="/royal-rum/setup" element={<RoyalRumSetup />} />
         <Route path="/royal-rum/play/:sessionId" element={<RoyalRumPlay />} />
+        <Route path="/hearts/setup" element={<HeartsSetup />} />
+        <Route path="/hearts/play/:sessionId" element={<HeartsPlay />} />
+        <Route path="/spades/setup" element={<SpadesSetup />} />
+        <Route path="/spades/play/:sessionId" element={<SpadesPlay />} />
+        <Route path="/cribbage/setup" element={<CribbageSetup />} />
+        <Route path="/cribbage/play/:sessionId" element={<CribbagePlay />} />
+        <Route path="/canasta/setup" element={<CanastaSetup />} />
+        <Route path="/canasta/play/:sessionId" element={<CanastaPlay />} />
+        <Route path="/pinochle/setup" element={<PinochleSetup />} />
+        <Route path="/pinochle/play/:sessionId" element={<PinochlePlay />} />
+        <Route path="/golf/setup" element={<GolfSetup />} />
+        <Route path="/golf/play/:sessionId" element={<GolfPlay />} />
+        <Route path="/gin-rummy/setup" element={<GinRummySetup />} />
+        <Route path="/gin-rummy/play/:sessionId" element={<GinRummyPlay />} />
       </Route>
     </Routes>
   );

@@ -15,6 +15,13 @@ export const GAME_LABELS = {
   "thirty-one": "31",
   "royal-rum": "Royal Rum",
   other: "Other",
+  hearts: "Hearts",
+  cribbage: "Cribbage",
+  canasta: "Canasta",
+  pinochle: "Pinochle",
+  golf: "Golf",
+  spades: "Spades",
+  "gin-rummy": "Gin Rummy",
 };
 
 function slug(s) {

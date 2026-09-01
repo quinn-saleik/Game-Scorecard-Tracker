@@ -8,6 +8,7 @@ import {
   setPlayerColor,
   setPlayerAvatar,
   setPlayerPhoto,
+  updatePlayerName,
   subscribeToPlayers,
 } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
@@ -27,6 +28,9 @@ export default function Players() {
   const [busy, setBusy] = useState(false);
   const [colorPickerFor, setColorPickerFor] = useState(null);
   const [avatarPickerFor, setAvatarPickerFor] = useState(null);
+  const [nameEditFor, setNameEditFor] = useState(null);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
   const [clearingDefaults, setClearingDefaults] = useState(false);
 
   useEffect(() => {
@@ -73,6 +77,24 @@ export default function Players() {
       await deleteDefaultPlayers();
     } finally {
       setClearingDefaults(false);
+    }
+  }
+
+  function startEditName(player) {
+    setNameEditFor(player.id);
+    setEditFirstName(player.firstName || player.name?.split(" ")[0] || "");
+    setEditLastName(player.lastName || player.name?.split(" ").slice(1).join(" ") || "");
+  }
+
+  async function saveEditName(playerId) {
+    setBusy(true);
+    try {
+      await updatePlayerName(playerId, editFirstName, editLastName);
+      setNameEditFor(null);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -208,6 +230,7 @@ export default function Players() {
                 const s = statsById.get(p.id);
                 const pickerOpen = colorPickerFor === p.id;
                 const avatarOpen = avatarPickerFor === p.id;
+                const nameEditOpen = nameEditFor === p.id;
                 return (
                   <Fragment key={p.id}>
                     <tr>
@@ -217,6 +240,7 @@ export default function Players() {
                           onClick={() => {
                             setColorPickerFor(pickerOpen ? null : p.id);
                             setAvatarPickerFor(null);
+                            setNameEditFor(null);
                           }}
                           title="Set color"
                           style={{
@@ -235,6 +259,7 @@ export default function Players() {
                           onClick={() => {
                             setAvatarPickerFor(avatarOpen ? null : p.id);
                             setColorPickerFor(null);
+                            setNameEditFor(null);
                           }}
                           title="Set avatar"
                           style={{
@@ -292,6 +317,19 @@ export default function Players() {
                         <Link to={`/players/${p.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                           {p.name}
                         </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (nameEditFor === p.id) setNameEditFor(null);
+                            else startEditName(p);
+                            setColorPickerFor(null);
+                            setAvatarPickerFor(null);
+                          }}
+                          title="Fix spelling / rename"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "var(--muted)", marginLeft: 6 }}
+                        >
+                          ✎
+                        </button>
                       </td>
                       <td>{s?.gamesPlayed || 0}</td>
                       <td>{s?.gamesPlayed ? `${s.winPct}%` : "—"}</td>
@@ -406,6 +444,51 @@ export default function Players() {
                               No avatar
                             </button>
                           </div>
+                        </td>
+                      </tr>
+                    )}
+                    {nameEditOpen && (
+                      <tr>
+                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
+                          <div className="btn-row" style={{ padding: "10px 4px" }}>
+                            <input
+                              className="input"
+                              style={{ flex: 1, minWidth: 120 }}
+                              placeholder="First name"
+                              value={editFirstName}
+                              onChange={(e) => setEditFirstName(e.target.value)}
+                              disabled={busy}
+                            />
+                            <input
+                              className="input"
+                              style={{ flex: 1, minWidth: 120 }}
+                              placeholder="Last name"
+                              value={editLastName}
+                              onChange={(e) => setEditLastName(e.target.value)}
+                              disabled={busy}
+                            />
+                            <button
+                              type="button"
+                              className="btn primary small"
+                              onClick={() => saveEditName(p.id)}
+                              disabled={busy}
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="btn ghost small"
+                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                              onClick={() => setNameEditFor(null)}
+                              disabled={busy}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                          <p style={{ color: "var(--muted)", fontSize: 12, margin: "0 4px 6px" }}>
+                            Past games keep the name they were played under — this only changes
+                            how {p.name} shows up going forward.
+                          </p>
                         </td>
                       </tr>
                     )}
