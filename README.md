@@ -2,19 +2,7 @@
 
 A family card-game score tracker: pick a game, pick players, keep score, see stats. Built with React + Vite, synced live across devices with Firebase Firestore, deployed free on GitHub Pages.
 
-Live games in this build: **Flip7**, **Oh Heck!**, and **Euchre** (2-player / 3-player / traditional). Euchre's 15-card and pick-your-partner variants, plus **Other**, are on the roadmap — see `ScorecardAppAgents.docx` in the project for the full spec.
-
-### Oh Heck! rules as implemented
-- Config at game start: starting card count (default 8), and a bid-rule toggle — **Traditional** (dealer can't bid the number that would make total bids exactly equal the cards dealt) or **Bang 'em** (no restriction, bids just labeled over/under/even).
-- Round progression: down to 1 card, the 1-card round is played twice, then back up to the starting count, then the game ends (e.g. 5→4→3→2→1→1→2→3→4→5).
-- Dealer rotates one seat per round in the order players were selected at setup; bidding goes in turn order starting left of the dealer, dealer bids last.
-- Scoring: hit your bid exactly → bid + 10. Miss it → however many tricks you actually won, no bonus.
-- Like Flip7, the final round's win doesn't lock in until you tap "Confirm winner & finish" — there's an undo-last-round option first.
-
-### Euchre rules as implemented
-- **2-player**: pick 2 players (order sets who deals first), configurable win threshold (default 50). Each hand you enter both players' points, added cumulatively; dealer alternates automatically each hand (shown as a badge). Same confirm-before-locking pattern as Flip7.
-- **3-player**: pick 3 players, configurable starting score (default 15). Each hand, every player gets an outcome: 1-5 points (subtracted from their score) or **SET** (+5, moves them further from the goal). First to 0 or below wins.
-- **Traditional (2v2)**: tap players to assign Team 1 / Team 2 (2 each), configurable win threshold (default 10). Each hand you enter each team's points, added cumulatively to a shared team score. The winning team's individual players each get credited with a win in Stats, same as every other game.
+Live games in this build: **Flip7**. Oh Heck!, Euchre (2-player / 3-player / traditional), and Other are on the roadmap — see `ScorecardAppAgents.docx` in the project for the full spec.
 
 ## One-time setup (~15 minutes)
 
@@ -72,11 +60,7 @@ Requires `.env` to be filled in (step 3 above) for the app to talk to Firestore.
 ## How data is structured
 
 - **`players`** collection — one doc per player (`{ name, active, isDefault }`). The 13 default players are seeded automatically on first load of the Players tab. "Removing" a player just flips `active: false` so past game stats still resolve their name.
-- **`gameSessions`** collection — one doc per game played, shared by every game type: `{ gameType, players, config, rounds, totals, status: 'in_progress' | 'completed', winnerIds }`. Every round/hand is written to Firestore as it's scored (not just at the end), so nothing is lost if someone closes the tab mid-game.
-
-## Resuming in-progress games
-
-`src/components/OngoingGames.jsx` shows any game(s) still `in_progress`: on the Home screen it shows every ongoing game across all types (so nothing gets lost if you wander off to Stats mid-game); on each game's Setup screen it's scoped to just that game type, so picking a game you're already mid-way through offers to resume it. Each entry shows a live players/scores summary and has **Resume** (jumps back into the Play screen) and **Quit & delete** (hard-deletes the session — used for a game that was abandoned or started by mistake) buttons.
+- **`gameSessions`** collection — one doc per game played, shared by every game type: `{ gameType, players, config, rounds, totals, status: 'in_progress' | 'completed', winnerIds }`. Stats are computed client-side from completed sessions.
 
 ## Access
 
