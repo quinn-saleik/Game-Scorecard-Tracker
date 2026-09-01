@@ -12,6 +12,7 @@ import {
   getForbiddenBid,
 } from "./ohHeckLogic";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -73,7 +74,7 @@ export default function OhHeckPlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {winners.map((p) => p.name).join(", ")}</p>
+        <p>Winner: {winners.map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -136,7 +137,7 @@ export default function OhHeckPlay() {
           <span className="suit black">🂡</span> Oh Heck! — Final round complete
         </h1>
         <div className="card-surface">
-          <h2>🏆 {winners.map((p) => p.name).join(" & ")}</h2>
+          <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")}</h2>
           <table className="score-table">
             <thead>
               <tr><th>Player</th><th>Total</th></tr>
@@ -147,7 +148,7 @@ export default function OhHeckPlay() {
                 .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
                 .map((p) => (
                   <tr key={p.id}>
-                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                     <td className={(totals[p.id] || 0) === maxTotal ? "leader" : ""}>{totals[p.id] || 0}</td>
                   </tr>
                 ))}
@@ -204,7 +205,7 @@ export default function OhHeckPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}{p.id === dealer.id ? " 🃏" : ""}</td>
+              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{p.id === dealer.id ? " 🃏" : ""}</td>
               <td>{totals[p.id] || 0}</td>
             </tr>
           ))}
@@ -229,7 +230,7 @@ export default function OhHeckPlay() {
         {header}
         {undoButton}
         <div className="card-surface">
-          <h2>Bidding — <PlayerDot color={currentBidder.color} avatar={currentBidder.avatar} photo={currentBidder.photo} />{currentBidder.name}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
+          <h2>Bidding — <PlayerDot color={currentBidder.color} avatar={currentBidder.avatar} photo={currentBidder.photo} />{shortName(currentBidder)}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
           <p>Bids so far this round: {bidsSoFar} of {cardsThisRound} cards</p>
           {forbidden !== null && (
             <p style={{ color: "#b3352c" }}>
@@ -287,7 +288,7 @@ export default function OhHeckPlay() {
             <thead><tr><th>Player</th><th>Bid</th></tr></thead>
             <tbody>
               {bidOrder.map((p) => (
-                <tr key={p.id}><td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td><td>{bids[p.id]}</td></tr>
+                <tr key={p.id}><td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td><td>{bids[p.id]}</td></tr>
               ))}
             </tbody>
           </table>
@@ -354,7 +355,7 @@ export default function OhHeckPlay() {
               <thead><tr><th>Player</th><th>Tricks won</th></tr></thead>
               <tbody>
                 {bidOrder.map((p) => (
-                  <tr key={p.id}><td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td><td>{results[p.id]?.tricksWon ?? 0}</td></tr>
+                  <tr key={p.id}><td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td><td>{results[p.id]?.tricksWon ?? 0}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -388,7 +389,7 @@ export default function OhHeckPlay() {
       <div>
         {header}
         <div className="card-surface">
-          <h2><PlayerDot color={currentScorer.color} avatar={currentScorer.avatar} photo={currentScorer.photo} />{currentScorer.name} bid {theirBid}. What did they get?</h2>
+          <h2><PlayerDot color={currentScorer.color} avatar={currentScorer.avatar} photo={currentScorer.photo} />{shortName(currentScorer)} bid {theirBid}. What did they get?</h2>
           <div className="btn-row" style={{ marginBottom: 14 }}>
             <button
               className="btn primary"

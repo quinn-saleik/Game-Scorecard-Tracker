@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
@@ -31,7 +32,7 @@ export default function Flip7Play() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {session.players.filter((p) => session.winnerIds.includes(p.id)).map((p) => p.name).join(", ")}</p>
+        <p>Winner: {session.players.filter((p) => session.winnerIds.includes(p.id)).map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -127,7 +128,7 @@ export default function Flip7Play() {
           <tbody>
             {session.players.map((p) => (
               <tr key={p.id}>
-                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                 <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                   {totals[p.id] || 0}
                 </td>
@@ -139,7 +140,7 @@ export default function Flip7Play() {
 
       {pendingFinish ? (
         <div className="card-surface">
-          <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} reached {threshold}!</h2>
+          <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
             <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
@@ -156,7 +157,7 @@ export default function Flip7Play() {
           <form onSubmit={submitRound}>
             {session.players.map((p) => (
               <div className="field" key={p.id}>
-                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</label>
+                <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</label>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                   <input
                     id={`pt-${p.id}`}

@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -13,7 +14,7 @@ function TeamNames({ players }) {
   return players.map((p, i) => (
     <span key={p.id}>
       {i > 0 && " & "}
-      <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+      <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
     </span>
   ));
 }
@@ -33,7 +34,7 @@ export default function CatchphrasePlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winning team: {winners.map((p) => p.name).join(" & ")}</p>
+        <p>Winning team: {winners.map((p) => shortName(p)).join(" & ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -124,7 +125,7 @@ export default function CatchphrasePlay() {
 
       {pendingFinish ? (
         <div className="card-surface">
-          <h2>🏆 {winningTeamPlayers.map((p) => p.name).join(" & ")} reached {threshold}!</h2>
+          <h2>🏆 {winningTeamPlayers.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last point before locking it in.</p>
           <div className="btn-row">
             <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>

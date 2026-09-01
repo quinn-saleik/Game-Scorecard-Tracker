@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  seedDefaultPlayers,
   addPlayer,
+  deletePlayer,
+  deleteDefaultPlayers,
   setPlayerActive,
   setPlayerColor,
   setPlayerAvatar,
@@ -21,15 +22,14 @@ export default function Players() {
   const [players, setPlayers] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newName, setNewName] = useState("");
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
   const [busy, setBusy] = useState(false);
   const [colorPickerFor, setColorPickerFor] = useState(null);
   const [avatarPickerFor, setAvatarPickerFor] = useState(null);
+  const [clearingDefaults, setClearingDefaults] = useState(false);
 
   useEffect(() => {
-    seedDefaultPlayers().catch((err) =>
-      console.error("Failed to seed default players:", err)
-    );
     const unsubPlayers = subscribeToPlayers((list) => {
       setPlayers(list);
       setLoading(false);
@@ -43,15 +43,36 @@ export default function Players() {
 
   async function handleAdd(e) {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newFirstName.trim() || !newLastName.trim()) return;
     setBusy(true);
     try {
-      await addPlayer(newName);
-      setNewName("");
+      await addPlayer(newFirstName, newLastName);
+      setNewFirstName("");
+      setNewLastName("");
     } catch (err) {
       alert(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleDelete(player) {
+    if (!window.confirm(`Delete ${player.name} entirely? This can't be undone — past games they played in keep their name, but they'll no longer have a roster entry or stats page.`)) return;
+    setBusy(true);
+    try {
+      await deletePlayer(player.id);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleClearDefaults() {
+    if (!window.confirm("Remove all of the sample default players?")) return;
+    setClearingDefaults(true);
+    try {
+      await deleteDefaultPlayers();
+    } finally {
+      setClearingDefaults(false);
     }
   }
 
@@ -109,6 +130,7 @@ export default function Players() {
   const inactive = players.filter((p) => !p.active);
   const stats = computePlayerStats(active, sessions);
   const statsById = new Map(stats.map((s) => [s.playerId, s]));
+  const hasDefaults = players.some((p) => p.isDefault);
 
   return (
     <div>
@@ -116,15 +138,37 @@ export default function Players() {
         <span className="suit black">♣</span> Players
       </h1>
 
+      {hasDefaults && (
+        <div className="card-surface">
+          <p style={{ margin: 0 }}>Sample default players are still on the roster.</p>
+          <button
+            className="btn ghost small"
+            style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", marginTop: 8 }}
+            onClick={handleClearDefaults}
+            disabled={clearingDefaults}
+          >
+            {clearingDefaults ? "Removing…" : "Remove all default players"}
+          </button>
+        </div>
+      )}
+
       <div className="card-surface">
         <h2>Add a player</h2>
         <form onSubmit={handleAdd} className="btn-row">
           <input
             className="input"
-            style={{ flex: 1, minWidth: 160 }}
-            placeholder="Player name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            style={{ flex: 1, minWidth: 120 }}
+            placeholder="First name"
+            value={newFirstName}
+            onChange={(e) => setNewFirstName(e.target.value)}
+            disabled={busy}
+          />
+          <input
+            className="input"
+            style={{ flex: 1, minWidth: 120 }}
+            placeholder="Last name"
+            value={newLastName}
+            onChange={(e) => setNewLastName(e.target.value)}
             disabled={busy}
           />
           <button className="btn primary" type="submit" disabled={busy}>
@@ -155,6 +199,7 @@ export default function Players() {
                 <th>Win %</th>
                 <th>Favorite</th>
                 <th>Last played</th>
+                <th></th>
                 <th></th>
               </tr>
             </thead>
@@ -262,10 +307,21 @@ export default function Players() {
                           ✕
                         </span>
                       </td>
+                      <td>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(p)}
+                          disabled={busy}
+                          title="Delete permanently"
+                          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "var(--muted)" }}
+                        >
+                          🗑
+                        </button>
+                      </td>
                     </tr>
                     {pickerOpen && (
                       <tr>
-                        <td colSpan={9} style={{ background: "var(--card-white)" }}>
+                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
                           <div className="chip-row" style={{ padding: "10px 4px" }}>
                             {PLAYER_COLORS.map((c) => {
                               const takenBy = active.find(
@@ -320,7 +376,7 @@ export default function Players() {
                     )}
                     {avatarOpen && (
                       <tr>
-                        <td colSpan={9} style={{ background: "var(--card-white)" }}>
+                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
                           <div className="chip-row" style={{ padding: "10px 4px" }}>
                             {PLAYER_AVATARS.map((emoji) => (
                               <button
@@ -366,14 +422,13 @@ export default function Players() {
           <h2>Removed players ({inactive.length})</h2>
           <div className="chip-row">
             {inactive.map((p) => (
-              <span
-                key={p.id}
-                className="player-chip inactive"
-                onClick={() => toggleActive(p)}
-                title="Tap to restore"
-                style={{ cursor: "pointer", opacity: 1 }}
-              >
-                {p.name} ↺
+              <span key={p.id} className="player-chip inactive" style={{ opacity: 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span onClick={() => toggleActive(p)} title="Tap to restore" style={{ cursor: "pointer" }}>
+                  {p.name} ↺
+                </span>
+                <span onClick={() => handleDelete(p)} title="Delete permanently" style={{ cursor: "pointer" }}>
+                  🗑
+                </span>
               </span>
             ))}
           </div>

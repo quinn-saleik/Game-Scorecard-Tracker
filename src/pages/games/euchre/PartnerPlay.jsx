@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
@@ -38,7 +39,7 @@ export default function PartnerPlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {winners.map((p) => p.name).join(", ")}</p>
+        <p>Winner: {winners.map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -126,7 +127,7 @@ export default function PartnerPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
               <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                 {totals[p.id] || 0}
               </td>
@@ -154,7 +155,7 @@ export default function PartnerPlay() {
         <h1 className="page-title"><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</h1>
         {scoreTable}
         <div className="card-surface">
-          <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} reached {threshold}!</h2>
+          <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
             <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
@@ -187,7 +188,7 @@ export default function PartnerPlay() {
                 onClick={() => toggleBidPlayer(p.id)}
               >
                 <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                {p.name}
+                {shortName(p)}
               </span>
             ))}
           </div>
@@ -268,7 +269,7 @@ export default function PartnerPlay() {
                 const delta = bidTeamIds.includes(p.id) ? bidVal : othersVal;
                 return (
                   <tr key={p.id}>
-                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}{bidTeamIds.includes(p.id) ? " (bid team)" : ""}</td>
+                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{bidTeamIds.includes(p.id) ? " (bid team)" : ""}</td>
                     <td>{delta >= 0 ? `+${delta}` : delta}</td>
                   </tr>
                 );
@@ -303,7 +304,7 @@ function TeamList({ players }) {
   return players.map((p, i) => (
     <span key={p.id}>
       {i > 0 && " & "}
-      <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+      <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
     </span>
   ));
 }

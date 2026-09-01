@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import { recomputeTotals } from "../../../data/rounds";
@@ -46,7 +47,7 @@ export default function RoyalRumPlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {winners.map((p) => p.name).join(", ")}</p>
+        <p>Winner: {winners.map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -141,7 +142,7 @@ export default function RoyalRumPlay() {
             const done = checklists[p.id];
             return (
               <tr key={p.id}>
-                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                 <td style={{ fontSize: 13, letterSpacing: 1 }}>
                   {GOALS.map((g) => (
                     <span key={g} style={{ opacity: done.has(g) ? 1 : 0.3, marginRight: 4 }}>
@@ -175,7 +176,7 @@ export default function RoyalRumPlay() {
         <h1 className="page-title"><span className="suit black">♦</span> Royal Rum — Hand {rounds.length + 1}</h1>
         {scoreTable}
         <div className="card-surface">
-          <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} checked off all 7 with the lowest score!</h2>
+          <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} checked off all 7 with the lowest score!</h2>
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
             {rounds.length > 0 && (
@@ -206,7 +207,7 @@ export default function RoyalRumPlay() {
             return (
               <div key={p.id} style={{ marginBottom: 14 }}>
                 <p style={{ margin: "0 0 6px", fontWeight: 600 }}>
-                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                 </p>
                 <div className="chip-row">
                   <span
@@ -244,7 +245,7 @@ export default function RoyalRumPlay() {
           {session.players.map((p) => (
             <div className="field" key={p.id}>
               <label htmlFor={`pts-${p.id}`}>
-                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                 {goalPicks[p.id] ? ` — checked off ${goalPicks[p.id]}` : ""}
               </label>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -282,7 +283,7 @@ export default function RoyalRumPlay() {
                 const pts = Number(pointsInput[p.id]) || 0;
                 return (
                   <tr key={p.id}>
-                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                     <td>{g ? `✅ ${g}` : "—"}</td>
                     <td>{pts}</td>
                   </tr>

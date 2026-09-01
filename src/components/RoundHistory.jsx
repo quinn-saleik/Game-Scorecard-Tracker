@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PlayerDot from "./PlayerDot";
 import { getRoundDelta } from "../data/rounds";
+import { shortName } from "../data/playerNames";
 
 // A list of every round/hand played so far with a delete button on each —
 // not just the most recent one. Deleting recomputes totals from the
@@ -31,7 +32,7 @@ export default function RoundHistory({ session, rounds, gameType, unitLabel = "R
                   return (
                     <span key={p.id} style={{ marginRight: 10, whiteSpace: "nowrap" }}>
                       <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                      {p.name} {d >= 0 ? `+${d}` : d}
+                      {shortName(p)} {d >= 0 ? `+${d}` : d}
                     </span>
                   );
                 })}

@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -44,7 +45,7 @@ export default function ThreePlayerPlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {winners.map((p) => p.name).join(", ")}</p>
+        <p>Winner: {winners.map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -95,13 +96,13 @@ export default function ThreePlayerPlay() {
       <div>
         <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand complete</h1>
         <div className="card-surface">
-          <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} reached 0!</h2>
+          <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached 0!</h2>
           <table className="score-table">
             <thead><tr><th>Player</th><th>Score</th></tr></thead>
             <tbody>
               {session.players.slice().sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0)).map((p) => (
                 <tr key={p.id}>
-                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                   <td className={(totals[p.id] ?? 0) <= 0 ? "leader" : ""}>{totals[p.id] ?? 0}</td>
                 </tr>
               ))}
@@ -137,7 +138,7 @@ export default function ThreePlayerPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
               <td className={(totals[p.id] ?? 0) === lowestTotal ? "leader" : ""}>{totals[p.id] ?? 0}</td>
             </tr>
           ))}
@@ -188,7 +189,7 @@ export default function ThreePlayerPlay() {
             <tbody>
               {session.players.map((p) => (
                 <tr key={p.id}>
-                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                   <td>{results[p.id]?.type === "set" ? "SET (+5)" : `${results[p.id]?.value ?? 0} pts`}</td>
                 </tr>
               ))}
@@ -224,7 +225,7 @@ export default function ThreePlayerPlay() {
       <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
       {undoButton}
       <div className="card-surface">
-        <h2><PlayerDot color={currentPlayer.color} avatar={currentPlayer.avatar} photo={currentPlayer.photo} />{currentPlayer.name} — what happened?</h2>
+        <h2><PlayerDot color={currentPlayer.color} avatar={currentPlayer.avatar} photo={currentPlayer.photo} />{shortName(currentPlayer)} — what happened?</h2>
         <div className="btn-row" style={{ marginBottom: 14 }}>
           <button
             className="btn danger"

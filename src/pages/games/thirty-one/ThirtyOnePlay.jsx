@@ -6,6 +6,7 @@ import {
   completeSession,
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -30,7 +31,7 @@ export default function ThirtyOnePlay() {
     return (
       <div className="card-surface">
         <h2>Game already finished</h2>
-        <p>Winner: {winners.map((p) => p.name).join(", ")}</p>
+        <p>Winner: {winners.map((p) => shortName(p)).join(", ")}</p>
         <button className="btn primary" onClick={() => navigate("/")}>Back to games</button>
       </div>
     );
@@ -110,7 +111,7 @@ export default function ThirtyOnePlay() {
               return (
                 <tr key={p.id}>
                   <td style={out ? { opacity: 0.5 } : undefined}>
-                    <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}{out ? " — out" : ""}
+                    <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{out ? " — out" : ""}
                   </td>
                   <td className={!out && lives === maxLives ? "leader" : ""}>{"❤️".repeat(Math.max(0, lives)) || "—"}</td>
                 </tr>
@@ -138,7 +139,7 @@ export default function ThirtyOnePlay() {
         <h1 className="page-title"><span className="suit red">🂱</span> 31 — Round {rounds.length + 1}</h1>
         {scoreTable}
         <div className="card-surface">
-          <h2>🏆 {potentialWinners.map((p) => p.name).join(" & ")} {potentialWinners.length > 1 ? "are" : "is"} last standing!</h2>
+          <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} {potentialWinners.length > 1 ? "are" : "is"} last standing!</h2>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
             {rounds.length > 0 && (
@@ -172,13 +173,13 @@ export default function ThirtyOnePlay() {
               onClick={() => toggleLost(p.id)}
             >
               <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-              {p.name}
+              {shortName(p)}
             </span>
           ))}
         </div>
         {outPlayers.length > 0 && (
           <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 10 }}>
-            Out: {outPlayers.map((p) => p.name).join(", ")}
+            Out: {outPlayers.map((p) => shortName(p)).join(", ")}
           </p>
         )}
         <div className="btn-row" style={{ marginTop: 14 }}>

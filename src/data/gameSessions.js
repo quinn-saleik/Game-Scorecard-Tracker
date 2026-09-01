@@ -79,11 +79,27 @@ export async function rematchSession(session) {
   return ref.id;
 }
 
-// Hard delete — used by the "quit game" option on an in-progress session.
-// Completed games are never deleted this way (there's no UI path to it).
+// Hard delete — permanent, no undo. Used for the "quit game" option on an
+// in-progress session, and for permanently emptying a completed game out
+// of the trash (see softDeleteSession below).
 export async function deleteSession(sessionId) {
   await authReady;
   await deleteDoc(doc(sessionsCol, sessionId));
+}
+
+// Soft delete for a *completed* game: marks it trashed instead of removing
+// it, so a slip of the "Delete" button on the Stats page doesn't erase
+// real family history. Trashed games drop out of subscribeToCompletedSessions
+// (and therefore out of every stat, Hall of Fame record, etc.) but stay
+// recoverable until someone empties the trash (deleteSession).
+export async function softDeleteSession(sessionId) {
+  await authReady;
+  await updateDoc(doc(sessionsCol, sessionId), { deletedAt: serverTimestamp() });
+}
+
+export async function restoreSession(sessionId) {
+  await authReady;
+  await updateDoc(doc(sessionsCol, sessionId), { deletedAt: null });
 }
 
 export function subscribeToSession(sessionId, callback) {
@@ -92,7 +108,11 @@ export function subscribeToSession(sessionId, callback) {
   });
 }
 
-// Live feed of every completed game, newest first — used by the stats page.
+// Live feed of every completed, non-trashed game, newest first — used
+// everywhere stats/records are computed. Filtered for `deletedAt` client
+// side (rather than in the query) since Firestore's `== null` doesn't
+// match documents that never had the field set at all, which is every
+// game completed before the trash feature existed.
 export function subscribeToCompletedSessions(callback) {
   const q = query(
     sessionsCol,
@@ -100,7 +120,28 @@ export function subscribeToCompletedSessions(callback) {
     orderBy("completedAt", "desc")
   );
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    callback(
+      snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((s) => !s.deletedAt)
+    );
+  });
+}
+
+// The trash: completed games that were soft-deleted, newest-trashed first.
+// Powers the "Restore" list on the Stats page.
+export function subscribeToTrashedSessions(callback) {
+  const q = query(
+    sessionsCol,
+    where("status", "==", "completed"),
+    orderBy("completedAt", "desc")
+  );
+  return onSnapshot(q, (snap) => {
+    const trashed = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((s) => !!s.deletedAt);
+    trashed.sort((a, b) => (b.deletedAt?.toMillis?.() || 0) - (a.deletedAt?.toMillis?.() || 0));
+    callback(trashed);
   });
 }
 
