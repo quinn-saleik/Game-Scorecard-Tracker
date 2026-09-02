@@ -131,7 +131,7 @@ export default function OhHeckSetup() {
           back to {startingCards} to end).
         </p>
         {deckWarning && (
-          <p style={{ color: "#b3352c", fontSize: 14 }}>
+          <p style={{ color: "var(--red-suit)", fontSize: 14 }}>
             Heads up: {startingCards} cards × {seatedPlayers.length} players
             is more than a 52-card deck can deal — fine if you're using two
             decks, otherwise lower the starting count.
@@ -144,7 +144,7 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "traditional" ? "primary" : "ghost"}`}
-              style={bidRule !== "traditional" ? { color: "var(--text-on-surface)", border: "2px solid #6b4226" } : undefined}
+              style={bidRule !== "traditional" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
               onClick={() => setBidRule("traditional")}
             >
               Traditional
@@ -152,7 +152,7 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "bang-em" ? "primary" : "ghost"}`}
-              style={bidRule !== "bang-em" ? { color: "var(--text-on-surface)", border: "2px solid #6b4226" } : undefined}
+              style={bidRule !== "bang-em" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
               onClick={() => setBidRule("bang-em")}
             >
               Bang 'em

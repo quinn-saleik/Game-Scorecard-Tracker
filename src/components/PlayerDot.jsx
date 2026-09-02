@@ -31,7 +31,7 @@ export default function PlayerDot({ color, avatar, photo }) {
           height: 10,
           borderRadius: "50%",
           background: color || "transparent",
-          border: color ? "1px solid rgba(0,0,0,0.15)" : "1px dashed #a89f8a",
+          border: color ? "1px solid rgba(0,0,0,0.15)" : "1px dashed var(--border-soft)",
         }}
       />
       {avatar && (

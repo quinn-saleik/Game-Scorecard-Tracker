@@ -139,7 +139,7 @@ export default function GinRummyPlay() {
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} wins!</h2>
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last hand
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -194,7 +194,7 @@ export default function GinRummyPlay() {
               </p>
               <div className="btn-row">
                 {rounds.length > 0 && (
-                  <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+                  <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
                     ← Undo last hand
                   </button>
                 )}
@@ -207,7 +207,7 @@ export default function GinRummyPlay() {
 
           {!winnerPick && rounds.length > 0 && (
             <div className="btn-row" style={{ marginTop: 12 }}>
-              <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+              <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
                 ← Undo last hand
               </button>
             </div>

@@ -46,9 +46,12 @@ export default function Recap() {
   useEffect(() => {
     if (fired || !session || session.status !== "completed") return;
     setFired(true);
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ["#d9a441", "#1f5c45", "#e34948", "#fdf6e8"] });
+    // canvas-confetti draws straight to <canvas>, so these need literal hex —
+    // CSS custom properties don't resolve outside the DOM/CSSOM. Keep in
+    // sync with the --gold/--wood/--red-suit/--cream tokens below by hand.
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ["#ab8a3f", "#1f2a3a", "#a12e2e", "#eef1f6"] });
     const t = setTimeout(
-      () => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, colors: ["#d9a441", "#1f5c45", "#e34948"] }),
+      () => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, colors: ["#ab8a3f", "#1f2a3a", "#a12e2e"] }),
       300
     );
     return () => clearTimeout(t);
@@ -130,8 +133,8 @@ export default function Recap() {
         <button className="btn primary" onClick={playAgain} disabled={rematching}>
           {rematching ? "Starting…" : "🔁 Rematch — same players"}
         </button>
-        <button className="btn ghost" style={{ color: "#fdf6e8" }} onClick={() => navigate("/")}>Play another game</button>
-        <button className="btn ghost" style={{ color: "#fdf6e8" }} onClick={() => navigate("/stats")}>View stats</button>
+        <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={() => navigate("/")}>Play another game</button>
+        <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={() => navigate("/stats")}>View stats</button>
       </div>
     </div>
   );

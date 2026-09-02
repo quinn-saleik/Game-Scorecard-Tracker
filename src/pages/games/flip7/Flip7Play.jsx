@@ -143,7 +143,7 @@ export default function Flip7Play() {
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last round
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -184,7 +184,7 @@ export default function Flip7Play() {
                 <button
                   type="button"
                   className="btn ghost"
-                  style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                  style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                   onClick={undoLastRound}
                   disabled={saving}
                 >

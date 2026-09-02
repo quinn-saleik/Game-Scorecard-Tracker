@@ -12,7 +12,7 @@ import { recomputeTotals } from "../../../data/rounds";
 
 const DEAL_SIZE = 13;
 const NIL_BONUS = 100;
-const backBtnStyle = { color: "var(--text-on-surface)", border: "2px solid #6b4226" };
+const backBtnStyle = { color: "var(--text-on-surface)", border: "2px solid var(--wood)" };
 
 function TeamNames({ players }) {
   return players.map((p, i) => (

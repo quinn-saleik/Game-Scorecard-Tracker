@@ -95,7 +95,7 @@ export default function PlayerDetail() {
                 borderRadius: 10,
                 textAlign: "center",
                 background: b.earned ? "var(--card-white)" : "transparent",
-                border: `2px solid ${b.earned ? "var(--gold, #d9a441)" : "var(--border-soft)"}`,
+                border: `2px solid ${b.earned ? "var(--gold, var(--gold))" : "var(--border-soft)"}`,
                 opacity: b.earned ? 1 : 0.4,
               }}
             >
@@ -130,7 +130,7 @@ export default function PlayerDetail() {
         )}
       </div>
 
-      <Link className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} to="/players">
+      <Link className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} to="/players">
         ← Back to Players
       </Link>
     </div>

@@ -1,43 +1,54 @@
+/* "Ledger" theme — the app as a ruled account book instead of a card
+   table: a navy cloth cover, pale ruled-paper cards, a brass/stamp-red
+   accent pair, and Courier Prime numerals wherever a column of digits
+   needs to line up. Token NAMES are unchanged from the old felt/wood
+   theme on purpose (--felt/--wood/etc. still mean "the dark cover chrome"
+   and --gold/--red-suit still mean "the two accent colors") — only the
+   values moved, so no component below needed touching. */
 :root {
-  --felt: #1f5c45;
-  --felt-dark: #163f30;
-  --wood: #6b4226;
-  --wood-dark: #4a2d18;
-  --cream: #fdf6e8;
-  --card-white: #fffdf7;
-  --gold: #d9a441;
-  --red-suit: #b3352c;
-  --ink: #2b2117;
-  --muted: #6f6455;
-  --radius: 16px;
-  --shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  --felt: #1b2534;
+  --felt-dark: #10161f;
+  --wood: #223247;
+  --wood-dark: #16202c;
+  --cream: #eef1f6;
+  --card-white: #fdfeff;
+  --gold: #ab8a3f;
+  --red-suit: #a12e2e;
+  --ink: #1f2a3a;
+  --muted: #626e7d;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(15, 23, 33, 0.16), 0 1px 0 rgba(15, 23, 33, 0.05);
 
   /* Semantic "text on a card-surface" colors, kept separate from --ink and
      --wood-dark above: those two also color things that must NOT flip in
      dark mode (black-suit icons, primary-button text, the nav bar), so
      card-surface text gets its own variables instead of reusing them. */
   --text-on-surface: var(--ink);
-  --heading-on-surface: var(--wood-dark);
-  --divider: #eee2c8;
-  --border-soft: #e3d5b8;
+  --heading-on-surface: #2c3e52;
+  --divider: #d7dfe8;
+  --border-soft: #c3ceda;
 
-  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  --font-display: "Bitter", Georgia, "Iowan Old Style", serif;
+  --font-body: "Bitter", Georgia, "Iowan Old Style", serif;
+  --font-mono: "Courier Prime", "Courier New", monospace;
+
+  font-family: var(--font-body);
   color-scheme: light;
 }
 
 /* Dark mode — only card/game-tile surfaces and their text actually flip;
-   the felt table background, nav bar, and gold/cream accents already read
+   the cover background, nav bar, and brass/paper accents already read
    fine at night and stay the same in both themes. Toggled via a "dark"
    class on <html> (src/data/preferences.js), not prefers-color-scheme,
    since it's an explicit in-app setting. */
 html.dark {
-  --card-white: #2a2015;
-  --text-on-surface: #f0e6d2;
-  --heading-on-surface: #e0b25a;
-  --muted: #b7a687;
-  --divider: #4a3c28;
-  --border-soft: #5a4a32;
-  --red-suit: #e2695c;
+  --card-white: #1c2531;
+  --text-on-surface: #e7ecf2;
+  --heading-on-surface: #c9ab68;
+  --muted: #90a0b2;
+  --divider: #33404f;
+  --border-soft: #435063;
+  --red-suit: #d1615a;
   color-scheme: dark;
 }
 
@@ -70,7 +81,7 @@ body,
 
 body {
   margin: 0;
-  background: radial-gradient(ellipse at top, var(--felt) 0%, var(--felt-dark) 70%);
+  background: linear-gradient(180deg, var(--felt) 0%, var(--felt-dark) 100%);
   color: var(--text-on-surface);
   min-height: 100vh;
 }
@@ -115,6 +126,8 @@ h2,
 h3 {
   margin-top: 0;
   color: var(--heading-on-surface);
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 .page-title {
@@ -124,6 +137,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .suit {
@@ -169,7 +184,7 @@ h3 {
     background: var(--wood-dark);
   }
   .btn.primary:hover {
-    background: #c4932f;
+    background: #8f712f;
   }
 }
 .btn.danger {
@@ -180,7 +195,7 @@ h3 {
   background: transparent;
   color: var(--cream);
   box-shadow: none;
-  border: 2px solid rgba(253, 246, 232, 0.4);
+  border: 2px solid rgba(238, 241, 246, 0.4);
 }
 .btn.small {
   padding: 8px 14px;
@@ -248,7 +263,7 @@ h3 {
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
 }
 .nav-bar a {
-  color: rgba(253, 246, 232, 0.65);
+  color: rgba(238, 241, 246, 0.65);
   text-decoration: none;
   font-size: 13px;
   display: flex;
@@ -260,7 +275,7 @@ h3 {
 }
 .nav-bar a.active {
   color: var(--cream);
-  background: rgba(217, 164, 65, 0.2);
+  background: rgba(171, 138, 63, 0.25);
 }
 .nav-bar .nav-icon {
   font-size: 20px;
@@ -331,6 +346,10 @@ table.score-table th {
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+table.score-table td {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
 table.score-table td.leader {
   font-weight: 700;
   color: var(--red-suit);
@@ -343,11 +362,11 @@ table.score-table td.leader {
 }
 
 .warning-banner {
-  background: #fbeadb;
+  background: #f2ead9;
   border: 2px solid var(--gold);
   border-radius: 12px;
   padding: 12px 14px;
-  color: #6b4226;
+  color: var(--wood);
   font-weight: 600;
   margin-bottom: 14px;
 }

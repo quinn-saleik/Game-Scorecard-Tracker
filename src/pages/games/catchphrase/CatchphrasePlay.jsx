@@ -128,7 +128,7 @@ export default function CatchphrasePlay() {
           <h2>🏆 {winningTeamPlayers.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last point before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last point
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -152,7 +152,7 @@ export default function CatchphrasePlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={undoLastRound}
                 disabled={saving}
               >

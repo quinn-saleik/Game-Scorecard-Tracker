@@ -156,7 +156,7 @@ export default function OhHeckPlay() {
           </table>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
               ← Undo last round
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -191,7 +191,7 @@ export default function OhHeckPlay() {
 
   const undoButton = rounds.length > 0 && (
     <div className="btn-row" style={{ marginBottom: 12 }}>
-      <button className="btn ghost" style={{ color: "#fdf6e8" }} onClick={undoLastRound} disabled={saving}>
+      <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={undoLastRound} disabled={saving}>
         ← Undo last round
       </button>
     </div>
@@ -233,7 +233,7 @@ export default function OhHeckPlay() {
           <h2>Bidding — <PlayerDot color={currentBidder.color} avatar={currentBidder.avatar} photo={currentBidder.photo} />{shortName(currentBidder)}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
           <p>Bids so far this round: {bidsSoFar} of {cardsThisRound} cards</p>
           {forbidden !== null && (
-            <p style={{ color: "#b3352c" }}>
+            <p style={{ color: "var(--red-suit)" }}>
               Can't bid {forbidden} — that would make the total exactly {cardsThisRound}.
             </p>
           )}
@@ -254,7 +254,7 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => setBiddingIdx((i) => i - 1)}
               >
                 ← Back
@@ -296,7 +296,7 @@ export default function OhHeckPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={() => { setPhase("bidding"); setBiddingIdx(0); }}
             >
               ← Edit bids
@@ -368,7 +368,7 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => setScoringIdx((i) => i - 1)}
               >
                 ← Edit last score
@@ -421,7 +421,7 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => setScoringIdx((i) => i - 1)}
               >
                 ← Back

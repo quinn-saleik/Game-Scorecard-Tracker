@@ -132,7 +132,7 @@ export default function OtherPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={() => setFinishing(false)}
               disabled={saving}
             >
@@ -201,7 +201,7 @@ export default function OtherPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={undoLastRound}
                 disabled={saving}
               >

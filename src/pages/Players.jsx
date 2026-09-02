@@ -165,7 +165,7 @@ export default function Players() {
           <p style={{ margin: 0 }}>Sample default players are still on the roster.</p>
           <button
             className="btn ghost small"
-            style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", marginTop: 8 }}
+            style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)", marginTop: 8 }}
             onClick={handleClearDefaults}
             disabled={clearingDefaults}
           >
@@ -378,7 +378,7 @@ export default function Players() {
                                     alignItems: "center",
                                     gap: 4,
                                     background: "none",
-                                    border: p.color === c.hex ? "2px solid #6b4226" : "2px solid transparent",
+                                    border: p.color === c.hex ? "2px solid var(--wood)" : "2px solid transparent",
                                     borderRadius: 10,
                                     padding: 6,
                                     cursor: "pointer",
@@ -402,7 +402,7 @@ export default function Players() {
                             <button
                               type="button"
                               className="btn ghost small"
-                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", alignSelf: "center" }}
+                              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)", alignSelf: "center" }}
                               onClick={() => pickColor(p.id, null)}
                               disabled={busy}
                             >
@@ -424,7 +424,7 @@ export default function Players() {
                                 disabled={busy}
                                 style={{
                                   background: "none",
-                                  border: p.avatar === emoji ? "2px solid #6b4226" : "2px solid transparent",
+                                  border: p.avatar === emoji ? "2px solid var(--wood)" : "2px solid transparent",
                                   borderRadius: 10,
                                   padding: 6,
                                   fontSize: 20,
@@ -437,7 +437,7 @@ export default function Players() {
                             <button
                               type="button"
                               className="btn ghost small"
-                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226", alignSelf: "center" }}
+                              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)", alignSelf: "center" }}
                               onClick={() => pickAvatar(p.id, null)}
                               disabled={busy}
                             >
@@ -478,7 +478,7 @@ export default function Players() {
                             <button
                               type="button"
                               className="btn ghost small"
-                              style={{ color: "var(--text-on-surface)", border: "2px solid #6b4226" }}
+                              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                               onClick={() => setNameEditFor(null)}
                               disabled={busy}
                             >
