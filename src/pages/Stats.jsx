@@ -11,6 +11,7 @@ import {
 import { computePlayerStats, computeGameStats, gameGroupLabel } from "../data/stats";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
+import { shortName } from "../data/playerNames";
 
 export default function Stats() {
   const [players, setPlayers] = useState([]);
@@ -121,7 +122,7 @@ export default function Stats() {
                       <tr key={s.id}>
                         <td>{formatLastPlayed(s.completedAt?.toDate?.() || null)}</td>
                         <td>{gameGroupLabel(s)}</td>
-                        <td>{winners.map((p) => p.name).join(" & ") || "—"}</td>
+                        <td>{winners.map((p) => shortName(p)).join(" & ") || "—"}</td>
                         <td>
                           <span className="btn-row">
                             <button
@@ -172,7 +173,7 @@ export default function Stats() {
                     <tr key={p.playerId}>
                       <td>
                         <Link to={`/players/${p.playerId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
-                          <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                          <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                         </Link>
                       </td>
                       <td>{p.gamesPlayed}</td>
@@ -213,7 +214,7 @@ export default function Stats() {
                         <tr key={s.id}>
                           <td>{formatLastPlayed(s.completedAt?.toDate?.() || null)}</td>
                           <td>{gameGroupLabel(s)}</td>
-                          <td>{winners.map((p) => p.name).join(" & ") || "—"}</td>
+                          <td>{winners.map((p) => shortName(p)).join(" & ") || "—"}</td>
                           <td>
                             <button
                               className="btn danger small"

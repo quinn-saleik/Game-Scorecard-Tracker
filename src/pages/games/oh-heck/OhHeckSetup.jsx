@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import GameInstructions from "../../../components/GameInstructions";
 
 const MIN_PLAYERS = 3;
@@ -104,7 +105,7 @@ export default function OhHeckSetup() {
                 >
                   {seatNum > -1 ? `${seatNum + 1}. ` : ""}
                   <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                  {p.name}
+                  {shortName(p)}
                 </span>
               );
             })}

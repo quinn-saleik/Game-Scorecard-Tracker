@@ -5,6 +5,7 @@ import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import GameInstructions from "../../../components/GameInstructions";
 
 export default function Euchre15Setup() {
@@ -113,7 +114,7 @@ export default function Euchre15Setup() {
                 >
                   {onA ? "① " : onB ? "② " : ""}
                   <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                  {p.name}
+                  {shortName(p)}
                 </span>
               );
             })}
@@ -128,7 +129,7 @@ export default function Euchre15Setup() {
             ? teamAPlayers.map((p, i) => (
                 <span key={p.id}>
                   {i > 0 && " & "}
-                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                 </span>
               ))
             : "—"}
@@ -139,7 +140,7 @@ export default function Euchre15Setup() {
             ? teamBPlayers.map((p, i) => (
                 <span key={p.id}>
                   {i > 0 && " & "}
-                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                 </span>
               ))
             : "—"}

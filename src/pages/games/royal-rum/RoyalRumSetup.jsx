@@ -4,6 +4,7 @@ import { subscribeToPlayers } from "../../../data/players";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
+import { shortName } from "../../../data/playerNames";
 import GameInstructions from "../../../components/GameInstructions";
 
 export default function RoyalRumSetup() {
@@ -78,7 +79,7 @@ export default function RoyalRumSetup() {
                 onClick={() => toggle(p.id)}
               >
                 <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                {p.name}
+                {shortName(p)}
               </span>
             ))}
           </div>

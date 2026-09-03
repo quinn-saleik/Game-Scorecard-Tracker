@@ -53,6 +53,8 @@ export function computePlayerStats(players, completedSessions) {
       {
         playerId: p.id,
         name: p.name,
+        firstName: p.firstName || null,
+        lastName: p.lastName || null,
         color: p.color || null,
         avatar: p.avatar || null,
         photo: p.photo || null,
@@ -98,6 +100,8 @@ export function computePlayerStats(players, completedSessions) {
       return {
         playerId: e.playerId,
         name: e.name,
+        firstName: e.firstName,
+        lastName: e.lastName,
         color: e.color,
         avatar: e.avatar,
         photo: e.photo,

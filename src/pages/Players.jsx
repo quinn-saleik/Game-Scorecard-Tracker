@@ -18,6 +18,7 @@ import { PLAYER_AVATARS } from "../data/playerAvatars";
 import { fileToPlayerPhoto } from "../data/photo";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
+import { shortName } from "../data/playerNames";
 
 export default function Players() {
   const [players, setPlayers] = useState([]);
@@ -314,8 +315,8 @@ export default function Players() {
                         )}
                       </td>
                       <td>
-                        <Link to={`/players/${p.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
-                          {p.name}
+                        <Link to={`/players/${p.id}`} title={p.name} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                          {shortName(p)}
                         </Link>
                         <button
                           type="button"
@@ -506,8 +507,8 @@ export default function Players() {
           <div className="chip-row">
             {inactive.map((p) => (
               <span key={p.id} className="player-chip inactive" style={{ opacity: 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <span onClick={() => toggleActive(p)} title="Tap to restore" style={{ cursor: "pointer" }}>
-                  {p.name} ↺
+                <span onClick={() => toggleActive(p)} title={`Tap to restore ${p.name}`} style={{ cursor: "pointer" }}>
+                  {shortName(p)} ↺
                 </span>
                 <span onClick={() => handleDelete(p)} title="Delete permanently" style={{ cursor: "pointer" }}>
                   🗑

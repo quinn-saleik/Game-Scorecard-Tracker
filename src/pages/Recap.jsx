@@ -7,6 +7,7 @@ import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computePlayerDetail } from "../data/stats";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "../components/PlayerDot";
+import { shortName } from "../data/playerNames";
 
 function buildCallouts(winner, session, players, completedSessions) {
   const gameLabel = session.config?.customName || session.gameLabel;
@@ -94,14 +95,14 @@ export default function Recap() {
       </h1>
 
       <div className="card-surface">
-        <h2>{winners.map((p) => p.name).join(" & ")} {winners.length > 1 ? "win" : "wins"}!</h2>
+        <h2>{winners.map((p) => shortName(p)).join(" & ")} {winners.length > 1 ? "win" : "wins"}!</h2>
         {winners.map((w) => {
           const callouts = ready ? buildCallouts(w, session, players, completedSessions) : [];
           return (
             <div key={w.id} style={{ marginBottom: 10 }}>
               <p style={{ fontWeight: 700 }}>
                 <PlayerDot color={w.color} avatar={w.avatar} photo={w.photo} />
-                {w.name}
+                {shortName(w)}
               </p>
               {callouts.map((c, i) => (
                 <p key={i} style={{ margin: "2px 0 2px 20px", color: "var(--muted)" }}>{c}</p>
@@ -121,7 +122,7 @@ export default function Recap() {
               .sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0))
               .map((p) => (
                 <tr key={p.id}>
-                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}</td>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
                   <td className={session.winnerIds.includes(p.id) ? "leader" : ""}>{totals[p.id] ?? 0}</td>
                 </tr>
               ))}

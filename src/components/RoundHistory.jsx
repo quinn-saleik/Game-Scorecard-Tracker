@@ -6,7 +6,7 @@ import { shortName } from "../data/playerNames";
 // A list of every round/hand played so far with a delete button on each —
 // not just the most recent one. Deleting recomputes totals from the
 // remaining rounds (see data/rounds.js).
-export default function RoundHistory({ session, rounds, gameType, unitLabel = "Round", onDelete, busy }) {
+export default function RoundHistory({ session, rounds, gameType, unitLabel = "Round", onDelete, busy, showBids }) {
   const [confirmIdx, setConfirmIdx] = useState(null);
 
   if (!rounds || rounds.length === 0) return null;
@@ -29,10 +29,14 @@ export default function RoundHistory({ session, rounds, gameType, unitLabel = "R
               <td>
                 {session.players.map((p) => {
                   const d = getRoundDelta(gameType, round, p.id, session);
+                  const bid = showBids ? round.bids?.[p.id] : undefined;
                   return (
                     <span key={p.id} style={{ marginRight: 10, whiteSpace: "nowrap" }}>
                       <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                       {shortName(p)} {d >= 0 ? `+${d}` : d}
+                      {bid != null && (
+                        <span style={{ color: "var(--muted)" }}> (bid {bid})</span>
+                      )}
                     </span>
                   );
                 })}

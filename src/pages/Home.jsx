@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import OngoingGames from "../components/OngoingGames";
+import { subscribeToCustomGames } from "../data/customGames";
 
 const GAMES = [
   { icon: "🂡", label: "Oh Heck!", path: "/oh-heck/setup", soon: false },
@@ -10,15 +12,14 @@ const GAMES = [
   { icon: "🂱", label: "31", path: "/thirty-one/setup", soon: false },
   { icon: "♥", label: "Hearts", path: "/hearts/setup", soon: false },
   { icon: "♠", label: "Spades", path: "/spades/setup", soon: false },
-  { icon: "📍", label: "Cribbage", path: "/cribbage/setup", soon: false },
-  { icon: "🃞", label: "Canasta", path: "/canasta/setup", soon: false },
-  { icon: "🂮", label: "Pinochle", path: "/pinochle/setup", soon: false },
   { icon: "⛳", label: "Golf", path: "/golf/setup", soon: false },
-  { icon: "🎴", label: "Gin Rummy", path: "/gin-rummy/setup", soon: false },
-  { icon: "🃏", label: "Other", path: "/other/setup", soon: false },
 ];
 
 export default function Home() {
+  const [customGames, setCustomGames] = useState([]);
+
+  useEffect(() => subscribeToCustomGames(setCustomGames), []);
+
   return (
     <div>
       <h1 className="page-title">
@@ -40,6 +41,19 @@ export default function Home() {
             </Link>
           )
         )}
+        {/* Games someone made up through "Other" — saved so everyone sees
+            the same tile with the same rules, instead of re-describing the
+            game from scratch every time it comes up. */}
+        {customGames.map((g) => (
+          <Link className="game-tile" to={`/other/setup/${g.id}`} key={`custom-${g.id}`}>
+            <span className="icon">{g.icon || "🃏"}</span>
+            <span>{g.name}</span>
+          </Link>
+        ))}
+        <Link className="game-tile" to="/other/setup" key="other-new">
+          <span className="icon">➕</span>
+          <span>New game</span>
+        </Link>
       </div>
     </div>
   );

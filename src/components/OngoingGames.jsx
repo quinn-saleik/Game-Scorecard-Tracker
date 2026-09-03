@@ -4,10 +4,13 @@ import { subscribeToInProgressSessions, deleteSession } from "../data/gameSessio
 import { GAME_LABELS } from "../data/stats";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "./PlayerDot";
+import { shortName } from "../data/playerNames";
 
-// Euchre 3-player, Royal Rum, Hearts, and Golf count DOWN (lower is
-// better); everything else — including "31" lives, where more is safer —
-// counts up.
+// Euchre 3-player, Royal Rum, and Hearts count DOWN (lower is better);
+// Golf and "Other" games decide their own direction per session (Golf is
+// always down; "Other" reads config.scoreDirection — see the sortAsc
+// calculation below); everything else — including "31" lives, where more
+// is safer — counts up.
 const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum", "hearts", "golf"]);
 
 const UNIT_LABEL = {
@@ -23,18 +26,21 @@ const UNIT_LABEL = {
   "royal-rum": "Hand",
   other: "Round",
   hearts: "Hand",
-  cribbage: "Hand",
-  canasta: "Hand",
-  pinochle: "Hand",
   golf: "Hole",
   spades: "Hand",
-  "gin-rummy": "Hand",
 };
+
+function slug(s) {
+  return (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+}
 
 // Shows any in-progress game(s) so nothing gets lost when you navigate away
 // mid-game. Pass `gameType` to scope it to one game (shown on that game's
-// setup screen); omit it to show every ongoing game (shown on Home).
-export default function OngoingGames({ gameType }) {
+// setup screen); for "Other", also pass `customName` to scope it to that
+// one custom game specifically — otherwise every in-progress "Other" game
+// (Poker, Yahtzee, whatever else) would show up on each other's screen.
+// Omit both to show every ongoing game (shown on Home).
+export default function OngoingGames({ gameType, customName }) {
   const [sessions, setSessions] = useState([]);
   const [busyId, setBusyId] = useState(null);
   const navigate = useNavigate();
@@ -43,7 +49,8 @@ export default function OngoingGames({ gameType }) {
 
   const filtered = sessions
     .filter((s) => !gameType || s.gameType === gameType)
-    .filter((s) => PLAY_ROUTE[s.gameType]); // skip game types without a play route (e.g. Other, once added, if unsupported)
+    .filter((s) => !customName || slug(s.config?.customName) === slug(customName))
+    .filter((s) => PLAY_ROUTE[s.gameType]); // skip game types without a play route (e.g. a removed game's leftover session)
 
   if (filtered.length === 0) return null;
 
@@ -70,7 +77,9 @@ export default function OngoingGames({ gameType }) {
         const totals = session.totals || {};
         const label = labelFor(session);
         const unit = UNIT_LABEL[session.gameType] || "Round";
-        const sortAsc = LOWER_IS_BETTER.has(session.gameType);
+        const sortAsc =
+          LOWER_IS_BETTER.has(session.gameType) ||
+          (session.gameType === "other" && session.config?.scoreDirection === "down");
         const ranked = session.players
           .slice()
           .sort((a, b) =>
@@ -87,7 +96,7 @@ export default function OngoingGames({ gameType }) {
               {ranked.map((p, i) => (
                 <span key={p.id}>
                   {i > 0 && "  •  "}
-                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{p.name}: {totals[p.id] ?? 0}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}: {totals[p.id] ?? 0}
                 </span>
               ))}
             </p>

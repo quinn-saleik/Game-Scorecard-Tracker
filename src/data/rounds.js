@@ -10,7 +10,6 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "euchre-2p":
     case "other":
     case "hearts":
-    case "cribbage":
     case "golf":
       return round.scores?.[playerId] || 0;
     case "oh-heck":
@@ -21,8 +20,6 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "euchre-traditional":
     case "euchre-15card":
     case "catchphrase":
-    case "canasta":
-    case "pinochle":
     case "spades": {
       const teamA = session?.config?.teamA || [];
       const teamB = session?.config?.teamB || [];
@@ -34,8 +31,6 @@ export function getRoundDelta(gameType, round, playerId, session) {
       return round.lostLifeIds?.includes(playerId) ? -1 : 0;
     case "royal-rum":
       return round.points?.[playerId] || 0;
-    case "gin-rummy":
-      return round.winnerId === playerId ? round.pointsAwarded || 0 : 0;
     default:
       return 0;
   }
@@ -53,19 +48,24 @@ export function getInitialTotals(gameType, session) {
     const start = session.config?.startingLives ?? 3;
     return Object.fromEntries(session.players.map((p) => [p.id, start]));
   }
+  if (gameType === "other") {
+    const start = session.config?.startingScore ?? 0;
+    return Object.fromEntries(session.players.map((p) => [p.id, start]));
+  }
   return Object.fromEntries(session.players.map((p) => [p.id, 0]));
 }
 
-// Note: Hearts, Cribbage, and Golf all use the same free-form
-// per-player round.scores shape as Flip7/Other — Hearts and Golf are just
-// lower-is-better (see OngoingGames' LOWER_IS_BETTER set and each Play
-// screen's own end-condition) and Golf ends after a fixed number of holes
-// rather than a score threshold.
+// Note: Hearts and Golf both use the same free-form per-player
+// round.scores shape as Flip7/Other — they're just lower-is-better (see
+// OngoingGames' LOWER_IS_BETTER set and each Play screen's own
+// end-condition) and Golf ends after a fixed number of holes rather than
+// a score threshold. "Other" games configure their own direction/target
+// per game instead (see data/customGames.js).
 //
-// Canasta, Pinochle, and Spades reuse the teamAPoints/teamBPoints shape —
-// each Play screen precomputes that hand's net point swing (including
-// bid/set math, melds, or nil bonuses) before saving, same as Euchre
-// (traditional/15-card) already does with tricks-vs-bid.
+// Spades reuses the teamAPoints/teamBPoints shape — each Play screen
+// precomputes that hand's net point swing (including bid/set math or nil
+// bonuses) before saving, same as Euchre (traditional/15-card) already
+// does with tricks-vs-bid.
 //
 // Royal Rum's per-player completed-goal checklist (6-12) isn't a
 // running numeric total, so it's derived straight from the rounds array in

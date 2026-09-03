@@ -17,6 +17,7 @@ export default function OtherPlay() {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [inputs, setInputs] = useState({});
+  const [bidInputs, setBidInputs] = useState({});
   const [finishing, setFinishing] = useState(false);
   const [selectedWinners, setSelectedWinners] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -28,6 +29,10 @@ export default function OtherPlay() {
   }
 
   const gameName = session.config?.customName || session.gameLabel || "Other";
+  const icon = session.config?.icon || "🃏";
+  const direction = session.config?.scoreDirection === "down" ? "down" : "up";
+  const targetScore = typeof session.config?.targetScore === "number" ? session.config.targetScore : null;
+  const bidding = Boolean(session.config?.bidding);
 
   if (session.status === "completed") {
     const winners = session.players.filter((p) => session.winnerIds.includes(p.id));
@@ -42,22 +47,44 @@ export default function OtherPlay() {
 
   const totals = session.totals || {};
   const rounds = session.rounds || [];
-  const leaderTotal = Math.max(0, ...Object.values(totals));
+
+  // "Leader" highlighting respects this game's configured direction —
+  // lowest total wins for a count-down game, highest for count-up — and
+  // stays off entirely while everyone's still tied (usually just the
+  // start of the game), rather than the old "0 doesn't count" special case
+  // that only made sense for count-up games.
+  const totalValues = session.players.map((p) => totals[p.id] || 0);
+  const allTied = totalValues.every((v) => v === totalValues[0]);
+  const leaderTotal = allTied ? null : direction === "down" ? Math.min(...totalValues) : Math.max(...totalValues);
+
+  // Players who've crossed the configured winning score, if any — purely
+  // informational (see the banner below); nothing here ends the game
+  // automatically.
+  const reachedPlayers =
+    targetScore == null
+      ? []
+      : session.players.filter((p) =>
+          direction === "down" ? (totals[p.id] || 0) <= targetScore : (totals[p.id] || 0) >= targetScore
+        );
 
   async function submitRound(e) {
     e.preventDefault();
     setSaving(true);
     try {
       const roundScores = {};
+      const roundBids = {};
       const newTotals = { ...totals };
       for (const p of session.players) {
         const val = Number(inputs[p.id]) || 0;
         roundScores[p.id] = val;
         newTotals[p.id] = (newTotals[p.id] || 0) + val;
+        if (bidding) roundBids[p.id] = Number(bidInputs[p.id]) || 0;
       }
       const newRound = { roundNumber: rounds.length + 1, scores: roundScores };
+      if (bidding) newRound.bids = roundBids;
       await updateSession(sessionId, { rounds: [...rounds, newRound], totals: newTotals });
       setInputs({});
+      setBidInputs({});
     } finally {
       setSaving(false);
     }
@@ -89,9 +116,11 @@ export default function OtherPlay() {
   }
 
   function openFinish() {
-    // Default-check whoever's currently leading — still fully adjustable,
-    // since for some "Other" games the highest number doesn't mean winner.
-    setSelectedWinners(session.players.filter((p) => (totals[p.id] || 0) === leaderTotal && leaderTotal > 0).map((p) => p.id));
+    // Default-check whoever hit the winning score, or otherwise whoever's
+    // currently leading — still fully adjustable, since for some "Other"
+    // games the number on the board doesn't decide the winner.
+    const preselect = reachedPlayers.length > 0 ? reachedPlayers : session.players.filter((p) => (totals[p.id] || 0) === leaderTotal && leaderTotal != null);
+    setSelectedWinners(preselect.map((p) => p.id));
     setFinishing(true);
   }
 
@@ -112,7 +141,7 @@ export default function OtherPlay() {
   if (finishing) {
     return (
       <div>
-        <h1 className="page-title"><span className="suit black">🃏</span> {gameName} — Finish game</h1>
+        <h1 className="page-title"><span className="suit black">{icon}</span> {gameName} — Finish game</h1>
         <div className="card-surface">
           <h2>Who won?</h2>
           <p style={{ color: "var(--muted)", fontSize: 14 }}>Tap to select — pick as many as apply (ties, teams, etc.), scores don't have to decide it.</p>
@@ -152,17 +181,32 @@ export default function OtherPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">🃏</span> {gameName} — Round {rounds.length + 1}</h1>
+      <h1 className="page-title"><span className="suit black">{icon}</span> {gameName} — Round {rounds.length + 1}</h1>
+
+      {reachedPlayers.length > 0 && (
+        <div className="warning-banner">
+          🎯 {reachedPlayers.map((p) => shortName(p)).join(" & ")} reached the winning score
+          ({targetScore}).{" "}
+          <button
+            type="button"
+            className="btn primary small"
+            style={{ marginLeft: 8 }}
+            onClick={openFinish}
+          >
+            Finish game
+          </button>
+        </div>
+      )}
 
       <div className="card-surface">
-        <h2>Scores</h2>
+        <h2>Scores{direction === "down" ? " (lowest wins)" : ""}</h2>
         <table className="score-table">
           <thead><tr><th>Player</th><th>Total</th></tr></thead>
           <tbody>
             {session.players.map((p) => (
               <tr key={p.id}>
                 <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
-                <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
+                <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal != null ? "leader" : ""}>
                   {totals[p.id] || 0}
                 </td>
               </tr>
@@ -189,9 +233,20 @@ export default function OtherPlay() {
                 <VoiceInputButton
                   onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
                 />
+                {bidding && (
+                  <input
+                    aria-label={`${p.name} bid`}
+                    className="input"
+                    type="number"
+                    placeholder="Bid"
+                    style={{ maxWidth: 90 }}
+                    value={bidInputs[p.id] ?? ""}
+                    onChange={(e) => setBidInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                  />
+                )}
               </div>
               <ScorePresets
-                values={[0]}
+                values={direction === "down" ? [0, -5, -10] : [0, 5, 10]}
                 onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
               />
             </div>
@@ -224,6 +279,7 @@ export default function OtherPlay() {
         unitLabel="Round"
         onDelete={deleteRound}
         busy={saving}
+        showBids={bidding}
       />
     </div>
   );

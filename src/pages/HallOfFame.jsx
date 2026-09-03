@@ -5,6 +5,7 @@ import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computeHallOfFame } from "../data/stats";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
+import { shortName } from "../data/playerNames";
 
 function Trophy({ icon, title, empty, children }) {
   return (
@@ -68,7 +69,7 @@ export default function HallOfFame() {
               <p style={{ fontSize: 15 }}>
                 <Link to={`/players/${biggestScore.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                   <PlayerDot color={biggestScore.player.color} avatar={biggestScore.player.avatar} photo={biggestScore.player.photo} />
-                  {biggestScore.player.name}
+                  {shortName(biggestScore.player)}
                 </Link>{" "}
                 — <strong>{biggestScore.score}</strong> in {biggestScore.gameLabel}
                 {biggestScore.completedAt ? ` (${formatLastPlayed(biggestScore.completedAt)})` : ""}
@@ -81,7 +82,7 @@ export default function HallOfFame() {
               <p style={{ fontSize: 15 }}>
                 <Link to={`/players/${mostGamesPlayed.playerId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                   <PlayerDot color={mostGamesPlayed.color} avatar={mostGamesPlayed.avatar} photo={mostGamesPlayed.photo} />
-                  {mostGamesPlayed.name}
+                  {shortName(mostGamesPlayed)}
                 </Link>{" "}
                 — <strong>{mostGamesPlayed.gamesPlayed}</strong> games
               </p>
@@ -93,7 +94,7 @@ export default function HallOfFame() {
               <p style={{ fontSize: 15 }}>
                 <Link to={`/players/${mostWins.playerId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                   <PlayerDot color={mostWins.color} avatar={mostWins.avatar} photo={mostWins.photo} />
-                  {mostWins.name}
+                  {shortName(mostWins)}
                 </Link>{" "}
                 — <strong>{mostWins.wins}</strong> wins
               </p>
@@ -105,7 +106,7 @@ export default function HallOfFame() {
               <p style={{ fontSize: 15 }}>
                 <Link to={`/players/${longestStreakEver.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
                   <PlayerDot color={longestStreakEver.player.color} avatar={longestStreakEver.player.avatar} photo={longestStreakEver.player.photo} />
-                  {longestStreakEver.player.name}
+                  {shortName(longestStreakEver.player)}
                 </Link>{" "}
                 — <strong>{longestStreakEver.streak}</strong> games in a row
               </p>

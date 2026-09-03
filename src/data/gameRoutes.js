@@ -14,10 +14,6 @@ export const PLAY_ROUTE = {
   "royal-rum": (id) => `/royal-rum/play/${id}`,
   other: (id) => `/other/play/${id}`,
   hearts: (id) => `/hearts/play/${id}`,
-  cribbage: (id) => `/cribbage/play/${id}`,
-  canasta: (id) => `/canasta/play/${id}`,
-  pinochle: (id) => `/pinochle/play/${id}`,
   golf: (id) => `/golf/play/${id}`,
   spades: (id) => `/spades/play/${id}`,
-  "gin-rummy": (id) => `/gin-rummy/play/${id}`,
 };
