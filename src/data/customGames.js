@@ -33,6 +33,7 @@ export const DEFAULT_GAME_CONFIG = {
   startingScore: 0,
   targetScore: null, // null = no threshold — finish manually whenever
   bidding: false, // track an optional per-round bid alongside the score
+  houseRules: "", // free-text notes for anything the structured options don't cover
 };
 
 // Create a brand-new custom game or update an existing one in place — the

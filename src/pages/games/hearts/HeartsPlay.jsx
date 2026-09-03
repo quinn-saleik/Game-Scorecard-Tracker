@@ -10,6 +10,7 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 export default function HeartsPlay() {
@@ -50,6 +51,16 @@ export default function HeartsPlay() {
   const standings = session.players
     .slice()
     .sort((a, b) => (totals[a.id] || 0) - (totals[b.id] || 0));
+
+  const tvRows = standings.map((p) => ({
+    key: p.id,
+    label: p.name,
+    score: totals[p.id] || 0,
+    isLeader: (totals[p.id] || 0) === lowestTotal,
+    color: p.color,
+    avatar: p.avatar,
+    photo: p.photo,
+  }));
 
   function moonShot(shooterId) {
     setInputs((prev) => {
@@ -126,8 +137,9 @@ export default function HeartsPlay() {
 
   return (
     <div>
-      <h1 className="page-title">
-        <span className="suit red">♥</span> Hearts — Hand {rounds.length + 1}
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit red">♥</span> Hearts — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Hearts" icon="♥" statusLine={`Hand ${rounds.length + 1} · lowest wins, ends at ${targetScore}`} rows={tvRows} />
       </h1>
 
       <div className="card-surface">

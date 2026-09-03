@@ -10,6 +10,8 @@ import {
   setPlayerPhoto,
   updatePlayerName,
   subscribeToPlayers,
+  purgeStaleRemovedPlayers,
+  removedPlayerTimeLeftMs,
 } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computePlayerStats } from "../data/stats";
@@ -19,6 +21,12 @@ import { fileToPlayerPhoto } from "../data/photo";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
+
+// "~2h" / "<1h" — coarse on purpose, this is just a heads-up, not a countdown.
+function formatTimeLeft(ms) {
+  const hours = ms / (60 * 60 * 1000);
+  return hours < 1 ? "<1h" : `~${Math.ceil(hours)}h`;
+}
 
 export default function Players() {
   const [players, setPlayers] = useState([]);
@@ -38,6 +46,10 @@ export default function Players() {
     const unsubPlayers = subscribeToPlayers((list) => {
       setPlayers(list);
       setLoading(false);
+      // Opportunistic, fire-and-forget: hard-deletes anyone past their
+      // removal grace period, back-fills deactivatedAt for legacy removed
+      // players. Nothing else in this app runs on a schedule to do this.
+      purgeStaleRemovedPlayers(list).catch((err) => console.error("purgeStaleRemovedPlayers failed:", err));
     });
     const unsubSessions = subscribeToCompletedSessions((list) => setSessions(list));
     return () => {
@@ -150,7 +162,10 @@ export default function Players() {
   }
 
   const active = players.filter((p) => p.active);
-  const inactive = players.filter((p) => !p.active);
+  // Client-side mirror of purgeStaleRemovedPlayers' expiry check, so a
+  // player past their grace period never flashes on screen even for the
+  // moment before the fire-and-forget delete above lands.
+  const inactive = players.filter((p) => !p.active && removedPlayerTimeLeftMs(p) > 0);
   const stats = computePlayerStats(active, sessions);
   const statsById = new Map(stats.map((s) => [s.playerId, s]));
   const hasDefaults = players.some((p) => p.isDefault);
@@ -445,6 +460,31 @@ export default function Players() {
                               No avatar
                             </button>
                           </div>
+                          <div style={{ padding: "0 4px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+                            <input
+                              type="text"
+                              className="input"
+                              style={{ maxWidth: 90 }}
+                              placeholder="Any emoji…"
+                              maxLength={8}
+                              disabled={busy}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                                  pickAvatar(p.id, e.currentTarget.value.trim());
+                                  e.currentTarget.value = "";
+                                }
+                              }}
+                              onBlur={(e) => {
+                                if (e.currentTarget.value.trim()) {
+                                  pickAvatar(p.id, e.currentTarget.value.trim());
+                                  e.currentTarget.value = "";
+                                }
+                              }}
+                            />
+                            <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                              Tap in, then use your keyboard's emoji button (🌐 / 😀) for any emoji — not just the picks above.
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -504,13 +544,21 @@ export default function Players() {
       {inactive.length > 0 && (
         <div className="card-surface">
           <h2>Removed players ({inactive.length})</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
+            Drops off this list on its own a few hours after removal — restore before then to
+            keep someone on the roster.
+          </p>
           <div className="chip-row">
             {inactive.map((p) => (
               <span key={p.id} className="player-chip inactive" style={{ opacity: 1, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <span onClick={() => toggleActive(p)} title={`Tap to restore ${p.name}`} style={{ cursor: "pointer" }}>
-                  {shortName(p)} ↺
+                <span
+                  onClick={() => toggleActive(p)}
+                  title={`Tap to restore ${p.name} — auto-removes in ${formatTimeLeft(removedPlayerTimeLeftMs(p))}`}
+                  style={{ cursor: "pointer" }}
+                >
+                  {shortName(p)} ↺ <span style={{ fontSize: 11, color: "var(--muted)" }}>({formatTimeLeft(removedPlayerTimeLeftMs(p))})</span>
                 </span>
-                <span onClick={() => handleDelete(p)} title="Delete permanently" style={{ cursor: "pointer" }}>
+                <span onClick={() => handleDelete(p)} title="Delete permanently now" style={{ cursor: "pointer" }}>
                   🗑
                 </span>
               </span>

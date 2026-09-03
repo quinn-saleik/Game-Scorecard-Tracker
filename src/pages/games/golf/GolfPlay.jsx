@@ -10,6 +10,7 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 export default function GolfPlay() {
@@ -53,6 +54,18 @@ export default function GolfPlay() {
   const totals = session.totals || {};
   const rounds = session.rounds || [];
   const minTotal = Math.min(...session.players.map((p) => totals[p.id] || 0));
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (totals[a.id] || 0) - (totals[b.id] || 0))
+    .map((p) => ({
+      key: p.id,
+      label: p.name,
+      score: totals[p.id] || 0,
+      isLeader: (totals[p.id] || 0) === minTotal,
+      color: p.color,
+      avatar: p.avatar,
+      photo: p.photo,
+    }));
 
   async function undoLastRound() {
     setSaving(true);
@@ -101,8 +114,9 @@ export default function GolfPlay() {
 
     return (
       <div>
-        <h1 className="page-title">
-          <span className="suit black">⛳</span> Golf — Final hole complete
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit black">⛳</span> Golf — Final hole complete</span>
+          <TvMode gameName="Golf" icon="⛳" statusLine="Final hole complete · lowest wins" rows={tvRows} />
         </h1>
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")} wins!</h2>
@@ -169,8 +183,9 @@ export default function GolfPlay() {
 
   return (
     <div>
-      <h1 className="page-title">
-        <span className="suit black">⛳</span> Golf — Hole {rounds.length + 1} of {holes}
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">⛳</span> Golf — Hole {rounds.length + 1} of {holes}</span>
+        <TvMode gameName="Golf" icon="⛳" statusLine={`Hole ${rounds.length + 1} of ${holes} · lowest wins`} rows={tvRows} />
       </h1>
 
       <div className="card-surface">

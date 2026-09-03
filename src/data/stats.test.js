@@ -121,6 +121,23 @@ describe("computeGameStats", () => {
     expect(counts.find((c) => c.label === "Flip7").count).toBe(2);
     expect(counts.find((c) => c.label === "Poker").count).toBe(1);
   });
+
+  it("gives two different custom 'Other' games distinct groupKeys, not just the shared gameType", () => {
+    // Regression test: every custom game shares gameType "other", so a UI
+    // list keyed by gameType (e.g. React's `key` prop) would collide two
+    // different custom games into a single row. groupKey is what actually
+    // distinguishes them.
+    const sessions = [
+      makeSession({ id: "s1", gameType: "other", config: { customName: "Poker" }, playerIds: ["p1"], completedAt: "2026-01-01" }),
+      makeSession({ id: "s2", gameType: "other", config: { customName: "Yahtzee" }, playerIds: ["p1"], completedAt: "2026-01-02" }),
+    ];
+    const counts = computeGameStats(sessions);
+    expect(counts).toHaveLength(2);
+    const groupKeys = counts.map((c) => c.groupKey);
+    expect(new Set(groupKeys).size).toBe(2);
+    expect(counts.find((c) => c.label === "Poker").count).toBe(1);
+    expect(counts.find((c) => c.label === "Yahtzee").count).toBe(1);
+  });
 });
 
 describe("computeAchievements", () => {

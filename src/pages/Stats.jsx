@@ -9,6 +9,7 @@ import {
   deleteSession,
 } from "../data/gameSessions";
 import { computePlayerStats, computeGameStats, gameGroupLabel } from "../data/stats";
+import { subscribeToCustomGames } from "../data/customGames";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
@@ -17,6 +18,7 @@ export default function Stats() {
   const [players, setPlayers] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [trashed, setTrashed] = useState([]);
+  const [customGames, setCustomGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
 
@@ -37,15 +39,25 @@ export default function Stats() {
       check();
     });
     const unsub3 = subscribeToTrashedSessions(setTrashed);
+    const unsub4 = subscribeToCustomGames(setCustomGames);
     return () => {
       unsub1();
       unsub2();
       unsub3();
+      unsub4();
     };
   }, []);
 
   const playerStats = computePlayerStats(players, sessions);
-  const gameStats = computeGameStats(sessions);
+  // Every custom game gets a row too, even at 0 plays — same reasoning as
+  // visiblePlayerStats below: a game someone just added to the home screen
+  // shouldn't be invisible in Stats until after its first completed game.
+  const playedStats = computeGameStats(sessions);
+  const playedKeys = new Set(playedStats.map((g) => g.groupKey));
+  const unplayedCustomGames = customGames
+    .filter((g) => !playedKeys.has(`other:${g.id}`))
+    .map((g) => ({ groupKey: `other:${g.id}`, gameType: "other", label: g.name, count: 0 }));
+  const gameStats = [...playedStats, ...unplayedCustomGames];
   // Show every active player, not just ones with a completed game — a
   // brand-new player with no history yet should show up with "—"
   // placeholders, not disappear from the table entirely. A removed
@@ -247,9 +259,9 @@ export default function Stats() {
                 </thead>
                 <tbody>
                   {gameStats.map((g) => (
-                    <tr key={g.gameType}>
+                    <tr key={g.groupKey}>
                       <td>{g.label}</td>
-                      <td>{g.count}</td>
+                      <td>{g.count || "—"}</td>
                     </tr>
                   ))}
                 </tbody>

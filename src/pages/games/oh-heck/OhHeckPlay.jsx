@@ -14,6 +14,7 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 function NumberPicker({ max, disabledValue, onSelect }) {
@@ -84,6 +85,19 @@ export default function OhHeckPlay() {
   const roundIndex = session.rounds.length;
   const rounds = session.rounds || [];
   const totals = session.totals || {};
+  const currentMax = Math.max(0, ...Object.values(totals));
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
+    .map((p) => ({
+      key: p.id,
+      label: p.name,
+      score: totals[p.id] || 0,
+      isLeader: (totals[p.id] || 0) === currentMax && currentMax > 0,
+      color: p.color,
+      avatar: p.avatar,
+      photo: p.photo,
+    }));
 
   async function undoLastRound() {
     setSaving(true);
@@ -133,8 +147,9 @@ export default function OhHeckPlay() {
 
     return (
       <div>
-        <h1 className="page-title">
-          <span className="suit black">🂡</span> Oh Heck! — Final round complete
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit black">🂡</span> Oh Heck! — Final round complete</span>
+          <TvMode gameName="Oh Heck!" icon="🂡" statusLine="Final round complete" rows={tvRows} />
         </h1>
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")}</h2>
@@ -184,8 +199,9 @@ export default function OhHeckPlay() {
   const bidRule = session.config?.bidRule || "traditional";
 
   const header = (
-    <h1 className="page-title">
-      <span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)
+    <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+      <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
+      <TvMode gameName="Oh Heck!" icon="🂡" statusLine={`Round ${roundIndex + 1} of ${roundSequence.length}`} rows={tvRows} />
     </h1>
   );
 

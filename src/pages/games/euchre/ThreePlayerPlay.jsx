@@ -8,6 +8,7 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 function PointsPicker({ onSelect }) {
@@ -56,6 +57,18 @@ export default function ThreePlayerPlay() {
   const lowestTotal = Math.min(...Object.values(totals));
   const pendingFinish = lowestTotal <= 0;
   const potentialWinners = session.players.filter((p) => (totals[p.id] ?? 0) <= 0);
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0))
+    .map((p) => ({
+      key: p.id,
+      label: p.name,
+      score: totals[p.id] ?? 0,
+      isLeader: (totals[p.id] ?? 0) === lowestTotal,
+      color: p.color,
+      avatar: p.avatar,
+      photo: p.photo,
+    }));
 
   async function undoLastRound() {
     setSaving(true);
@@ -94,7 +107,10 @@ export default function ThreePlayerPlay() {
     }
     return (
       <div>
-        <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand complete</h1>
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit black">♣</span> Euchre (3-player) — Hand complete</span>
+          <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+        </h1>
         <div className="card-surface">
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached 0!</h2>
           <table className="score-table">
@@ -181,7 +197,10 @@ export default function ThreePlayerPlay() {
     }
     return (
       <div>
-        <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
+          <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+        </h1>
         <div className="card-surface">
           <h2>Hand {rounds.length + 1} scored</h2>
           <table className="score-table">

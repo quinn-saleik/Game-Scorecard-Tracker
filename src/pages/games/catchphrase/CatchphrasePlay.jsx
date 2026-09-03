@@ -8,6 +8,7 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 function TeamNames({ players }) {
@@ -52,6 +53,10 @@ export default function CatchphrasePlay() {
   const pendingFinish = teamATotal >= threshold || teamBTotal >= threshold;
   const aWins = teamATotal >= threshold && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
+  const tvRows = [
+    { key: "A", label: teamAPlayers.map((p) => p.name).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
+    { key: "B", label: teamBPlayers.map((p) => p.name).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
+  ].sort((a, b) => b.score - a.score);
 
   async function addPoint(team) {
     setSaving(true);
@@ -104,7 +109,10 @@ export default function CatchphrasePlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit red">🎤</span> Catchphrase</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit red">🎤</span> Catchphrase</span>
+        <TvMode gameName="Catchphrase" icon="🎤" statusLine={`First to ${threshold}`} rows={tvRows} />
+      </h1>
 
       <div className="card-surface">
         <h2>Scores (first to {threshold})</h2>

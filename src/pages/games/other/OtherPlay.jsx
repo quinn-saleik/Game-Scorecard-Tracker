@@ -10,6 +10,7 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 export default function OtherPlay() {
@@ -21,6 +22,7 @@ export default function OtherPlay() {
   const [finishing, setFinishing] = useState(false);
   const [selectedWinners, setSelectedWinners] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
@@ -33,6 +35,7 @@ export default function OtherPlay() {
   const direction = session.config?.scoreDirection === "down" ? "down" : "up";
   const targetScore = typeof session.config?.targetScore === "number" ? session.config.targetScore : null;
   const bidding = Boolean(session.config?.bidding);
+  const houseRules = (session.config?.houseRules || "").trim();
 
   if (session.status === "completed") {
     const winners = session.players.filter((p) => session.winnerIds.includes(p.id));
@@ -66,6 +69,19 @@ export default function OtherPlay() {
       : session.players.filter((p) =>
           direction === "down" ? (totals[p.id] || 0) <= targetScore : (totals[p.id] || 0) >= targetScore
         );
+
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (direction === "down" ? (totals[a.id] || 0) - (totals[b.id] || 0) : (totals[b.id] || 0) - (totals[a.id] || 0)))
+    .map((p) => ({
+      key: p.id,
+      label: p.name,
+      score: totals[p.id] || 0,
+      isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal != null,
+      color: p.color,
+      avatar: p.avatar,
+      photo: p.photo,
+    }));
 
   async function submitRound(e) {
     e.preventDefault();
@@ -181,7 +197,33 @@ export default function OtherPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">{icon}</span> {gameName} — Round {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">{icon}</span> {gameName} — Round {rounds.length + 1}</span>
+        <TvMode gameName={gameName} icon={icon} statusLine={`Round ${rounds.length + 1}${direction === "down" ? " · lowest wins" : ""}`} rows={tvRows} />
+      </h1>
+
+      {houseRules && (
+        <div className="card-surface" style={{ paddingTop: 14, paddingBottom: showRules ? 20 : 14 }}>
+          <button
+            type="button"
+            onClick={() => setShowRules((o) => !o)}
+            aria-expanded={showRules}
+            style={{
+              display: "flex", alignItems: "center", gap: 8, width: "100%",
+              background: "none", border: "none", cursor: "pointer", padding: 0,
+              fontSize: 15, fontWeight: 700, color: "var(--heading-on-surface)",
+            }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }}>ⓘ</span>
+            {showRules ? "Hide house rules" : "House rules"}
+          </button>
+          {showRules && (
+            <p style={{ margin: "12px 0 0", color: "var(--muted)", fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+              {houseRules}
+            </p>
+          )}
+        </div>
+      )}
 
       {reachedPlayers.length > 0 && (
         <div className="warning-banner">

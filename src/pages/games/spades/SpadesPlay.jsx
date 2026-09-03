@@ -8,6 +8,7 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 const DEAL_SIZE = 13;
@@ -92,6 +93,10 @@ export default function SpadesPlay() {
   const pendingFinish = teamATotal >= targetScore || teamBTotal >= targetScore;
   const aWins = teamATotal >= targetScore && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
+  const tvRows = [
+    { key: "A", label: teamAPlayers.map((p) => p.name).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
+    { key: "B", label: teamBPlayers.map((p) => p.name).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
+  ].sort((a, b) => b.score - a.score);
 
   async function undoLastRound() {
     setSaving(true);
@@ -173,7 +178,10 @@ export default function SpadesPlay() {
   if (pendingFinish) {
     return (
       <div>
-        <h1 className="page-title"><span className="suit black">♠</span> Spades — Hand {rounds.length + 1}</h1>
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit black">♠</span> Spades — Hand {rounds.length + 1}</span>
+          <TvMode gameName="Spades" icon="♠" statusLine={`Hand ${rounds.length + 1} · first to ${targetScore}`} rows={tvRows} />
+        </h1>
         {scoreTable}
         <div className="card-surface">
           <h2>🏆 {winningTeamPlayers.map((p) => shortName(p)).join(" & ")} reached {targetScore}!</h2>
@@ -235,7 +243,10 @@ export default function SpadesPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">♠</span> Spades — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">♠</span> Spades — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Spades" icon="♠" statusLine={`Hand ${rounds.length + 1} · first to ${targetScore}`} rows={tvRows} />
+      </h1>
       {scoreTable}
 
       {phase === "bidA" && (

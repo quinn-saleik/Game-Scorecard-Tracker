@@ -31,6 +31,7 @@ export default function OtherSetup() {
   const [startingScore, setStartingScore] = useState(String(DEFAULT_GAME_CONFIG.startingScore));
   const [targetScore, setTargetScore] = useState("");
   const [bidding, setBidding] = useState(DEFAULT_GAME_CONFIG.bidding);
+  const [houseRules, setHouseRules] = useState(DEFAULT_GAME_CONFIG.houseRules);
   const [editingRules, setEditingRules] = useState(!gameId);
 
   const [starting, setStarting] = useState(false);
@@ -61,6 +62,7 @@ export default function OtherSetup() {
     setStartingScore(String(loadedGame.config?.startingScore ?? DEFAULT_GAME_CONFIG.startingScore));
     setTargetScore(loadedGame.config?.targetScore != null ? String(loadedGame.config.targetScore) : "");
     setBidding(Boolean(loadedGame.config?.bidding));
+    setHouseRules(loadedGame.config?.houseRules || "");
   }, [loadedGame?.id]);
 
   // Creating a fresh game, but the typed name matches one that already
@@ -74,6 +76,7 @@ export default function OtherSetup() {
     setStartingScore(String(nameMatch.config?.startingScore ?? DEFAULT_GAME_CONFIG.startingScore));
     setTargetScore(nameMatch.config?.targetScore != null ? String(nameMatch.config.targetScore) : "");
     setBidding(Boolean(nameMatch.config?.bidding));
+    setHouseRules(nameMatch.config?.houseRules || "");
   }, [nameMatch?.id]);
 
   function toggle(id) {
@@ -89,15 +92,16 @@ export default function OtherSetup() {
     try {
       const config = {
         customName: effectiveName.trim(),
-        icon,
+        icon: icon.trim() || GAME_ICONS[0],
         scoreDirection: direction,
         startingScore: Number(startingScore) || 0,
         targetScore: targetScore.trim() === "" ? null : Number(targetScore),
         bidding,
+        houseRules: houseRules.trim(),
       };
       // Persist/refresh the reusable rules so this game keeps showing up
       // on Home for everyone, whether it's brand-new or just re-tuned.
-      await saveCustomGame(effectiveName, config, icon);
+      await saveCustomGame(effectiveName, config, config.icon);
 
       const sessionPlayers = active
         .filter((p) => selected.includes(p.id))
@@ -212,6 +216,20 @@ export default function OtherSetup() {
                     </span>
                   ))}
                 </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <input
+                    type="text"
+                    className="input"
+                    style={{ maxWidth: 90 }}
+                    placeholder="Any emoji…"
+                    maxLength={8}
+                    value={GAME_ICONS.includes(icon) ? "" : icon}
+                    onChange={(e) => setIcon(e.target.value)}
+                  />
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Or tap in and use your keyboard's emoji button (🌐 / 😀) for any emoji.
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -241,6 +259,11 @@ export default function OtherSetup() {
                   </button>
                 </span>
               </div>
+              {!editingRules && houseRules.trim() && (
+                <p style={{ color: "var(--text-on-surface)", fontSize: 14, whiteSpace: "pre-wrap", marginBottom: 0 }}>
+                  {houseRules}
+                </p>
+              )}
             </div>
           )}
 
@@ -327,6 +350,23 @@ export default function OtherSetup() {
                 <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
                   Adds a bid field next to each player's score every round — recorded for
                   reference, not auto-scored (bid-to-score math varies too much game to game).
+                </p>
+              </div>
+
+              <div className="field">
+                <label htmlFor="houseRules">House rules (optional)</label>
+                <textarea
+                  id="houseRules"
+                  className="input"
+                  rows={4}
+                  style={{ resize: "vertical", fontFamily: "inherit" }}
+                  placeholder="Anything the options above don't cover — deal size, special hands, how ties break, house-specific twists…"
+                  value={houseRules}
+                  onChange={(e) => setHouseRules(e.target.value)}
+                />
+                <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+                  Shown on this Setup screen and during the game so everyone can check the rules
+                  mid-play.
                 </p>
               </div>
             </div>

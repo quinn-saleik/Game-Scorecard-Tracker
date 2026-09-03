@@ -8,6 +8,30 @@ import { computePlayerDetail } from "../data/stats";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "../components/PlayerDot";
 import { shortName } from "../data/playerNames";
+import { generateRecapCardBlob, shareOrDownloadImage } from "../data/recapCard";
+
+// A single standout line for the share card: reuse the same "first win /
+// win streak / personal best" callouts already computed for the page
+// (buildCallouts below) when there is one — it's more personal than a
+// generic stat. Otherwise fall back to the margin over whoever came
+// closest to the winner, which works for every game type since it only
+// needs session.totals (not each game's own round-record shape).
+function computeStandoutStat(winner, session, players, completedSessions, ready) {
+  const callouts = ready ? buildCallouts(winner, session, players, completedSessions) : [];
+  if (callouts.length > 0) return callouts[0].replace(/^[^\w]+/, "").trim();
+
+  const totals = session.totals || {};
+  const winnerScore = totals[winner.id];
+  if (typeof winnerScore !== "number") return null;
+  const otherScores = session.players
+    .filter((p) => !session.winnerIds.includes(p.id))
+    .map((p) => totals[p.id])
+    .filter((v) => typeof v === "number");
+  if (otherScores.length === 0) return null;
+  const closest = otherScores.reduce((best, v) => (Math.abs(v - winnerScore) < Math.abs(best - winnerScore) ? v : best));
+  const margin = Math.abs(winnerScore - closest);
+  return margin === 0 ? "Down to the wire — tied with the runner-up" : `Won by a margin of ${margin}`;
+}
 
 function buildCallouts(winner, session, players, completedSessions) {
   const gameLabel = session.config?.customName || session.gameLabel;
@@ -39,10 +63,18 @@ export default function Recap() {
   const [completedSessions, setCompletedSessions] = useState([]);
   const [fired, setFired] = useState(false);
   const [rematching, setRematching] = useState(false);
+  const [cardUrl, setCardUrl] = useState(null);
+  const [cardBlob, setCardBlob] = useState(null);
+  const [cardBusy, setCardBusy] = useState(false);
+  const [shareResult, setShareResult] = useState(null);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
   useEffect(() => subscribeToPlayers(setPlayers), []);
   useEffect(() => subscribeToCompletedSessions(setCompletedSessions), []);
+
+  // Object URLs aren't garbage-collected on their own — release the last
+  // one generated when this page goes away.
+  useEffect(() => () => { if (cardUrl) URL.revokeObjectURL(cardUrl); }, [cardUrl]);
 
   useEffect(() => {
     if (fired || !session || session.status !== "completed") return;
@@ -76,6 +108,50 @@ export default function Recap() {
   // computePlayerDetail needs the just-finished session included — fall
   // back gracefully if the completedSessions listener hasn't caught up yet.
   const ready = completedSessions.some((s) => s.id === sessionId);
+
+  async function makeCard() {
+    setCardBusy(true);
+    setShareResult(null);
+    try {
+      const sortedStandings = session.players
+        .slice()
+        .sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0))
+        .map((p) => ({
+          id: p.id,
+          name: shortName(p),
+          score: totals[p.id] ?? 0,
+          isWinner: session.winnerIds.includes(p.id),
+          color: p.color,
+          avatar: p.avatar,
+          photo: p.photo,
+        }));
+      const standoutStat = ready ? computeStandoutStat(winners[0], session, players, completedSessions, ready) : null;
+      const blob = await generateRecapCardBlob({
+        gameName: gameLabel,
+        icon: session.config?.icon || "🃏",
+        dateLabel: (session.completedAt?.toDate?.() || new Date()).toLocaleDateString(undefined, {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+        winnerLabel: winners.map((p) => shortName(p)).join(" & "),
+        winnerAvatarSource: { color: winners[0].color, avatar: winners[0].avatar, photo: winners[0].photo },
+        standings: sortedStandings,
+        standoutStat,
+      });
+      if (cardUrl) URL.revokeObjectURL(cardUrl);
+      setCardBlob(blob);
+      setCardUrl(URL.createObjectURL(blob));
+    } finally {
+      setCardBusy(false);
+    }
+  }
+
+  async function shareCard() {
+    if (!cardBlob) return;
+    const result = await shareOrDownloadImage(cardBlob, `${gameLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-recap.png`);
+    setShareResult(result);
+  }
 
   async function playAgain() {
     setRematching(true);
@@ -128,6 +204,37 @@ export default function Recap() {
               ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="card-surface">
+        <h2>Share the recap</h2>
+        {!cardUrl ? (
+          <>
+            <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
+              Generates a shareable image with the final score and winner — drop it straight
+              into the family group chat.
+            </p>
+            <button className="btn primary" onClick={makeCard} disabled={cardBusy}>
+              {cardBusy ? "Generating…" : "🖼️ Create shareable recap card"}
+            </button>
+          </>
+        ) : (
+          <>
+            <img
+              src={cardUrl}
+              alt="Recap card preview"
+              style={{ maxWidth: 260, width: "100%", borderRadius: 12, boxShadow: "var(--shadow)", display: "block", margin: "0 auto 14px" }}
+            />
+            <div className="btn-row" style={{ justifyContent: "center" }}>
+              <button className="btn primary" onClick={shareCard}>📤 Share</button>
+              <a className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} href={cardUrl} download={`${gameLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-recap.png`}>
+                ⬇️ Download image
+              </a>
+            </div>
+            {shareResult === "shared" && <p style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Shared!</p>}
+            {shareResult === "downloaded" && <p style={{ textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Downloaded — attach it wherever you like.</p>}
+          </>
+        )}
       </div>
 
       <div className="btn-row">

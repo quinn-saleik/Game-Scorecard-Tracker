@@ -10,6 +10,7 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 function TeamNames({ players }) {
@@ -56,6 +57,10 @@ export default function TraditionalPlay() {
   const pendingFinish = teamATotal >= threshold || teamBTotal >= threshold;
   const aWins = teamATotal >= threshold && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
+  const tvRows = [
+    { key: "A", label: teamAPlayers.map((p) => p.name).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
+    { key: "B", label: teamBPlayers.map((p) => p.name).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
+  ].sort((a, b) => b.score - a.score);
 
   async function submitRound(e) {
     e.preventDefault();
@@ -111,7 +116,10 @@ export default function TraditionalPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">♣</span> Euchre — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">♣</span> Euchre — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Euchre" icon="♣" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
+      </h1>
 
       <div className="card-surface">
         <h2>Scores (first to {threshold})</h2>

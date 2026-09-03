@@ -173,7 +173,11 @@ export function computeGameStats(completedSessions) {
   for (const session of completedSessions) {
     const key = gameGroupKey(session);
     const label = gameGroupLabel(session);
-    counts[key] = counts[key] || { gameType: session.gameType, label, count: 0 };
+    // `groupKey` (not `gameType`) is what actually distinguishes two custom
+    // "Other" games — every custom game shares the literal gameType
+    // "other", so a caller that keys a list by gameType (e.g. React's
+    // `key` prop) would collide two different custom games into one row.
+    counts[key] = counts[key] || { groupKey: key, gameType: session.gameType, label, count: 0 };
     counts[key].count += 1;
   }
   return Object.values(counts).sort((a, b) => b.count - a.count);

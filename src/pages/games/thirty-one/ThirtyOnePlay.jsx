@@ -8,6 +8,7 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 export default function ThirtyOnePlay() {
@@ -46,6 +47,21 @@ export default function ThirtyOnePlay() {
   const potentialWinners = alivePlayers.length > 0
     ? alivePlayers
     : session.players.filter((p) => (totals[p.id] ?? 0) === maxLives);
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0))
+    .map((p) => {
+      const lives = totals[p.id] ?? 0;
+      return {
+        key: p.id,
+        label: p.name + (lives <= 0 ? " — out" : ""),
+        score: Math.max(0, lives),
+        isLeader: lives > 0 && lives === maxLives,
+        color: p.color,
+        avatar: p.avatar,
+        photo: p.photo,
+      };
+    });
 
   function toggleLost(id) {
     setLostIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
@@ -136,7 +152,10 @@ export default function ThirtyOnePlay() {
   if (pendingFinish) {
     return (
       <div>
-        <h1 className="page-title"><span className="suit red">🂱</span> 31 — Round {rounds.length + 1}</h1>
+        <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+          <span><span className="suit red">🂱</span> 31 — Round {rounds.length + 1}</span>
+          <TvMode gameName="31" icon="🂱" statusLine={`Round ${rounds.length + 1} · most lives wins`} rows={tvRows} unitLabel="❤️" />
+        </h1>
         {scoreTable}
         <div className="card-surface">
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} {potentialWinners.length > 1 ? "are" : "is"} last standing!</h2>

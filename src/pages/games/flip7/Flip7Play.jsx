@@ -10,6 +10,7 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
+import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
 export default function Flip7Play() {
@@ -46,6 +47,19 @@ export default function Flip7Play() {
   const potentialWinners = session.players.filter(
     (p) => (totals[p.id] || 0) === leaderTotal && leaderTotal >= threshold
   );
+
+  const tvRows = session.players
+    .slice()
+    .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
+    .map((p) => ({
+      key: p.id,
+      label: p.name,
+      score: totals[p.id] || 0,
+      isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal > 0,
+      color: p.color,
+      avatar: p.avatar,
+      photo: p.photo,
+    }));
 
   async function submitRound(e) {
     e.preventDefault();
@@ -112,8 +126,9 @@ export default function Flip7Play() {
 
   return (
     <div>
-      <h1 className="page-title">
-        <span className="suit red">🔥</span> Flip7 — Round {rounds.length + 1}
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit red">🔥</span> Flip7 — Round {rounds.length + 1}</span>
+        <TvMode gameName="Flip7" icon="🔥" statusLine={`Round ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
       </h1>
 
       <div className="card-surface">
