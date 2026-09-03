@@ -73,15 +73,22 @@ html.text-xl .nav-bar {
   box-sizing: border-box;
 }
 
+/* min-height (a floor), not height (a hard cap) — a page taller than one
+   viewport (most game screens, Stats, Players) needs body's own box to
+   grow past 100vh so its background grows with it. With a hard height
+   here instead, body's box stopped at one viewport tall and the
+   navy gradient below tiled to fill the rest of the page — a visible
+   seam wherever it repeated. */
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   background: linear-gradient(180deg, var(--felt) 0%, var(--felt-dark) 100%);
+  background-repeat: no-repeat;
   color: var(--text-on-surface);
   min-height: 100vh;
 }

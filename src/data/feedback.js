@@ -18,23 +18,48 @@ import { db, authReady } from "../firebase";
 
 const feedbackCol = collection(db, "feedback");
 
-export async function submitFeedback(text) {
-  await authReady;
-  const trimmed = (text || "").trim();
-  if (!trimmed) throw new Error("Type something first.");
-  await addDoc(feedbackCol, {
-    text: trimmed,
-    // Which page they were on when they hit send — small bit of context
-    // for a bug report ("scores wouldn't save") without asking them to
-    // explain where they were.
-    path: typeof window !== "undefined" ? window.location.pathname : null,
-    createdAt: serverTimestamp(),
+// Bounds how long we'll wait on a promise that could otherwise hang
+// forever with no feedback to the person staring at a "Sending…" button —
+// e.g. if anonymous sign-in (authReady) never resolves because it silently
+// failed, or the write can't reach Firestore. Converts an indefinite hang
+// into an actual error the UI can show and recover from.
+function withTimeout(promise, ms, message) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
   });
 }
 
+export async function submitFeedback(text) {
+  const trimmed = (text || "").trim();
+  if (!trimmed) throw new Error("Type something first.");
+  await withTimeout(authReady, 10000, "Still trying to connect — check your internet connection and try again.");
+  await withTimeout(
+    addDoc(feedbackCol, {
+      text: trimmed,
+      // Which page they were on when they hit send — small bit of context
+      // for a bug report ("scores wouldn't save") without asking them to
+      // explain where they were.
+      path: typeof window !== "undefined" ? window.location.pathname : null,
+      createdAt: serverTimestamp(),
+    }),
+    10000,
+    "That's taking too long to send — check your connection and try again."
+  );
+}
+
 export async function deleteFeedback(id) {
-  await authReady;
-  await deleteDoc(doc(feedbackCol, id));
+  await withTimeout(authReady, 10000, "Still trying to connect — check your internet connection and try again.");
+  await withTimeout(deleteDoc(doc(feedbackCol, id)), 10000, "That's taking too long — check your connection and try again.");
 }
 
 export function subscribeToFeedback(callback) {

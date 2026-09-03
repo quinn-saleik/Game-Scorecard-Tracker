@@ -64,11 +64,17 @@ export default function FirstRunTour({ onClose }) {
   // Lazy-init so the platform sniff only runs once per mount, not every render.
   const [steps] = useState(() => buildSteps());
   const [step, setStep] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const isLast = step === steps.length - 1;
   const current = steps[step];
 
+  // Opt-out, not opt-in: this pops up on every fresh visit by default (see
+  // Layout.jsx — it only stays closed once markTourSeen() has actually been
+  // called) so non-technical family members always get reminded how to
+  // install it, add players, etc. It only stops for good once someone
+  // checks the box below.
   function finish() {
-    markTourSeen();
+    if (dontShowAgain) markTourSeen();
     onClose();
   }
 
@@ -103,6 +109,28 @@ export default function FirstRunTour({ onClose }) {
             />
           ))}
         </div>
+
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            fontSize: 13,
+            color: "var(--muted)",
+            margin: "0 0 14px",
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={dontShowAgain}
+            onChange={(e) => setDontShowAgain(e.target.checked)}
+            style={{ width: 16, height: 16 }}
+          />
+          Don't show this again
+        </label>
 
         <div className="btn-row" style={{ justifyContent: "center" }}>
           {step > 0 && (
