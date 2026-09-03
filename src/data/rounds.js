@@ -11,6 +11,8 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "other":
     case "hearts":
     case "golf":
+    case "dutch-blitz":
+    case "nertz":
       return round.scores?.[playerId] || 0;
     case "oh-heck":
       return round.results?.[playerId]?.score || 0;
@@ -20,7 +22,8 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "euchre-traditional":
     case "euchre-15card":
     case "catchphrase":
-    case "spades": {
+    case "spades":
+    case "codenames": {
       const teamA = session?.config?.teamA || [];
       const teamB = session?.config?.teamB || [];
       if (teamA.includes(playerId)) return round.teamAPoints || 0;
@@ -30,7 +33,11 @@ export function getRoundDelta(gameType, round, playerId, session) {
     case "thirty-one":
       return round.lostLifeIds?.includes(playerId) ? -1 : 0;
     case "royal-rum":
+    case "phase-10":
       return round.points?.[playerId] || 0;
+    case "egyptian-ratscrew":
+    case "skip-bo":
+      return round.winnerId === playerId ? 1 : 0;
     default:
       return 0;
   }

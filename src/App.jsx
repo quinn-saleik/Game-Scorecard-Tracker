@@ -11,6 +11,7 @@ const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const Stats = lazy(() => import("./pages/Stats"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const Recap = lazy(() => import("./pages/Recap"));
+const Feedback = lazy(() => import("./pages/Feedback"));
 const Flip7Setup = lazy(() => import("./pages/games/flip7/Flip7Setup"));
 const Flip7Play = lazy(() => import("./pages/games/flip7/Flip7Play"));
 const OhHeckSetup = lazy(() => import("./pages/games/oh-heck/OhHeckSetup"));
@@ -40,6 +41,20 @@ const SpadesSetup = lazy(() => import("./pages/games/spades/SpadesSetup"));
 const SpadesPlay = lazy(() => import("./pages/games/spades/SpadesPlay"));
 const GolfSetup = lazy(() => import("./pages/games/golf/GolfSetup"));
 const GolfPlay = lazy(() => import("./pages/games/golf/GolfPlay"));
+const SecretHitlerSetup = lazy(() => import("./pages/games/secret-hitler/SecretHitlerSetup"));
+const SecretHitlerPlay = lazy(() => import("./pages/games/secret-hitler/SecretHitlerPlay"));
+const DutchBlitzSetup = lazy(() => import("./pages/games/dutch-blitz/DutchBlitzSetup"));
+const DutchBlitzPlay = lazy(() => import("./pages/games/dutch-blitz/DutchBlitzPlay"));
+const NertzSetup = lazy(() => import("./pages/games/nertz/NertzSetup"));
+const NertzPlay = lazy(() => import("./pages/games/nertz/NertzPlay"));
+const CodenamesSetup = lazy(() => import("./pages/games/codenames/CodenamesSetup"));
+const CodenamesPlay = lazy(() => import("./pages/games/codenames/CodenamesPlay"));
+const EgyptianRatscrewSetup = lazy(() => import("./pages/games/egyptian-ratscrew/EgyptianRatscrewSetup"));
+const EgyptianRatscrewPlay = lazy(() => import("./pages/games/egyptian-ratscrew/EgyptianRatscrewPlay"));
+const SkipBoSetup = lazy(() => import("./pages/games/skip-bo/SkipBoSetup"));
+const SkipBoPlay = lazy(() => import("./pages/games/skip-bo/SkipBoPlay"));
+const Phase10Setup = lazy(() => import("./pages/games/phase-10/Phase10Setup"));
+const Phase10Play = lazy(() => import("./pages/games/phase-10/Phase10Play"));
 
 function App() {
   return (
@@ -51,6 +66,8 @@ function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/hall-of-fame" element={<HallOfFame />} />
         <Route path="/recap/:sessionId" element={<Recap />} />
+        {/* Not in the nav bar on purpose — see src/pages/Feedback.jsx. */}
+        <Route path="/feedback" element={<Feedback />} />
         <Route path="/flip7/setup" element={<Flip7Setup />} />
         <Route path="/flip7/play/:sessionId" element={<Flip7Play />} />
         <Route path="/oh-heck/setup" element={<OhHeckSetup />} />
@@ -81,6 +98,20 @@ function App() {
         <Route path="/spades/play/:sessionId" element={<SpadesPlay />} />
         <Route path="/golf/setup" element={<GolfSetup />} />
         <Route path="/golf/play/:sessionId" element={<GolfPlay />} />
+        <Route path="/secret-hitler/setup" element={<SecretHitlerSetup />} />
+        <Route path="/secret-hitler/play/:sessionId" element={<SecretHitlerPlay />} />
+        <Route path="/dutch-blitz/setup" element={<DutchBlitzSetup />} />
+        <Route path="/dutch-blitz/play/:sessionId" element={<DutchBlitzPlay />} />
+        <Route path="/nertz/setup" element={<NertzSetup />} />
+        <Route path="/nertz/play/:sessionId" element={<NertzPlay />} />
+        <Route path="/codenames/setup" element={<CodenamesSetup />} />
+        <Route path="/codenames/play/:sessionId" element={<CodenamesPlay />} />
+        <Route path="/egyptian-ratscrew/setup" element={<EgyptianRatscrewSetup />} />
+        <Route path="/egyptian-ratscrew/play/:sessionId" element={<EgyptianRatscrewPlay />} />
+        <Route path="/skip-bo/setup" element={<SkipBoSetup />} />
+        <Route path="/skip-bo/play/:sessionId" element={<SkipBoPlay />} />
+        <Route path="/phase-10/setup" element={<Phase10Setup />} />
+        <Route path="/phase-10/play/:sessionId" element={<Phase10Play />} />
       </Route>
     </Routes>
   );

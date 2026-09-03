@@ -22,13 +22,6 @@ import { db, authReady } from "../firebase";
 
 const playersCol = collection(db, "players");
 
-// How long a removed player lingers in the "Removed players" list before
-// they're gone for good. Nothing in this app runs on a server schedule (no
-// backend functions), so this is only ever enforced opportunistically —
-// whenever someone happens to have the Players page open, see
-// purgeStaleRemovedPlayers below.
-export const REMOVED_PLAYER_GRACE_MS = 4 * 60 * 60 * 1000; // 4 hours
-
 function slugify(name) {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
@@ -65,44 +58,17 @@ export async function addPlayer(firstName, lastName) {
 
 // Soft delete: keep the player doc (so past game stats still resolve their
 // name) but mark them inactive so they drop out of "who's playing" pickers.
-// deactivatedAt starts the removal grace period (cleared on restore) — see
-// REMOVED_PLAYER_GRACE_MS / purgeStaleRemovedPlayers.
+// Removed players stick around indefinitely (no auto-expiry) — deactivatedAt
+// is kept purely as a "removed X ago" hint on the Players page, so cleaning
+// up is a manual, whenever-you-feel-like-it thing (the 🗑 button), not
+// something the app does to your roster on its own. A player removed before
+// this field existed just won't show a time — nothing backfills it.
 export async function setPlayerActive(playerId, active) {
   await authReady;
   await updateDoc(doc(playersCol, playerId), {
     active,
     deactivatedAt: active ? null : serverTimestamp(),
   });
-}
-
-// Milliseconds left before a removed player disappears for good, for the UI
-// hint ("removes in ~3h"). A player just removed this session may not have
-// their serverTimestamp() synced back yet — treat that as "the full grace
-// period remains" rather than "expired".
-export function removedPlayerTimeLeftMs(player) {
-  const deactivatedAt = player.deactivatedAt?.toDate?.();
-  if (!deactivatedAt) return REMOVED_PLAYER_GRACE_MS;
-  return Math.max(0, REMOVED_PLAYER_GRACE_MS - (Date.now() - deactivatedAt.getTime()));
-}
-
-// Opportunistic cleanup, called whenever the Players page loads a fresh
-// player list. Hard-deletes anyone who's been inactive longer than the
-// grace period. Players removed before this feature existed have no
-// deactivatedAt yet — back-fill one instead of deleting them outright, so
-// they get the same few-hour grace window instead of vanishing the moment
-// this code first runs for them.
-export async function purgeStaleRemovedPlayers(players) {
-  await authReady;
-  const writes = [];
-  for (const p of players) {
-    if (p.active) continue;
-    if (!p.deactivatedAt) {
-      writes.push(updateDoc(doc(playersCol, p.id), { deactivatedAt: serverTimestamp() }));
-    } else if (removedPlayerTimeLeftMs(p) <= 0) {
-      writes.push(deleteDoc(doc(playersCol, p.id)));
-    }
-  }
-  await Promise.all(writes);
 }
 
 // Fix a typo'd name after the fact. Doesn't touch the doc id (generated

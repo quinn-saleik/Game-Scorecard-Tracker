@@ -22,6 +22,13 @@ export const GAME_LABELS = {
   golf: "Golf",
   spades: "Spades",
   "gin-rummy": "Gin Rummy",
+  "secret-hitler": "Secret Hitler",
+  "dutch-blitz": "Dutch Blitz",
+  nertz: "Nertz",
+  codenames: "Codenames",
+  "egyptian-ratscrew": "Egyptian Ratscrew",
+  "skip-bo": "Skip-Bo",
+  "phase-10": "Phase 10",
 };
 
 function slug(s) {

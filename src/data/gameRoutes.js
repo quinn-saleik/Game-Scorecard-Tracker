@@ -16,4 +16,11 @@ export const PLAY_ROUTE = {
   hearts: (id) => `/hearts/play/${id}`,
   golf: (id) => `/golf/play/${id}`,
   spades: (id) => `/spades/play/${id}`,
+  "secret-hitler": (id) => `/secret-hitler/play/${id}`,
+  "dutch-blitz": (id) => `/dutch-blitz/play/${id}`,
+  nertz: (id) => `/nertz/play/${id}`,
+  codenames: (id) => `/codenames/play/${id}`,
+  "egyptian-ratscrew": (id) => `/egyptian-ratscrew/play/${id}`,
+  "skip-bo": (id) => `/skip-bo/play/${id}`,
+  "phase-10": (id) => `/phase-10/play/${id}`,
 };
