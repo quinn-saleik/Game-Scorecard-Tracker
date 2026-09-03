@@ -16,7 +16,16 @@ import {
 } from "firebase/firestore";
 import { db, authReady } from "../firebase";
 
-const feedbackCol = collection(db, "feedback");
+// Named "scorecard_notes", not "feedback" — the Firestore collection name
+// becomes part of the literal request URL
+// (firestore.googleapis.com/.../documents/feedback), and "feedback" is a
+// common word on ad-blocker/privacy-extension filter lists (uBlock Origin,
+// Brave Shields, etc. — same family of rules that blocks "survey" or
+// "tracking" URLs). That would explain everything else in the app working
+// fine while writes to a collection literally named "feedback" silently
+// stall or fail for some visitors. A bland, app-specific name sidesteps
+// the whole class of bug.
+const feedbackCol = collection(db, "scorecard_notes");
 
 // Bounds how long we'll wait on a promise that could otherwise hang
 // forever with no feedback to the person staring at a "Sending…" button —
