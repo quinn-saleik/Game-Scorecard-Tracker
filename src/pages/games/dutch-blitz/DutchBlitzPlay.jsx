@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -50,7 +49,7 @@ export default function DutchBlitzPlay() {
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
     .map((p) => ({
       key: p.id,
-      label: p.name,
+      label: shortName(p),
       score: totals[p.id] || 0,
       isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal > 0,
       color: p.color,
@@ -185,10 +184,6 @@ export default function DutchBlitzPlay() {
                     onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
                   />
                 </div>
-                <ScorePresets
-                  values={[0]}
-                  onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
-                />
               </div>
             ))}
             <div className="btn-row">

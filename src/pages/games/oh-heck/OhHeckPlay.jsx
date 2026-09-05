@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   subscribeToSession,
@@ -47,14 +47,34 @@ export default function OhHeckPlay() {
   const [results, setResults] = useState({});
   const [scoringIdx, setScoringIdx] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [conflictNotice, setConflictNotice] = useState(null);
+  // Set right before this device writes a round (save or undo) so the
+  // reset effect below can tell "I just saved" apart from "someone else's
+  // phone changed this game while I was mid-bid" — see that effect.
+  const changedByThisDeviceRef = useRef(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
   // Whenever the saved round count changes (a round was just written, or
   // undone), figure out whether more rounds remain or the game is over.
+  // This game is shared in real time — if a second phone on the same
+  // session saves a round while this device is still mid-bid/scoring for
+  // what it thought was the current hand, that local progress is now
+  // stale and gets reset here. That's the right outcome (the hand really
+  // did move on), but silently wiping someone's half-entered bids with no
+  // explanation reads as a bug ("it timed out and went back to bidding").
+  // Surface a brief notice instead of resetting silently.
   useEffect(() => {
     if (!session) return;
     const seq = session.config?.roundSequence || [];
+    const changedByThisDevice = changedByThisDeviceRef.current;
+    changedByThisDeviceRef.current = false;
+    const hadUnsavedProgress = phase !== "bidding" || biddingIdx > 0 || Object.keys(bids).length > 0;
+    let timer;
+    if (!changedByThisDevice && hadUnsavedProgress) {
+      setConflictNotice("Someone already saved this hand from another device — moved you to the next one.");
+      timer = setTimeout(() => setConflictNotice(null), 7000);
+    }
     if (session.rounds.length >= seq.length) {
       setPhase("confirm");
     } else {
@@ -64,6 +84,7 @@ export default function OhHeckPlay() {
       setResults({});
       setScoringIdx(0);
     }
+    return () => clearTimeout(timer);
   }, [session?.rounds?.length]);
 
   if (!session) {
@@ -86,21 +107,45 @@ export default function OhHeckPlay() {
   const rounds = session.rounds || [];
   const totals = session.totals || {};
   const currentMax = Math.max(0, ...Object.values(totals));
+
+  // Computed here (rather than after the confirm-phase return below) so
+  // both this screen's live bidding order AND the TV-mode row labels below
+  // can show whose turn it is and what they've bid so far — the "someone
+  // has to ask the phone-holder what's going on" complaint was really a
+  // visibility gap, not a logic bug (bid order/rotation itself was already
+  // correct).
+  const cardsThisRound = roundSequence[roundIndex];
+  const dealerIndex = getDealerIndex(roundIndex, session.players.length);
+  const dealer = session.players[dealerIndex];
+  const bidOrder = getBidOrder(session.players, dealerIndex);
+  const bidRule = session.config?.bidRule || "traditional";
+  const currentBidderId = phase === "bidding" ? bidOrder[biddingIdx]?.id : null;
+
   const tvRows = session.players
     .slice()
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
-    .map((p) => ({
-      key: p.id,
-      label: p.name,
-      score: totals[p.id] || 0,
-      isLeader: (totals[p.id] || 0) === currentMax && currentMax > 0,
-      color: p.color,
-      avatar: p.avatar,
-      photo: p.photo,
-    }));
+    .map((p) => {
+      let label = shortName(p);
+      if (phase === "bidding") {
+        if (bids[p.id] !== undefined) label += ` · bid ${bids[p.id]}`;
+        else if (p.id === currentBidderId) label += " · bidding…";
+      } else if (phase === "scoring" && results[p.id] === undefined && bids[p.id] !== undefined) {
+        label += ` · bid ${bids[p.id]}`;
+      }
+      return {
+        key: p.id,
+        label,
+        score: totals[p.id] || 0,
+        isLeader: (totals[p.id] || 0) === currentMax && currentMax > 0,
+        color: p.color,
+        avatar: p.avatar,
+        photo: p.photo,
+      };
+    });
 
   async function undoLastRound() {
     setSaving(true);
+    changedByThisDeviceRef.current = true;
     try {
       const last = rounds[rounds.length - 1];
       const newTotals = { ...totals };
@@ -151,6 +196,7 @@ export default function OhHeckPlay() {
           <span><span className="suit black">🂡</span> Oh Heck! — Final round complete</span>
           <TvMode gameName="Oh Heck!" icon="🂡" statusLine="Final round complete" rows={tvRows} />
         </h1>
+        {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")}</h2>
           <table className="score-table">
@@ -192,17 +238,19 @@ export default function OhHeckPlay() {
   }
 
   // --- In-progress round setup ---------------------------------------
-  const cardsThisRound = roundSequence[roundIndex];
-  const dealerIndex = getDealerIndex(roundIndex, session.players.length);
-  const dealer = session.players[dealerIndex];
-  const bidOrder = getBidOrder(session.players, dealerIndex);
-  const bidRule = session.config?.bidRule || "traditional";
+  const statusLine =
+    phase === "bidding" && bidOrder[biddingIdx]
+      ? `Round ${roundIndex + 1} of ${roundSequence.length} · ${shortName(bidOrder[biddingIdx])} is bidding`
+      : `Round ${roundIndex + 1} of ${roundSequence.length}`;
 
   const header = (
-    <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-      <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
-      <TvMode gameName="Oh Heck!" icon="🂡" statusLine={`Round ${roundIndex + 1} of ${roundSequence.length}`} rows={tvRows} />
-    </h1>
+    <>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
+        <TvMode gameName="Oh Heck!" icon="🂡" statusLine={statusLine} rows={tvRows} />
+      </h1>
+      {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
+    </>
   );
 
   const undoButton = rounds.length > 0 && (
@@ -247,6 +295,26 @@ export default function OhHeckPlay() {
         {undoButton}
         <div className="card-surface">
           <h2>Bidding — <PlayerDot color={currentBidder.color} avatar={currentBidder.avatar} photo={currentBidder.photo} />{shortName(currentBidder)}{currentBidder.id === dealer.id ? " (dealer)" : ""}</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -4 }}>
+            Bid order (left of the dealer goes first, dealer bids last):
+          </p>
+          <div className="chip-row" style={{ marginBottom: 10 }}>
+            {bidOrder.map((p) => {
+              const bidValue = bids[p.id];
+              const isCurrent = p.id === currentBidder.id;
+              return (
+                <span
+                  key={p.id}
+                  className={`player-chip ${isCurrent ? "selected" : ""}`}
+                  style={bidValue === undefined && !isCurrent ? { opacity: 0.5 } : undefined}
+                >
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                  {shortName(p)}
+                  {bidValue !== undefined ? ` — bid ${bidValue}` : isCurrent ? " — bidding now" : ""}
+                </span>
+              );
+            })}
+          </div>
           <p>Bids so far this round: {bidsSoFar} of {cardsThisRound} cards</p>
           {forbidden !== null && (
             <p style={{ color: "var(--red-suit)" }}>
@@ -338,6 +406,7 @@ export default function OhHeckPlay() {
 
       async function saveRound() {
         setSaving(true);
+        changedByThisDeviceRef.current = true;
         try {
           const totalBids = Object.values(bids).reduce((a, b) => a + b, 0);
           const roundRecord = {
@@ -406,6 +475,23 @@ export default function OhHeckPlay() {
         {header}
         <div className="card-surface">
           <h2><PlayerDot color={currentScorer.color} avatar={currentScorer.avatar} photo={currentScorer.photo} />{shortName(currentScorer)} bid {theirBid}. What did they get?</h2>
+          <div className="chip-row" style={{ marginBottom: 10 }}>
+            {bidOrder.map((p) => {
+              const scored = results[p.id];
+              const isCurrent = p.id === currentScorer.id;
+              return (
+                <span
+                  key={p.id}
+                  className={`player-chip ${isCurrent ? "selected" : ""}`}
+                  style={!scored && !isCurrent ? { opacity: 0.5 } : undefined}
+                >
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                  {shortName(p)}
+                  {scored ? ` — got ${scored.tricksWon}` : isCurrent ? " — scoring now" : ` — bid ${bids[p.id]}`}
+                </span>
+              );
+            })}
+          </div>
           <div className="btn-row" style={{ marginBottom: 14 }}>
             <button
               className="btn primary"

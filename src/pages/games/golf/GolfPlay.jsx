@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   subscribeToSession,
@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -20,20 +19,40 @@ export default function GolfPlay() {
   const [phase, setPhase] = useState("playing"); // playing | confirm
   const [inputs, setInputs] = useState({});
   const [saving, setSaving] = useState(false);
+  const [conflictNotice, setConflictNotice] = useState(null);
+  // Set right before this device writes a hole (save or undo) so the
+  // reset effect below can tell "I just saved" apart from "someone else's
+  // phone changed this game while I had scores typed in" — see that effect.
+  const changedByThisDeviceRef = useRef(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
   // Whenever the saved round count changes (a hole was just written, or
   // undone), figure out whether more holes remain or the game is over.
+  // This game is shared in real time — if a second phone on the same
+  // session saves a hole while this device still has scores typed in for
+  // what it thought was the current hole, that local progress is now
+  // stale and gets cleared here. That's the right outcome, but silently
+  // wiping someone's half-entered scores with no explanation reads as a
+  // bug. Surface a brief notice instead of resetting silently.
   useEffect(() => {
     if (!session) return;
     const holes = session.config?.holes || 9;
+    const changedByThisDevice = changedByThisDeviceRef.current;
+    changedByThisDeviceRef.current = false;
+    const hadUnsavedProgress = Object.keys(inputs).length > 0;
+    let timer;
+    if (!changedByThisDevice && hadUnsavedProgress) {
+      setConflictNotice("Someone already saved this hole from another device — moved you to the next one.");
+      timer = setTimeout(() => setConflictNotice(null), 7000);
+    }
     if (session.rounds.length >= holes) {
       setPhase("confirm");
     } else {
       setPhase("playing");
       setInputs({});
     }
+    return () => clearTimeout(timer);
   }, [session?.rounds?.length]);
 
   if (!session) {
@@ -59,7 +78,7 @@ export default function GolfPlay() {
     .sort((a, b) => (totals[a.id] || 0) - (totals[b.id] || 0))
     .map((p) => ({
       key: p.id,
-      label: p.name,
+      label: shortName(p),
       score: totals[p.id] || 0,
       isLeader: (totals[p.id] || 0) === minTotal,
       color: p.color,
@@ -69,6 +88,7 @@ export default function GolfPlay() {
 
   async function undoLastRound() {
     setSaving(true);
+    changedByThisDeviceRef.current = true;
     try {
       const last = rounds[rounds.length - 1];
       const newTotals = { ...totals };
@@ -118,6 +138,7 @@ export default function GolfPlay() {
           <span><span className="suit black">⛳</span> Golf — Final hole complete</span>
           <TvMode gameName="Golf" icon="⛳" statusLine="Final hole complete · lowest wins" rows={tvRows} />
         </h1>
+        {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")} wins!</h2>
           <table className="score-table">
@@ -162,6 +183,7 @@ export default function GolfPlay() {
   async function submitRound(e) {
     e.preventDefault();
     setSaving(true);
+    changedByThisDeviceRef.current = true;
     try {
       const roundScores = {};
       const newTotals = { ...totals };
@@ -187,6 +209,7 @@ export default function GolfPlay() {
         <span><span className="suit black">⛳</span> Golf — Hole {rounds.length + 1} of {holes}</span>
         <TvMode gameName="Golf" icon="⛳" statusLine={`Hole ${rounds.length + 1} of ${holes} · lowest wins`} rows={tvRows} />
       </h1>
+      {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
 
       <div className="card-surface">
         <h2>Standings</h2>
@@ -234,10 +257,6 @@ export default function GolfPlay() {
                   onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
                 />
               </div>
-              <ScorePresets
-                values={[-2, 0, 5, 10]}
-                onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
-              />
             </div>
           ))}
           <div className="btn-row">

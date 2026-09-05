@@ -20,10 +20,13 @@ export default function Euchre15Setup() {
 
   const active = players.filter((p) => p.active);
 
+  // Fill Team 1's 2 slots before Team 2 gets any, matching the on-screen
+  // caption ("First 2 taps go to Team 1, next 2 to Team 2") — this used to
+  // alternate A/B/A/B instead, which didn't match what it told players.
   function toggle(id) {
     if (teamA.includes(id)) return setTeamA((s) => s.filter((x) => x !== id));
     if (teamB.includes(id)) return setTeamB((s) => s.filter((x) => x !== id));
-    if (teamA.length <= teamB.length && teamA.length < 2) return setTeamA((s) => [...s, id]);
+    if (teamA.length < 2) return setTeamA((s) => [...s, id]);
     if (teamB.length < 2) return setTeamB((s) => [...s, id]);
   }
 
@@ -79,13 +82,14 @@ export default function Euchre15Setup() {
         </p>
         <p style={{ margin: "0 0 10px" }}>
           <strong>How to play:</strong> Deal out the full deck so 15 tricks are in play for the
-          hand between the two teams. Both teams bid how many of the 15 they think they'll take;
-          whoever bids higher names trump and leads the play.
+          hand between the two teams. Whoever wins the bid names trump and leads the play.
         </p>
         <p style={{ margin: 0 }}>
-          <strong>Scoring:</strong> A team that makes its bid scores the tricks it actually won;
-          a team that falls short goes negative by its bid amount instead. Enter each team's
-          tricks won (or note that they went short). First team to the target score wins.
+          <strong>Scoring:</strong> Only the bid-winning team is at risk — they score the tricks
+          they actually won if they make their bid, or go negative by their bid amount if they
+          fall short. The other team just banks whatever tricks they took, no risk either way.
+          Enter trump, who won the bid and for how much, then the bid team's tricks won — the app
+          works out both teams' scores. First team to the target score wins.
         </p>
       </GameInstructions>
 

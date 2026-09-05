@@ -54,7 +54,7 @@ export default function ThirtyOnePlay() {
       const lives = totals[p.id] ?? 0;
       return {
         key: p.id,
-        label: p.name + (lives <= 0 ? " — out" : ""),
+        label: shortName(p) + (lives <= 0 ? " — out" : ""),
         score: Math.max(0, lives),
         isLeader: lives > 0 && lives === maxLives,
         color: p.color,

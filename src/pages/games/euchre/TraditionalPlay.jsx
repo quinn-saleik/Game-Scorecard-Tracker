@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -58,8 +57,8 @@ export default function TraditionalPlay() {
   const aWins = teamATotal >= threshold && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
   const tvRows = [
-    { key: "A", label: teamAPlayers.map((p) => p.name).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
-    { key: "B", label: teamBPlayers.map((p) => p.name).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
+    { key: "A", label: teamAPlayers.map((p) => shortName(p)).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
+    { key: "B", label: teamBPlayers.map((p) => shortName(p)).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
   ].sort((a, b) => b.score - a.score);
 
   async function submitRound(e) {
@@ -161,7 +160,6 @@ export default function TraditionalPlay() {
                 <input id="teamA" className="input" type="number" placeholder="0" value={inputA} onChange={(e) => setInputA(e.target.value)} />
                 <VoiceInputButton onResult={(v) => setInputA(v)} />
               </div>
-              <ScorePresets values={[1, 2, 4]} onPick={(v) => setInputA(String(v))} />
             </div>
             <div className="field">
               <label htmlFor="teamB"><TeamNames players={teamBPlayers} /></label>
@@ -169,7 +167,6 @@ export default function TraditionalPlay() {
                 <input id="teamB" className="input" type="number" placeholder="0" value={inputB} onChange={(e) => setInputB(e.target.value)} />
                 <VoiceInputButton onResult={(v) => setInputB(v)} />
               </div>
-              <ScorePresets values={[1, 2, 4]} onPick={(v) => setInputB(String(v))} />
             </div>
             <div className="btn-row">
               {rounds.length > 0 && (

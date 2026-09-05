@@ -94,8 +94,8 @@ export default function SpadesPlay() {
   const aWins = teamATotal >= targetScore && teamATotal >= teamBTotal;
   const winningTeamPlayers = aWins ? teamAPlayers : teamBPlayers;
   const tvRows = [
-    { key: "A", label: teamAPlayers.map((p) => p.name).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
-    { key: "B", label: teamBPlayers.map((p) => p.name).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
+    { key: "A", label: teamAPlayers.map((p) => shortName(p)).join(" & "), score: teamATotal, isLeader: teamATotal >= teamBTotal && teamATotal > 0 },
+    { key: "B", label: teamBPlayers.map((p) => shortName(p)).join(" & "), score: teamBTotal, isLeader: teamBTotal >= teamATotal && teamBTotal > 0 },
   ].sort((a, b) => b.score - a.score);
 
   async function undoLastRound() {

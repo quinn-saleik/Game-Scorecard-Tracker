@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   subscribeToSession,
@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -22,15 +21,35 @@ export default function PartnerPlay() {
   const [bidPoints, setBidPoints] = useState("");
   const [othersPoints, setOthersPoints] = useState("");
   const [saving, setSaving] = useState(false);
+  const [conflictNotice, setConflictNotice] = useState(null);
+  // Set right before this device writes a round (save or undo) so the
+  // reset effect below can tell "I just saved" apart from "someone else's
+  // phone changed this game while I was mid-bid" — see that effect.
+  const changedByThisDeviceRef = useRef(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
-  // Reset the in-progress hand whenever one gets saved (or undone).
+  // Reset the in-progress hand whenever one gets saved (or undone). This
+  // game is shared in real time — if a second phone on the same session
+  // saves a round while this device is still mid-bid for what it thought
+  // was the current hand, that local progress is now stale and gets reset
+  // here. That's the right outcome, but silently wiping someone's
+  // half-entered bid with no explanation reads as a bug. Surface a brief
+  // notice instead of resetting silently.
   useEffect(() => {
+    const changedByThisDevice = changedByThisDeviceRef.current;
+    changedByThisDeviceRef.current = false;
+    const hadUnsavedProgress = phase !== "bidTeam" || bidTeamIds.length > 0;
+    let timer;
+    if (!changedByThisDevice && hadUnsavedProgress) {
+      setConflictNotice("Someone already saved this hand from another device — moved you to the next one.");
+      timer = setTimeout(() => setConflictNotice(null), 7000);
+    }
     setPhase("bidTeam");
     setBidTeamIds([]);
     setBidPoints("");
     setOthersPoints("");
+    return () => clearTimeout(timer);
   }, [session?.rounds?.length]);
 
   if (!session) return <p className="empty-state">Loading game…</p>;
@@ -59,7 +78,7 @@ export default function PartnerPlay() {
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
     .map((p) => ({
       key: p.id,
-      label: p.name,
+      label: shortName(p),
       score: totals[p.id] || 0,
       isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal > 0,
       color: p.color,
@@ -77,6 +96,7 @@ export default function PartnerPlay() {
 
   async function undoLastRound() {
     setSaving(true);
+    changedByThisDeviceRef.current = true;
     try {
       const last = rounds[rounds.length - 1];
       const newTotals = { ...totals };
@@ -117,6 +137,7 @@ export default function PartnerPlay() {
 
   async function saveRound() {
     setSaving(true);
+    changedByThisDeviceRef.current = true;
     try {
       const deltas = {};
       const newTotals = { ...totals };
@@ -169,6 +190,7 @@ export default function PartnerPlay() {
           <span><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</span>
           <TvMode gameName="Euchre (pick your partner)" icon="🤝" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
         </h1>
+        {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
         {scoreTable}
         <div className="card-surface">
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
@@ -190,6 +212,7 @@ export default function PartnerPlay() {
   return (
     <div>
       <h1 className="page-title"><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</h1>
+      {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
       {scoreTable}
 
       {phase === "bidTeam" && (
@@ -234,7 +257,6 @@ export default function PartnerPlay() {
               />
               <VoiceInputButton onResult={(v) => setBidPoints(v)} />
             </div>
-            <ScorePresets values={[1, 2, 4, -2]} onPick={(v) => setBidPoints(String(v))} />
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidTeam")}>
@@ -262,7 +284,6 @@ export default function PartnerPlay() {
               />
               <VoiceInputButton onResult={(v) => setOthersPoints(v)} />
             </div>
-            <ScorePresets values={[1, 2, 4, -2]} onPick={(v) => setOthersPoints(String(v))} />
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidPoints")}>

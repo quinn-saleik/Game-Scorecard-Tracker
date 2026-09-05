@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -54,7 +53,7 @@ export default function HeartsPlay() {
 
   const tvRows = standings.map((p) => ({
     key: p.id,
-    label: p.name,
+    label: shortName(p),
     score: totals[p.id] || 0,
     isLeader: (totals[p.id] || 0) === lowestTotal,
     color: p.color,
@@ -208,10 +207,6 @@ export default function HeartsPlay() {
                     🌙 Shot the moon
                   </button>
                 </div>
-                <ScorePresets
-                  values={[1, 5, 13, 26]}
-                  onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
-                />
               </div>
             ))}
             <div className="btn-row">

@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import ScorePresets from "../../../components/ScorePresets";
 import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
@@ -75,7 +74,7 @@ export default function OtherPlay() {
     .sort((a, b) => (direction === "down" ? (totals[a.id] || 0) - (totals[b.id] || 0) : (totals[b.id] || 0) - (totals[a.id] || 0)))
     .map((p) => ({
       key: p.id,
-      label: p.name,
+      label: shortName(p),
       score: totals[p.id] || 0,
       isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal != null,
       color: p.color,
@@ -287,10 +286,6 @@ export default function OtherPlay() {
                   />
                 )}
               </div>
-              <ScorePresets
-                values={direction === "down" ? [0, -5, -10] : [0, 5, 10]}
-                onPick={(v) => setInputs((prev) => ({ ...prev, [p.id]: String(v) }))}
-              />
             </div>
           ))}
           <div className="btn-row">

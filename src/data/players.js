@@ -32,12 +32,28 @@ export async function addPlayer(firstName, lastName) {
   const last = (lastName || "").trim();
   if (!first || !last) throw new Error("Enter both a first and last name.");
   const fullName = `${first} ${last}`;
-  let id = slugify(fullName);
+
+  const existing = await getDocs(playersCol);
+
+  // Block a second player with the exact same first + last name outright,
+  // rather than silently creating a second roster entry under a different
+  // doc id — two identically-named players would be indistinguishable
+  // everywhere names are shown (and shortName()'s first-name-only display
+  // relies on distinct people actually having distinct names to fall back
+  // on). Same first name alone is fine — that's exactly what shortName()
+  // is built to disambiguate.
+  const duplicate = existing.docs.some(
+    (d) => (d.data().name || "").trim().toLowerCase() === fullName.toLowerCase()
+  );
+  if (duplicate) {
+    throw new Error(`${fullName} is already a player. Add a middle initial or nickname to tell them apart.`);
+  }
 
   // Guard against two different players landing on the same doc id (e.g.
-  // two "Riley Smith"s) — the old single-name version of this function
-  // would have silently merged them into one doc.
-  const existing = await getDocs(playersCol);
+  // "Riley Smith" and "Riley  Smith" slugifying the same way) — the old
+  // single-name version of this function would have silently merged them
+  // into one doc.
+  let id = slugify(fullName);
   const takenIds = new Set(existing.docs.map((d) => d.id));
   if (takenIds.has(id)) {
     let n = 2;
@@ -80,10 +96,20 @@ export async function updatePlayerName(playerId, firstName, lastName) {
   const first = (firstName || "").trim();
   const last = (lastName || "").trim();
   if (!first || !last) throw new Error("Enter both a first and last name.");
+  const fullName = `${first} ${last}`;
+
+  const existing = await getDocs(playersCol);
+  const duplicate = existing.docs.some(
+    (d) => d.id !== playerId && (d.data().name || "").trim().toLowerCase() === fullName.toLowerCase()
+  );
+  if (duplicate) {
+    throw new Error(`${fullName} is already a player. Add a middle initial or nickname to tell them apart.`);
+  }
+
   await updateDoc(doc(playersCol, playerId), {
     firstName: first,
     lastName: last,
-    name: `${first} ${last}`,
+    name: fullName,
   });
 }
 

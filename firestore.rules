@@ -1,13 +1,103 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // The app signs everyone in anonymously in the background (no login
-    // screen). These rules just require *some* Firebase Auth session to
-    // exist, which keeps the database from being wide open to anyone who
-    // finds the public API key in the deployed JS bundle (that key is not a
-    // secret by design — Firestore rules are the actual gate).
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    function isAuthed() {
+      return request.auth != null;
     }
+
+    // Firestore rules throw if you access a map key that isn't present
+    // (unlike JS), so every optional field has to check `key in d` first.
+    function optionalField(d, key, maxLen) {
+      return !(key in d) || d[key] == null || (d[key] is string && d[key].size() <= maxLen);
+    }
+
+    // ---- players/{playerId} ----------------------------------------
+    // Roster entries. Kept tight since this collection is small and
+    // well-defined: real first/last names, a handful of optional
+    // display fields, nothing else.
+    match /players/{playerId} {
+      function validPlayer(d) {
+        return d.firstName is string && d.firstName.size() > 0 && d.firstName.size() <= 60
+          && d.lastName is string && d.lastName.size() > 0 && d.lastName.size() <= 60
+          && d.name is string && d.name.size() > 0 && d.name.size() <= 121
+          && d.active is bool
+          && d.isDefault is bool
+          && optionalField(d, 'color', 20)
+          && optionalField(d, 'avatar', 32)
+          // A 160x160 JPEG data URI comfortably fits well under this; a
+          // legit photo should never approach 1MB (Firestore's own doc
+          // cap), let alone this.
+          && optionalField(d, 'photo', 400000)
+          && (!('deactivatedAt' in d) || d.deactivatedAt == null || d.deactivatedAt is timestamp);
+      }
+
+      allow read: if isAuthed();
+
+      allow create: if isAuthed() && validPlayer(request.resource.data);
+
+      allow update: if isAuthed() && validPlayer(request.resource.data)
+        // createdAt is set once at creation and never changes afterward.
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAuthed();
+    }
+
+    // ---- gameSessions/{sessionId} -----------------------------------
+    // Shape varies a bit per game (config/rounds/totals are generic),
+    // so this checks the fields every game relies on rather than
+    // locking down every possible nested key.
+    match /gameSessions/{sessionId} {
+      function validSession(d) {
+        return d.gameType is string && d.gameType.size() > 0 && d.gameType.size() <= 60
+          && d.gameLabel is string && d.gameLabel.size() <= 80
+          && d.players is list && d.players.size() >= 1 && d.players.size() <= 20
+          && d.config is map
+          && d.rounds is list && d.rounds.size() <= 1000
+          && d.totals is map
+          && d.status is string && (d.status == 'in_progress' || d.status == 'completed')
+          && d.winnerIds is list;
+      }
+
+      allow read: if isAuthed();
+      allow create: if isAuthed() && validSession(request.resource.data);
+      allow update: if isAuthed() && validSession(request.resource.data);
+      allow delete: if isAuthed();
+    }
+
+    // ---- customGames/{gameId} ---------------------------------------
+    match /customGames/{gameId} {
+      function validCustomGame(d) {
+        return d.name is string && d.name.size() > 0 && d.name.size() <= 60
+          && d.icon is string && d.icon.size() <= 16
+          && d.config is map;
+      }
+
+      allow read: if isAuthed();
+      allow create, update: if isAuthed() && validCustomGame(request.resource.data);
+      allow delete: if isAuthed();
+    }
+
+    // ---- scorecard_notes/{noteId} (the feedback box) -----------------
+    match /scorecard_notes/{noteId} {
+      function validNote(d) {
+        return d.text is string && d.text.size() > 0 && d.text.size() <= 4000
+          && optionalField(d, 'path', 300);
+      }
+
+      allow read: if isAuthed();
+      allow create: if isAuthed() && validNote(request.resource.data);
+      allow delete: if isAuthed();
+      // Never edited in place after creation — only ever created or
+      // deleted (see data/feedback.js).
+      allow update: if false;
+    }
+
+    // Everything else: no such collection exists in this app. Deny by
+    // default instead of the old catch-all `{document=**}` wildcard,
+    // which let anyone write to literally any path once signed in
+    // anonymously (trivial, no gate at all — anyone can get an anonymous
+    // auth token) — that's what let last-hour's spike write freely to
+    // whatever it wanted.
   }
 }

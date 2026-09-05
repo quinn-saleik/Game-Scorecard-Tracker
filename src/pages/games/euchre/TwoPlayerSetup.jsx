@@ -65,9 +65,12 @@ export default function TwoPlayerSetup() {
           variant you use at your table (many deal a smaller hand or add a dummy hand).
         </p>
         <p style={{ margin: 0 }}>
-          <strong>Scoring:</strong> Enter each player's points for the hand — commonly 1 point
-          for taking the majority of tricks, 2 for a march (all of them). First to the target
-          score wins.
+          <strong>Scoring:</strong> Every hand splits 12 points between the two of you. Say who
+          called trump (ordered it up or named it) — only they're at risk. If they took at least 7
+          of the 12 they bank that many points; if they came up short, it's a flat -7 instead.
+          Either way, the other player banks whatever's left of the 12 — so if the caller takes 6
+          and misses, the caller scores -7 and the other player scores 6; if the caller takes 7,
+          it's 7 and 5; if the caller takes 11, it's 11 and 1. First to the target score wins.
         </p>
       </GameInstructions>
 
