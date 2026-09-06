@@ -12,13 +12,17 @@ import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
+const NO_PARTNER = "none"; // sentinel: bidder went alone
+
 export default function PartnerPlay() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
-  const [phase, setPhase] = useState("bidTeam"); // bidTeam | bidPoints | othersPoints | confirm
-  const [bidTeamIds, setBidTeamIds] = useState([]);
-  const [bidPoints, setBidPoints] = useState("");
+  const [phase, setPhase] = useState("bidder"); // bidder | bid | tricks | partner | others | confirm
+  const [bidderId, setBidderId] = useState(null);
+  const [bid, setBid] = useState("");
+  const [tricks, setTricks] = useState("");
+  const [partnerId, setPartnerId] = useState(null); // player id, NO_PARTNER, or null (not chosen yet)
   const [othersPoints, setOthersPoints] = useState("");
   const [saving, setSaving] = useState(false);
   const [conflictNotice, setConflictNotice] = useState(null);
@@ -39,15 +43,17 @@ export default function PartnerPlay() {
   useEffect(() => {
     const changedByThisDevice = changedByThisDeviceRef.current;
     changedByThisDeviceRef.current = false;
-    const hadUnsavedProgress = phase !== "bidTeam" || bidTeamIds.length > 0;
+    const hadUnsavedProgress = phase !== "bidder" || bidderId !== null;
     let timer;
     if (!changedByThisDevice && hadUnsavedProgress) {
       setConflictNotice("Someone already saved this hand from another device — moved you to the next one.");
       timer = setTimeout(() => setConflictNotice(null), 7000);
     }
-    setPhase("bidTeam");
-    setBidTeamIds([]);
-    setBidPoints("");
+    setPhase("bidder");
+    setBidderId(null);
+    setBid("");
+    setTricks("");
+    setPartnerId(null);
     setOthersPoints("");
     return () => clearTimeout(timer);
   }, [session?.rounds?.length]);
@@ -86,13 +92,13 @@ export default function PartnerPlay() {
       photo: p.photo,
     }));
 
-  function toggleBidPlayer(id) {
-    setBidTeamIds((s) => {
-      if (s.includes(id)) return s.filter((x) => x !== id);
-      if (s.length >= 2) return s;
-      return [...s, id];
-    });
-  }
+  const bidder = bidderId ? session.players.find((p) => p.id === bidderId) : null;
+  const partner =
+    partnerId && partnerId !== NO_PARTNER ? session.players.find((p) => p.id === partnerId) : null;
+  const partnerOptions = bidderId ? session.players.filter((p) => p.id !== bidderId) : [];
+  const othersPlayers = session.players.filter(
+    (p) => p.id !== bidderId && p.id !== (partner ? partner.id : null)
+  );
 
   async function undoLastRound() {
     setSaving(true);
@@ -130,10 +136,22 @@ export default function PartnerPlay() {
     }
   }
 
-  const bidVal = Number(bidPoints) || 0;
+  // Whoever bids the most names trump. Making the bid (or beating it) scores
+  // the tricks actually taken; falling short goes negative by the bid amount
+  // instead. A called partner shares that exact result; everyone else just
+  // gets one shared "how many did everyone else get?" entry.
+  const bidVal = Number(bid) || 0;
+  const tricksVal = Number(tricks) || 0;
+  const bidderMadeIt = tricksVal >= bidVal;
+  const bidderDelta = bidderMadeIt ? tricksVal : -bidVal;
   const othersVal = Number(othersPoints) || 0;
-  const bidTeamPlayers = session.players.filter((p) => bidTeamIds.includes(p.id));
-  const othersPlayers = session.players.filter((p) => !bidTeamIds.includes(p.id));
+
+  function choosePartner(id) {
+    setPartnerId(id);
+    const chosenPartnerId = id !== NO_PARTNER ? id : null;
+    const remaining = session.players.filter((p) => p.id !== bidderId && p.id !== chosenPartnerId);
+    setPhase(remaining.length > 0 ? "others" : "confirm");
+  }
 
   async function saveRound() {
     setSaving(true);
@@ -142,11 +160,20 @@ export default function PartnerPlay() {
       const deltas = {};
       const newTotals = { ...totals };
       for (const p of session.players) {
-        const delta = bidTeamIds.includes(p.id) ? bidVal : othersVal;
+        const delta =
+          p.id === bidderId ? bidderDelta : partner && p.id === partner.id ? bidderDelta : othersVal;
         deltas[p.id] = delta;
         newTotals[p.id] = (newTotals[p.id] || 0) + delta;
       }
-      const newRound = { roundNumber: rounds.length + 1, bidTeamIds, bidPoints: bidVal, othersPoints: othersVal, deltas };
+      const newRound = {
+        roundNumber: rounds.length + 1,
+        bidderId,
+        bid: bidVal,
+        tricks: tricksVal,
+        partnerId: partner ? partner.id : null,
+        othersPoints: othersVal,
+        deltas,
+      };
       await updateSession(sessionId, { rounds: [...rounds, newRound], totals: newTotals });
     } finally {
       setSaving(false);
@@ -211,68 +238,119 @@ export default function PartnerPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Euchre (pick your partner)" icon="🤝" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
+      </h1>
       {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
       {scoreTable}
 
-      {phase === "bidTeam" && (
+      {phase === "bidder" && (
         <div className="card-surface">
-          <h2>Who's on the bid team? ({bidTeamIds.length}/2)</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13 }}>Tap 1 player if they went alone, or 2 for a called partner.</p>
+          <h2>Who bid the most?</h2>
           <div className="chip-row">
             {session.players.map((p) => (
               <span
                 key={p.id}
-                className={`player-chip ${bidTeamIds.includes(p.id) ? "selected" : ""}`}
-                onClick={() => toggleBidPlayer(p.id)}
+                className="player-chip"
+                onClick={() => { setBidderId(p.id); setPhase("bid"); }}
               >
                 <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                 {shortName(p)}
               </span>
             ))}
           </div>
-          <div className="btn-row" style={{ marginTop: 12 }}>
-            <button
-              className="btn primary"
-              disabled={bidTeamIds.length === 0}
-              onClick={() => setPhase("bidPoints")}
-            >
-              Continue
-            </button>
-          </div>
         </div>
       )}
 
-      {phase === "bidPoints" && (
+      {phase === "bid" && bidder && (
         <div className="card-surface">
-          <h2>Points for <TeamList players={bidTeamPlayers} />?</h2>
+          <h2>How much did <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} bid?</h2>
           <div className="field">
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input
                 className="input"
                 type="number"
+                min="0"
                 placeholder="0"
-                value={bidPoints}
-                onChange={(e) => setBidPoints(e.target.value)}
+                value={bid}
+                onChange={(e) => setBid(e.target.value)}
+                autoFocus
               />
-              <VoiceInputButton onResult={(v) => setBidPoints(v)} />
+              <VoiceInputButton onResult={(v) => setBid(v)} />
             </div>
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidTeam")}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidder")}>
               ← Back
             </button>
-            <button className="btn primary" onClick={() => setPhase("othersPoints")}>
+            <button className="btn primary" onClick={() => setPhase("tricks")} disabled={bid === ""}>
               Continue
             </button>
           </div>
         </div>
       )}
 
-      {phase === "othersPoints" && (
+      {phase === "tricks" && bidder && (
         <div className="card-surface">
-          <h2>Points for everyone else (<TeamList players={othersPlayers} />)?</h2>
-          <p style={{ color: "var(--muted)", fontSize: 13 }}>Same value applied to all of them.</p>
+          <h2>How many tricks did <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} actually get?</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>
+            {bid}+ scores that many tricks; short of {bid} scores -{bidVal} instead.
+          </p>
+          <div className="field">
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input
+                className="input"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={tricks}
+                onChange={(e) => setTricks(e.target.value)}
+                autoFocus
+              />
+              <VoiceInputButton onResult={(v) => setTricks(v)} />
+            </div>
+          </div>
+          <div className="btn-row" style={{ marginTop: 12 }}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bid")}>
+              ← Back
+            </button>
+            <button className="btn primary" onClick={() => setPhase("partner")} disabled={tricks === ""}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === "partner" && bidder && (
+        <div className="card-surface">
+          <h2>Who was <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)}'s partner?</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>The partner gets the same score as {shortName(bidder)}.</p>
+          <div className="chip-row">
+            <span className="player-chip" onClick={() => choosePartner(NO_PARTNER)}>
+              🃏 Went alone (no partner)
+            </span>
+            {partnerOptions.map((p) => (
+              <span key={p.id} className="player-chip" onClick={() => choosePartner(p.id)}>
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                {shortName(p)}
+              </span>
+            ))}
+          </div>
+          <div className="btn-row" style={{ marginTop: 12 }}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("tricks")}>
+              ← Back
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === "others" && bidder && (
+        <div className="card-surface">
+          <h2>How many did everyone else get?</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>
+            Same value applied to <TeamList players={othersPlayers} />.
+          </p>
           <div className="field">
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input
@@ -281,12 +359,13 @@ export default function PartnerPlay() {
                 placeholder="0"
                 value={othersPoints}
                 onChange={(e) => setOthersPoints(e.target.value)}
+                autoFocus
               />
               <VoiceInputButton onResult={(v) => setOthersPoints(v)} />
             </div>
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidPoints")}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("partner")}>
               ← Back
             </button>
             <button className="btn primary" onClick={() => setPhase("confirm")}>
@@ -296,25 +375,40 @@ export default function PartnerPlay() {
         </div>
       )}
 
-      {phase === "confirm" && (
+      {phase === "confirm" && bidder && (
         <div className="card-surface">
           <h2>Confirm hand {rounds.length + 1}</h2>
           <table className="score-table">
-            <thead><tr><th>Player</th><th>Score</th></tr></thead>
+            <thead><tr><th>Player</th><th>Result</th><th>Score</th></tr></thead>
             <tbody>
-              {session.players.map((p) => {
-                const delta = bidTeamIds.includes(p.id) ? bidVal : othersVal;
-                return (
-                  <tr key={p.id}>
-                    <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{bidTeamIds.includes(p.id) ? " (bid team)" : ""}</td>
-                    <td>{delta >= 0 ? `+${delta}` : delta}</td>
-                  </tr>
-                );
-              })}
+              <tr>
+                <td><PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} (bid {bidVal})</td>
+                <td>{tricksVal} tricks — {bidderMadeIt ? "made it" : "didn't make it"}</td>
+                <td>{bidderDelta >= 0 ? `+${bidderDelta}` : bidderDelta}</td>
+              </tr>
+              {partner && (
+                <tr>
+                  <td><PlayerDot color={partner.color} avatar={partner.avatar} photo={partner.photo} />{shortName(partner)} (partner)</td>
+                  <td>—</td>
+                  <td>{bidderDelta >= 0 ? `+${bidderDelta}` : bidderDelta}</td>
+                </tr>
+              )}
+              {othersPlayers.map((p) => (
+                <tr key={p.id}>
+                  <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
+                  <td>—</td>
+                  <td>{othersVal >= 0 ? `+${othersVal}` : othersVal}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("othersPoints")}>
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
+              onClick={() => setPhase(othersPlayers.length > 0 ? "others" : "partner")}
+            >
               ← Edit
             </button>
             <button className="btn primary" onClick={saveRound} disabled={saving}>
@@ -324,7 +418,7 @@ export default function PartnerPlay() {
         </div>
       )}
 
-      {rounds.length > 0 && phase === "bidTeam" && (
+      {rounds.length > 0 && phase === "bidder" && (
         <div className="btn-row" style={{ marginBottom: 12 }}>
           <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
             ← Undo last hand

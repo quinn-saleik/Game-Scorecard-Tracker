@@ -175,7 +175,6 @@ export default function Stats() {
                     <th>Player</th>
                     <th>Played</th>
                     <th>Win %</th>
-                    <th>Avg score</th>
                     <th>Favorite</th>
                     <th>Last played</th>
                   </tr>
@@ -190,7 +189,6 @@ export default function Stats() {
                       </td>
                       <td>{p.gamesPlayed}</td>
                       <td>{p.gamesPlayed ? `${p.winPct}%` : "—"}</td>
-                      <td>{p.gamesPlayed ? p.avgScore : "—"}</td>
                       <td>{p.favoriteGame}</td>
                       <td>{formatLastPlayed(p.lastPlayedAt)}</td>
                     </tr>
@@ -207,8 +205,9 @@ export default function Stats() {
             ) : (
               <>
                 <p style={{ color: "var(--muted)", fontSize: 13 }}>
-                  Delete a logged game if it was test data — it drops out of everyone's stats
-                  right away, but lands in the Trash above so it's not gone for good.
+                  Tap a game to see its full scorepad. Delete a logged game if it was test data —
+                  it drops out of everyone's stats right away, but lands in the Trash above so
+                  it's not gone for good.
                 </p>
                 <table className="score-table">
                   <thead>
@@ -224,8 +223,16 @@ export default function Stats() {
                       const winners = (s.players || []).filter((p) => (s.winnerIds || []).includes(p.id));
                       return (
                         <tr key={s.id}>
-                          <td>{formatLastPlayed(s.completedAt?.toDate?.() || null)}</td>
-                          <td>{gameGroupLabel(s)}</td>
+                          <td>
+                            <Link to={`/history/${s.id}`} style={{ color: "var(--text-on-surface)" }}>
+                              {formatLastPlayed(s.completedAt?.toDate?.() || null)}
+                            </Link>
+                          </td>
+                          <td>
+                            <Link to={`/history/${s.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                              {gameGroupLabel(s)}
+                            </Link>
+                          </td>
                           <td>{winners.map((p) => shortName(p)).join(" & ") || "—"}</td>
                           <td>
                             <button

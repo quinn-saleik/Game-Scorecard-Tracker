@@ -48,7 +48,6 @@ export default function PlayerDetail() {
           <tbody>
             <tr><td>Games played</td><td>{detail.gamesPlayed}</td></tr>
             <tr><td>Win %</td><td>{detail.gamesPlayed ? `${detail.winPct}%` : "—"}</td></tr>
-            <tr><td>Avg score</td><td>{detail.gamesPlayed ? detail.avgScore : "—"}</td></tr>
             <tr><td>Favorite game</td><td>{detail.favoriteGame}</td></tr>
             <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>
           </tbody>
@@ -119,8 +118,16 @@ export default function PlayerDetail() {
             <tbody>
               {detail.history.map((g) => (
                 <tr key={g.sessionId}>
-                  <td>{formatLastPlayed(g.completedAt)}</td>
-                  <td>{g.gameLabel}</td>
+                  <td>
+                    <Link to={`/history/${g.sessionId}`} style={{ color: "var(--text-on-surface)" }}>
+                      {formatLastPlayed(g.completedAt)}
+                    </Link>
+                  </td>
+                  <td>
+                    <Link to={`/history/${g.sessionId}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                      {g.gameLabel}
+                    </Link>
+                  </td>
                   <td className={g.won ? "leader" : ""}>{g.won ? "🏆 Won" : "Lost"}</td>
                   <td>{g.score ?? "—"}</td>
                 </tr>

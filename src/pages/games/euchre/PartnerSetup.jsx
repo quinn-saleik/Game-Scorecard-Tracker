@@ -7,6 +7,8 @@ import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import GameInstructions from "../../../components/GameInstructions";
 
+const MIN_PLAYERS = 3;
+
 export default function PartnerSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -18,18 +20,17 @@ export default function PartnerSetup() {
 
   const active = players.filter((p) => p.active);
 
+  // No fixed player count — any table of 3 or more can play, since the
+  // bidder either calls one partner or goes it alone and everyone else just
+  // shares the "everyone else" score each hand.
   function toggle(id) {
-    setSelected((s) => {
-      if (s.includes(id)) return s.filter((x) => x !== id);
-      if (s.length >= 4) return s;
-      return [...s, id];
-    });
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
 
   const seated = selected.map((id) => active.find((p) => p.id === id)).filter(Boolean);
 
   async function handleStart() {
-    if (seated.length !== 4) return;
+    if (seated.length < MIN_PLAYERS) return;
     setStarting(true);
     try {
       const sessionPlayers = seated.map((p) => ({ id: p.id, name: p.name, color: p.color || null, avatar: p.avatar || null, photo: p.photo || null }));
@@ -52,26 +53,28 @@ export default function PartnerSetup() {
       </h1>
       <OngoingGames gameType="euchre-partner" />
 
-      <GameInstructions players="Exactly 4 players">
+      <GameInstructions players="3 or more players">
         <p style={{ margin: "0 0 10px" }}>
           <strong>Objective:</strong> Standard trump-calling euchre, but partners are chosen
           hand by hand instead of fixed teams.
         </p>
         <p style={{ margin: "0 0 10px" }}>
           <strong>How to play:</strong> Deal and call trump using your usual euchre rules.
-          Whoever calls trump can go alone, or call a partner (often "best card" or a named
-          card) to play with them for that hand only — the rest of the table defends.
+          Whoever bids the most names trump. They can go alone, or call a partner (often "best
+          card" or a named card) to play with them for that hand only — the rest of the table
+          defends.
         </p>
         <p style={{ margin: 0 }}>
-          <strong>Scoring:</strong> After the hand, mark who was on the bid team (1 player if
-          they went alone, 2 if partnered), enter their points, then enter what everyone else
-          gets. Scores are tracked per player since teams change every hand. First to the
-          target wins.
+          <strong>Scoring:</strong> After the hand, enter who bid and how much, then how many
+          tricks they actually took. Making the bid or better scores that many tricks; falling
+          short scores negative their bid instead. Then say who their partner was (or that they
+          went alone) — the partner gets that same score. Everyone else shares one "how many did
+          everyone else get?" entry. First to the target wins.
         </p>
       </GameInstructions>
 
       <div className="card-surface">
-        <h2>Select 4 players ({seated.length}/4)</h2>
+        <h2>Select players ({seated.length} selected)</h2>
         {active.length === 0 ? (
           <p className="empty-state">No active players. Add some on the Players tab first.</p>
         ) : (
@@ -105,10 +108,10 @@ export default function PartnerSetup() {
         </div>
       </div>
 
-      <button className="btn primary" disabled={seated.length !== 4 || starting} onClick={handleStart}>
+      <button className="btn primary" disabled={seated.length < MIN_PLAYERS || starting} onClick={handleStart}>
         {starting ? "Starting…" : "Start game"}
       </button>
-      {seated.length !== 4 && <p className="empty-state">Pick exactly 4 players to start.</p>}
+      {seated.length < MIN_PLAYERS && <p className="empty-state">Pick at least {MIN_PLAYERS} players to start.</p>}
     </div>
   );
 }

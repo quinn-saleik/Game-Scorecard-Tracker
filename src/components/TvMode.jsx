@@ -52,123 +52,34 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
       </button>
       {open &&
         createPortal(
-          <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 9999,
-              background: "radial-gradient(ellipse at top, #223247 0%, #10161f 70%)",
-              color: "#eef1f6",
-              display: "flex",
-              flexDirection: "column",
-              padding: "max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom))",
-              fontFamily: '"Bitter", Georgia, "Iowan Old Style", serif',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Exit TV mode"
-              style={{
-                position: "absolute",
-                top: "max(16px, env(safe-area-inset-top))",
-                right: 20,
-                background: "rgba(238,241,246,0.1)",
-                border: "2px solid rgba(238,241,246,0.35)",
-                color: "#eef1f6",
-                borderRadius: 12,
-                width: 48,
-                height: 48,
-                fontSize: 20,
-                cursor: "pointer",
-              }}
-            >
+          <div className="tv-mode-overlay">
+            <button type="button" className="tv-mode-close" onClick={() => setOpen(false)} aria-label="Exit TV mode">
               ✕
             </button>
 
-            <div style={{ textAlign: "center", marginTop: 8, marginBottom: "3vh" }}>
-              <div style={{ fontSize: "clamp(32px, 6vw, 56px)" }}>{icon}</div>
-              <h1
-                style={{
-                  fontSize: "clamp(28px, 5vw, 48px)",
-                  fontWeight: 800,
-                  margin: "4px 0 0",
-                  color: "#eef1f6",
-                }}
-              >
-                {gameName}
-              </h1>
-              {statusLine && (
-                <p style={{ fontSize: "clamp(14px, 2vw, 20px)", color: "#c9ab68", margin: "6px 0 0", letterSpacing: "0.03em" }}>
-                  {statusLine}
-                </p>
-              )}
+            <div className="tv-mode-header">
+              <div className="tv-mode-icon">{icon}</div>
+              <h1 className="tv-mode-title">{gameName}</h1>
+              {statusLine && <p className="tv-mode-status">{statusLine}</p>}
             </div>
 
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: "1.4vh",
-                justifyContent: "center",
-                maxWidth: 900,
-                width: "100%",
-                margin: "0 auto",
-                overflowY: "auto",
-              }}
-            >
+            <div className="tv-mode-rows">
               {rows.map((r, i) => (
-                <div
-                  key={r.key}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "3vw",
-                    padding: "1.6vh 3vw",
-                    borderRadius: 16,
-                    background: r.isLeader ? "rgba(171,138,63,0.22)" : "rgba(238,241,246,0.05)",
-                    border: r.isLeader ? "2px solid #ab8a3f" : "2px solid transparent",
-                  }}
-                >
-                  <span style={{ fontSize: "clamp(20px, 3vw, 32px)", color: "#90a0b2", width: "2ch", flexShrink: 0 }}>
-                    {r.isLeader ? "👑" : `${i + 1}`}
-                  </span>
+                <div key={r.key} className={`tv-mode-row ${r.isLeader ? "leader" : ""}`}>
+                  <span className="tv-mode-rank">{r.isLeader ? "👑" : `${i + 1}`}</span>
                   {(r.color || r.avatar || r.photo) && (
                     <PlayerDot color={r.color} avatar={r.avatar} photo={r.photo} />
                   )}
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: "clamp(20px, 3.4vw, 36px)",
-                      fontWeight: 700,
-                      color: "#eef1f6",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {r.label}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: '"Courier Prime", "Courier New", monospace',
-                      fontVariantNumeric: "tabular-nums",
-                      fontSize: "clamp(24px, 4.2vw, 44px)",
-                      fontWeight: 700,
-                      color: r.isLeader ? "#d9c17f" : "#eef1f6",
-                    }}
-                  >
+                  <span className="tv-mode-name">{r.label}</span>
+                  <span className={`tv-mode-score ${r.isLeader ? "leader" : ""}`}>
                     {r.score}
-                    {unitLabel && <span style={{ fontSize: "0.4em", marginLeft: 6, color: "#90a0b2" }}>{unitLabel}</span>}
+                    {unitLabel && <span className="tv-mode-unit">{unitLabel}</span>}
                   </span>
                 </div>
               ))}
             </div>
 
-            <p style={{ textAlign: "center", color: "#626e7d", fontSize: 13, margin: "3vh 0 0" }}>
-              Updates live as scores are entered — tap ✕ or press Esc to exit
-            </p>
+            <p className="tv-mode-footer">Updates live as scores are entered — tap ✕ or press Esc to exit</p>
           </div>,
           document.body
         )}

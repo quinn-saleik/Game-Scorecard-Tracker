@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   subscribeToSession,
@@ -16,6 +16,16 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
+
+// In-progress bidding/scoring for the CURRENT round lives on the session
+// document itself (session.live), not in this component's local state.
+// It used to be local-only, which meant only the phone actively entering
+// bids ever saw them — every other device's TV mode just sat blank because
+// nothing about "who's bid what so far" was ever written anywhere they
+// could read it. Writing it straight to Firestore as each bid/score is
+// entered means every device subscribed to the session — TV mode included
+// — sees the same live progress, not just the one phone doing the tapping.
+const DEFAULT_LIVE = { phase: "bidding", biddingIdx: 0, bids: {}, scoringIdx: 0, results: {} };
 
 function NumberPicker({ max, disabledValue, onSelect }) {
   const options = Array.from({ length: max + 1 }, (_, i) => i);
@@ -41,51 +51,9 @@ export default function OhHeckPlay() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
-  const [phase, setPhase] = useState("bidding"); // bidding | declare | scoring | confirm
-  const [bids, setBids] = useState({});
-  const [biddingIdx, setBiddingIdx] = useState(0);
-  const [results, setResults] = useState({});
-  const [scoringIdx, setScoringIdx] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [conflictNotice, setConflictNotice] = useState(null);
-  // Set right before this device writes a round (save or undo) so the
-  // reset effect below can tell "I just saved" apart from "someone else's
-  // phone changed this game while I was mid-bid" — see that effect.
-  const changedByThisDeviceRef = useRef(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
-
-  // Whenever the saved round count changes (a round was just written, or
-  // undone), figure out whether more rounds remain or the game is over.
-  // This game is shared in real time — if a second phone on the same
-  // session saves a round while this device is still mid-bid/scoring for
-  // what it thought was the current hand, that local progress is now
-  // stale and gets reset here. That's the right outcome (the hand really
-  // did move on), but silently wiping someone's half-entered bids with no
-  // explanation reads as a bug ("it timed out and went back to bidding").
-  // Surface a brief notice instead of resetting silently.
-  useEffect(() => {
-    if (!session) return;
-    const seq = session.config?.roundSequence || [];
-    const changedByThisDevice = changedByThisDeviceRef.current;
-    changedByThisDeviceRef.current = false;
-    const hadUnsavedProgress = phase !== "bidding" || biddingIdx > 0 || Object.keys(bids).length > 0;
-    let timer;
-    if (!changedByThisDevice && hadUnsavedProgress) {
-      setConflictNotice("Someone already saved this hand from another device — moved you to the next one.");
-      timer = setTimeout(() => setConflictNotice(null), 7000);
-    }
-    if (session.rounds.length >= seq.length) {
-      setPhase("confirm");
-    } else {
-      setPhase("bidding");
-      setBids({});
-      setBiddingIdx(0);
-      setResults({});
-      setScoringIdx(0);
-    }
-    return () => clearTimeout(timer);
-  }, [session?.rounds?.length]);
 
   if (!session) {
     return <p className="empty-state">Loading game…</p>;
@@ -107,13 +75,20 @@ export default function OhHeckPlay() {
   const rounds = session.rounds || [];
   const totals = session.totals || {};
   const currentMax = Math.max(0, ...Object.values(totals));
+  const allRoundsDone = roundIndex >= roundSequence.length;
 
-  // Computed here (rather than after the confirm-phase return below) so
-  // both this screen's live bidding order AND the TV-mode row labels below
-  // can show whose turn it is and what they've bid so far — the "someone
-  // has to ask the phone-holder what's going on" complaint was really a
-  // visibility gap, not a logic bug (bid order/rotation itself was already
-  // correct).
+  // Live, shared-across-devices progress for the round in play.
+  const live = session.live || DEFAULT_LIVE;
+  const phase = allRoundsDone ? "confirm" : live.phase || "bidding";
+  const biddingIdx = live.biddingIdx || 0;
+  const bids = live.bids || {};
+  const scoringIdx = live.scoringIdx || 0;
+  const results = live.results || {};
+
+  async function updateLive(patch) {
+    await updateSession(sessionId, { live: { ...live, ...patch } });
+  }
+
   const cardsThisRound = roundSequence[roundIndex];
   const dealerIndex = getDealerIndex(roundIndex, session.players.length);
   const dealer = session.players[dealerIndex];
@@ -129,8 +104,10 @@ export default function OhHeckPlay() {
       if (phase === "bidding") {
         if (bids[p.id] !== undefined) label += ` · bid ${bids[p.id]}`;
         else if (p.id === currentBidderId) label += " · bidding…";
-      } else if (phase === "scoring" && results[p.id] === undefined && bids[p.id] !== undefined) {
+      } else if ((phase === "scoring" || phase === "declare") && results[p.id] === undefined && bids[p.id] !== undefined) {
         label += ` · bid ${bids[p.id]}`;
+      } else if (phase === "scoring" && results[p.id] !== undefined) {
+        label += ` · got ${results[p.id].tricksWon}`;
       }
       return {
         key: p.id,
@@ -145,7 +122,6 @@ export default function OhHeckPlay() {
 
   async function undoLastRound() {
     setSaving(true);
-    changedByThisDeviceRef.current = true;
     try {
       const last = rounds[rounds.length - 1];
       const newTotals = { ...totals };
@@ -196,7 +172,6 @@ export default function OhHeckPlay() {
           <span><span className="suit black">🂡</span> Oh Heck! — Final round complete</span>
           <TvMode gameName="Oh Heck!" icon="🂡" statusLine="Final round complete" rows={tvRows} />
         </h1>
-        {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")}</h2>
           <table className="score-table">
@@ -244,13 +219,10 @@ export default function OhHeckPlay() {
       : `Round ${roundIndex + 1} of ${roundSequence.length}`;
 
   const header = (
-    <>
-      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-        <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
-        <TvMode gameName="Oh Heck!" icon="🂡" statusLine={statusLine} rows={tvRows} />
-      </h1>
-      {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
-    </>
+    <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+      <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
+      <TvMode gameName="Oh Heck!" icon="🂡" statusLine={statusLine} rows={tvRows} />
+    </h1>
   );
 
   const undoButton = rounds.length > 0 && (
@@ -325,12 +297,12 @@ export default function OhHeckPlay() {
             max={cardsThisRound}
             disabledValue={forbidden}
             onSelect={(n) => {
-              setBids((prev) => ({ ...prev, [currentBidder.id]: n }));
-              if (isLastBidder) {
-                setPhase("declare");
-              } else {
-                setBiddingIdx((i) => i + 1);
-              }
+              const newBids = { ...bids, [currentBidder.id]: n };
+              updateLive(
+                isLastBidder
+                  ? { phase: "declare", bids: newBids }
+                  : { biddingIdx: biddingIdx + 1, bids: newBids }
+              );
             }}
           />
           {biddingIdx > 0 && (
@@ -339,7 +311,12 @@ export default function OhHeckPlay() {
                 type="button"
                 className="btn ghost"
                 style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
-                onClick={() => setBiddingIdx((i) => i - 1)}
+                onClick={() => {
+                  const prevBidder = bidOrder[biddingIdx - 1];
+                  const newBids = { ...bids };
+                  delete newBids[prevBidder.id];
+                  updateLive({ biddingIdx: biddingIdx - 1, bids: newBids });
+                }}
               >
                 ← Back
               </button>
@@ -381,11 +358,11 @@ export default function OhHeckPlay() {
               type="button"
               className="btn ghost"
               style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
-              onClick={() => { setPhase("bidding"); setBiddingIdx(0); }}
+              onClick={() => updateLive({ phase: "bidding", biddingIdx: 0 })}
             >
               ← Edit bids
             </button>
-            <button className="btn primary" onClick={() => setPhase("scoring")}>
+            <button className="btn primary" onClick={() => updateLive({ phase: "scoring", scoringIdx: 0 })}>
               Move to scorekeeping
             </button>
           </div>
@@ -406,7 +383,6 @@ export default function OhHeckPlay() {
 
       async function saveRound() {
         setSaving(true);
-        changedByThisDeviceRef.current = true;
         try {
           const totalBids = Object.values(bids).reduce((a, b) => a + b, 0);
           const roundRecord = {
@@ -426,6 +402,7 @@ export default function OhHeckPlay() {
           await updateSession(sessionId, {
             rounds: [...rounds, roundRecord],
             totals: newTotals,
+            live: DEFAULT_LIVE,
           });
         } finally {
           setSaving(false);
@@ -454,7 +431,7 @@ export default function OhHeckPlay() {
                 type="button"
                 className="btn ghost"
                 style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
-                onClick={() => setScoringIdx((i) => i - 1)}
+                onClick={() => updateLive({ scoringIdx: scoringIdx - 1 })}
               >
                 ← Edit last score
               </button>
@@ -496,11 +473,11 @@ export default function OhHeckPlay() {
             <button
               className="btn primary"
               onClick={() => {
-                setResults((prev) => ({
-                  ...prev,
+                const newResults = {
+                  ...results,
                   [currentScorer.id]: { hitBid: true, tricksWon: theirBid, score: theirBid + 10 },
-                }));
-                setScoringIdx((i) => i + 1);
+                };
+                updateLive({ results: newResults, scoringIdx: scoringIdx + 1 });
               }}
             >
               Got their bid ({theirBid} + 10 = {theirBid + 10})
@@ -511,11 +488,8 @@ export default function OhHeckPlay() {
             max={cardsThisRound}
             disabledValue={theirBid}
             onSelect={(n) => {
-              setResults((prev) => ({
-                ...prev,
-                [currentScorer.id]: { hitBid: false, tricksWon: n, score: n },
-              }));
-              setScoringIdx((i) => i + 1);
+              const newResults = { ...results, [currentScorer.id]: { hitBid: false, tricksWon: n, score: n } };
+              updateLive({ results: newResults, scoringIdx: scoringIdx + 1 });
             }}
           />
           {scoringIdx > 0 && (
@@ -524,7 +498,7 @@ export default function OhHeckPlay() {
                 type="button"
                 className="btn ghost"
                 style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
-                onClick={() => setScoringIdx((i) => i - 1)}
+                onClick={() => updateLive({ scoringIdx: scoringIdx - 1 })}
               >
                 ← Back
               </button>

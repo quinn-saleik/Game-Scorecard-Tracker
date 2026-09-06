@@ -11,6 +11,7 @@ const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const Stats = lazy(() => import("./pages/Stats"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const Recap = lazy(() => import("./pages/Recap"));
+const GameHistoryDetail = lazy(() => import("./pages/GameHistoryDetail"));
 const Feedback = lazy(() => import("./pages/Feedback"));
 const Flip7Setup = lazy(() => import("./pages/games/flip7/Flip7Setup"));
 const Flip7Play = lazy(() => import("./pages/games/flip7/Flip7Play"));
@@ -66,6 +67,7 @@ function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="/hall-of-fame" element={<HallOfFame />} />
         <Route path="/recap/:sessionId" element={<Recap />} />
+        <Route path="/history/:sessionId" element={<GameHistoryDetail />} />
         {/* Not in the nav bar on purpose — see src/pages/Feedback.jsx. */}
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/flip7/setup" element={<Flip7Setup />} />

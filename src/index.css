@@ -400,3 +400,130 @@ table.score-table td.leader {
   background: var(--card-white);
   color: var(--text-on-surface);
 }
+
+/* ---- TV mode ------------------------------------------------------
+   Always-dark fullscreen scoreboard, colors hardcoded on purpose (see
+   TvMode.jsx) — deliberately ignores the light/dark toggle. Portrait
+   values below match the sizing TvMode used to compute inline; the
+   landscape override further down is the actual fix for "the header
+   eats the screen when the phone is sideways". */
+.tv-mode-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(ellipse at top, #223247 0%, #10161f 70%);
+  color: #eef1f6;
+  display: flex;
+  flex-direction: column;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  font-family: "Bitter", Georgia, "Iowan Old Style", serif;
+}
+
+.tv-mode-close {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 20px;
+  background: rgba(238, 241, 246, 0.1);
+  border: 2px solid rgba(238, 241, 246, 0.35);
+  color: #eef1f6;
+  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.tv-mode-header {
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 3vh;
+}
+.tv-mode-icon { font-size: clamp(32px, 6vw, 56px); }
+.tv-mode-title { font-size: clamp(28px, 5vw, 48px); font-weight: 800; margin: 4px 0 0; color: #eef1f6; }
+.tv-mode-status { font-size: clamp(14px, 2vw, 20px); color: #c9ab68; margin: 6px 0 0; letter-spacing: 0.03em; }
+
+.tv-mode-rows {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.tv-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 3vw;
+  padding: 1.6vh 3vw;
+  border-radius: 16px;
+  background: rgba(238, 241, 246, 0.05);
+  border: 2px solid transparent;
+}
+.tv-mode-row.leader {
+  background: rgba(171, 138, 63, 0.22);
+  border-color: #ab8a3f;
+}
+
+.tv-mode-rank { font-size: clamp(20px, 3vw, 32px); color: #90a0b2; width: 2ch; flex-shrink: 0; }
+.tv-mode-name {
+  flex: 1;
+  font-size: clamp(20px, 3.4vw, 36px);
+  font-weight: 700;
+  color: #eef1f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tv-mode-score {
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(24px, 4.2vw, 44px);
+  font-weight: 700;
+  color: #eef1f6;
+}
+.tv-mode-score.leader { color: #d9c17f; }
+.tv-mode-unit { font-size: 0.4em; margin-left: 6px; color: #90a0b2; }
+
+.tv-mode-footer { text-align: center; color: #626e7d; font-size: 13px; margin: 3vh 0 0; }
+
+/* Landscape phones: a short, wide viewport. The portrait layout above
+   stacks the header (icon + title + status, each sized off vw) above the
+   scoreboard, so on a wide-but-short screen that header block alone can
+   eat most of the available height before the rows even start, leaving a
+   cramped scrollable strip you can barely read — the reported bug. Below
+   a landscape-shaped, short viewport, put a compact header beside the
+   rows instead of above them, and size text off vh (the scarce dimension
+   here) instead of vw so nothing balloons just because the screen is
+   wide. Tablets in landscape have enough height that this never kicks
+   in, so they keep the portrait-style stacked layout. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .tv-mode-overlay {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 12px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+    gap: 16px;
+  }
+  .tv-mode-header {
+    flex: 0 0 auto;
+    width: clamp(140px, 22vw, 220px);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+  }
+  .tv-mode-icon { font-size: clamp(22px, 5vh, 36px); }
+  .tv-mode-title { font-size: clamp(16px, 4vh, 24px); margin-top: 2px; }
+  .tv-mode-status { font-size: clamp(10px, 2.2vh, 14px); margin-top: 4px; }
+  .tv-mode-rows { gap: 0.8vh; max-width: none; }
+  .tv-mode-row { padding: 0.8vh 2vw; gap: 2vw; border-radius: 10px; }
+  .tv-mode-rank { font-size: clamp(14px, 3vh, 20px); }
+  .tv-mode-name { font-size: clamp(14px, 3.4vh, 22px); }
+  .tv-mode-score { font-size: clamp(16px, 4vh, 26px); }
+  .tv-mode-footer { display: none; }
+  .tv-mode-close { width: 36px; height: 36px; font-size: 16px; top: 8px; right: 8px; }
+}

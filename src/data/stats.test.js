@@ -33,7 +33,7 @@ function makeSession({ id, gameType, config, playerIds, winnerIds, totals, compl
 }
 
 describe("computePlayerStats", () => {
-  it("tallies games played, wins, win %, and avg score per player", () => {
+  it("tallies games played, wins, and win % per player", () => {
     const sessions = [
       makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], totals: { p1: 200, p2: 150 }, completedAt: "2026-01-01" }),
       makeSession({ id: "s2", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], totals: { p1: 100, p2: 210 }, completedAt: "2026-01-02" }),
@@ -43,7 +43,6 @@ describe("computePlayerStats", () => {
     expect(p1.gamesPlayed).toBe(2);
     expect(p1.wins).toBe(1);
     expect(p1.winPct).toBe(50);
-    expect(p1.avgScore).toBe(150); // (200 + 100) / 2
 
     const p3 = stats.find((s) => s.playerId === "p3");
     expect(p3.gamesPlayed).toBe(0);

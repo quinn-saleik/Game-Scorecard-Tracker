@@ -68,8 +68,6 @@ export function computePlayerStats(players, completedSessions) {
         active: p.active,
         gamesPlayed: 0,
         wins: 0,
-        totalScore: 0,
-        scoreCount: 0,
         gameCounts: {}, // groupKey -> {label, count}
         lastPlayedAt: null,
       },
@@ -77,7 +75,6 @@ export function computePlayerStats(players, completedSessions) {
   );
 
   for (const session of completedSessions) {
-    const totals = session.totals || {};
     const groupKey = gameGroupKey(session);
     const groupLabel = gameGroupLabel(session);
     for (const player of session.players || []) {
@@ -89,10 +86,6 @@ export function computePlayerStats(players, completedSessions) {
       entry.gameCounts[groupKey] = g;
       if ((session.winnerIds || []).includes(player.id)) {
         entry.wins += 1;
-      }
-      if (typeof totals[player.id] === "number") {
-        entry.totalScore += totals[player.id];
-        entry.scoreCount += 1;
       }
       const completedAt = session.completedAt?.toDate?.() || null;
       if (completedAt && (!entry.lastPlayedAt || completedAt > entry.lastPlayedAt)) {
@@ -116,8 +109,6 @@ export function computePlayerStats(players, completedSessions) {
         gamesPlayed: e.gamesPlayed,
         wins: e.wins,
         winPct: e.gamesPlayed ? Math.round((e.wins / e.gamesPlayed) * 100) : 0,
-        avgScore: e.scoreCount ? Math.round(e.totalScore / e.scoreCount) : 0,
-        totalScore: e.totalScore,
         favoriteGame: favoriteEntry ? favoriteEntry.label : "—",
         lastPlayedAt: e.lastPlayedAt,
       };
