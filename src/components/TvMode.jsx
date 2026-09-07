@@ -17,12 +17,12 @@ import PlayerDot from "./PlayerDot";
 // rather than pulled from the (possibly-flipped) CSS custom properties.
 //
 // rows: pre-sorted best-to-worst by the caller (every game's "who's
-// winning" rule is different — lowest wins in Hearts, a team total in
-// Spades, lives left in 31 — so TvMode just renders whatever order it's
-// given rather than re-deriving it). Each row: { key, label, score,
+// winning" rule is different — lowest wins in Royal Rum, a team total in
+// Catchphrase, lives left in 31 — so TvMode just renders whatever order
+// it's given rather than re-deriving it). Each row: { key, label, score,
 // isLeader, color?, avatar?, photo? }. Omit color/avatar/photo for
-// team rows (Catchphrase, Spades, Euchre team variants) — the row still
-// renders fine without a dot.
+// team rows (Catchphrase, Codenames, Euchre team variants) — the row
+// still renders fine without a dot.
 export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) {
   const [open, setOpen] = useState(false);
 

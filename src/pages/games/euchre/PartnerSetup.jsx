@@ -60,16 +60,19 @@ export default function PartnerSetup() {
         </p>
         <p style={{ margin: "0 0 10px" }}>
           <strong>How to play:</strong> Deal and call trump using your usual euchre rules.
-          Whoever bids the most names trump. They can go alone, or call a partner (often "best
+          Whoever bids the most calls one of the 4 suits — or Hi-No (no trump, high card wins
+          each trick) or Lo-No (no trump, low card wins). Each player only gets to call Hi-No or
+          Lo-No once per game; after that they're locked to suits for the rest of the game
+          (calling suit trump has no limit). They can go alone, or call a partner (often "best
           card" or a named card) to play with them for that hand only — the rest of the table
           defends.
         </p>
         <p style={{ margin: 0 }}>
-          <strong>Scoring:</strong> After the hand, enter who bid and how much, then how many
-          tricks they actually took. Making the bid or better scores that many tricks; falling
-          short scores negative their bid instead. Then say who their partner was (or that they
-          went alone) — the partner gets that same score. Everyone else shares one "how many did
-          everyone else get?" entry. First to the target wins.
+          <strong>Scoring:</strong> After the hand, enter who bid, what they called, and how
+          much, then how many tricks they actually took. Making the bid or better scores that
+          many tricks; falling short scores negative their bid instead. Then say who their
+          partner was (or that they went alone) — the partner gets that same score. Everyone
+          else shares one "how many did everyone else get?" entry. First to the target wins.
         </p>
       </GameInstructions>
 

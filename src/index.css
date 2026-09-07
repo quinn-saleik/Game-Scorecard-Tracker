@@ -60,12 +60,14 @@ html.dark {
    size there instead of erroring. */
 html.text-lg .app-main,
 html.text-lg .top-bar,
-html.text-lg .nav-bar {
+html.text-lg .nav-bar,
+html.text-lg .tv-mode-overlay {
   zoom: 1.15;
 }
 html.text-xl .app-main,
 html.text-xl .top-bar,
-html.text-xl .nav-bar {
+html.text-xl .nav-bar,
+html.text-xl .tv-mode-overlay {
   zoom: 1.3;
 }
 
@@ -446,7 +448,12 @@ table.score-table td.leader {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.4vh;
+  /* center (not stretch) so each row hugs its own content instead of
+     spanning the full container width — a row full of blank background
+     between a short name and its right-flushed score is exactly the
+     "distance between name and score" complaint this replaces. */
+  align-items: center;
+  gap: 1.1vh;
   justify-content: center;
   max-width: 900px;
   width: 100%;
@@ -457,8 +464,8 @@ table.score-table td.leader {
 .tv-mode-row {
   display: flex;
   align-items: center;
-  gap: 3vw;
-  padding: 1.6vh 3vw;
+  gap: 1.6vw;
+  padding: 1.2vh 2.4vw;
   border-radius: 16px;
   background: rgba(238, 241, 246, 0.05);
   border: 2px solid transparent;
@@ -470,13 +477,13 @@ table.score-table td.leader {
 
 .tv-mode-rank { font-size: clamp(20px, 3vw, 32px); color: #90a0b2; width: 2ch; flex-shrink: 0; }
 .tv-mode-name {
-  flex: 1;
   font-size: clamp(20px, 3.4vw, 36px);
   font-weight: 700;
   color: #eef1f6;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 50vw;
 }
 .tv-mode-score {
   font-family: "Courier Prime", "Courier New", monospace;
@@ -484,6 +491,7 @@ table.score-table td.leader {
   font-size: clamp(24px, 4.2vw, 44px);
   font-weight: 700;
   color: #eef1f6;
+  margin-left: 4px;
 }
 .tv-mode-score.leader { color: #d9c17f; }
 .tv-mode-unit { font-size: 0.4em; margin-left: 6px; color: #90a0b2; }

@@ -15,8 +15,6 @@ const GAMES = [
   { icon: "♦", label: "Royal Rum", path: "/royal-rum/setup", soon: false, gameTypes: ["royal-rum"] },
   { icon: "🎤", label: "Catchphrase", path: "/catchphrase/setup", soon: false, gameTypes: ["catchphrase"] },
   { icon: "🂱", label: "31", path: "/thirty-one/setup", soon: false, gameTypes: ["thirty-one"] },
-  { icon: "♥", label: "Hearts", path: "/hearts/setup", soon: false, gameTypes: ["hearts"] },
-  { icon: "♠", label: "Spades", path: "/spades/setup", soon: false, gameTypes: ["spades"] },
   { icon: "⛳", label: "Golf", path: "/golf/setup", soon: false, gameTypes: ["golf"] },
   { icon: "🎭", label: "Secret Hitler", path: "/secret-hitler/setup", soon: false, gameTypes: ["secret-hitler"] },
   { icon: "🔺", label: "Dutch Blitz", path: "/dutch-blitz/setup", soon: false, gameTypes: ["dutch-blitz"] },

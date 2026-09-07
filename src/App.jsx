@@ -36,10 +36,6 @@ const ThirtyOneSetup = lazy(() => import("./pages/games/thirty-one/ThirtyOneSetu
 const ThirtyOnePlay = lazy(() => import("./pages/games/thirty-one/ThirtyOnePlay"));
 const RoyalRumSetup = lazy(() => import("./pages/games/royal-rum/RoyalRumSetup"));
 const RoyalRumPlay = lazy(() => import("./pages/games/royal-rum/RoyalRumPlay"));
-const HeartsSetup = lazy(() => import("./pages/games/hearts/HeartsSetup"));
-const HeartsPlay = lazy(() => import("./pages/games/hearts/HeartsPlay"));
-const SpadesSetup = lazy(() => import("./pages/games/spades/SpadesSetup"));
-const SpadesPlay = lazy(() => import("./pages/games/spades/SpadesPlay"));
 const GolfSetup = lazy(() => import("./pages/games/golf/GolfSetup"));
 const GolfPlay = lazy(() => import("./pages/games/golf/GolfPlay"));
 const SecretHitlerSetup = lazy(() => import("./pages/games/secret-hitler/SecretHitlerSetup"));
@@ -94,10 +90,6 @@ function App() {
         <Route path="/thirty-one/play/:sessionId" element={<ThirtyOnePlay />} />
         <Route path="/royal-rum/setup" element={<RoyalRumSetup />} />
         <Route path="/royal-rum/play/:sessionId" element={<RoyalRumPlay />} />
-        <Route path="/hearts/setup" element={<HeartsSetup />} />
-        <Route path="/hearts/play/:sessionId" element={<HeartsPlay />} />
-        <Route path="/spades/setup" element={<SpadesSetup />} />
-        <Route path="/spades/play/:sessionId" element={<SpadesPlay />} />
         <Route path="/golf/setup" element={<GolfSetup />} />
         <Route path="/golf/play/:sessionId" element={<GolfPlay />} />
         <Route path="/secret-hitler/setup" element={<SecretHitlerSetup />} />

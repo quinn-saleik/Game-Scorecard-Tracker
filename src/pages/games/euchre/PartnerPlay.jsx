@@ -14,12 +14,36 @@ import { recomputeTotals } from "../../../data/rounds";
 
 const NO_PARTNER = "none"; // sentinel: bidder went alone
 
+// Bidder calls one of the 4 suits, or a one-time-per-game "no trump" call
+// (high card wins every trick, or low card wins every trick). Once a
+// player has called either Hi-No or Lo-No once, they can't call either
+// again for the rest of THIS game — calling suit trump is unlimited, only
+// the no-trump calls are one-shot. Tracked per player, derived from the
+// rounds already played (see noTrumpUsedIds below) rather than a separate
+// stored flag, so undoing/deleting a hand automatically un-burns it.
+const TRUMP_OPTIONS = [
+  { key: "♠", label: "Spades", suitColor: "black" },
+  { key: "♥", label: "Hearts", suitColor: "red" },
+  { key: "♦", label: "Diamonds", suitColor: "red" },
+  { key: "♣", label: "Clubs", suitColor: "black" },
+  { key: "hi-no", label: "Hi-No" },
+  { key: "lo-no", label: "Lo-No" },
+];
+const NO_TRUMP_KEYS = new Set(["hi-no", "lo-no"]);
+
+function trumpDisplay(key) {
+  if (!key) return null;
+  const opt = TRUMP_OPTIONS.find((o) => o.key === key);
+  return opt ? opt.label : key;
+}
+
 export default function PartnerPlay() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
-  const [phase, setPhase] = useState("bidder"); // bidder | bid | tricks | partner | others | confirm
+  const [phase, setPhase] = useState("bidder"); // bidder | trump | bid | tricks | partner | others | confirm
   const [bidderId, setBidderId] = useState(null);
+  const [trump, setTrump] = useState(null);
   const [bid, setBid] = useState("");
   const [tricks, setTricks] = useState("");
   const [partnerId, setPartnerId] = useState(null); // player id, NO_PARTNER, or null (not chosen yet)
@@ -51,6 +75,7 @@ export default function PartnerPlay() {
     }
     setPhase("bidder");
     setBidderId(null);
+    setTrump(null);
     setBid("");
     setTricks("");
     setPartnerId(null);
@@ -79,18 +104,29 @@ export default function PartnerPlay() {
   const potentialWinners = session.players.filter(
     (p) => (totals[p.id] || 0) === leaderTotal && leaderTotal >= threshold
   );
+  // Whoever has already called Hi-No or Lo-No once this game can't call
+  // either again — derived fresh from the saved hands every render so an
+  // undone/deleted hand automatically un-burns it.
+  const noTrumpUsedIds = new Set(
+    rounds.filter((r) => NO_TRUMP_KEYS.has(r.trump)).map((r) => r.bidderId)
+  );
   const tvRows = session.players
     .slice()
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
-    .map((p) => ({
-      key: p.id,
-      label: shortName(p),
-      score: totals[p.id] || 0,
-      isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal > 0,
-      color: p.color,
-      avatar: p.avatar,
-      photo: p.photo,
-    }));
+    .map((p) => {
+      let label = shortName(p);
+      if (!pendingFinish && bidderId === p.id && trump) label += ` · ${trumpDisplay(trump)}`;
+      if (noTrumpUsedIds.has(p.id)) label += " 🌀";
+      return {
+        key: p.id,
+        label,
+        score: totals[p.id] || 0,
+        isLeader: (totals[p.id] || 0) === leaderTotal && leaderTotal > 0,
+        color: p.color,
+        avatar: p.avatar,
+        photo: p.photo,
+      };
+    });
 
   const bidder = bidderId ? session.players.find((p) => p.id === bidderId) : null;
   const partner =
@@ -168,6 +204,7 @@ export default function PartnerPlay() {
       const newRound = {
         roundNumber: rounds.length + 1,
         bidderId,
+        trump,
         bid: bidVal,
         tricks: tricksVal,
         partnerId: partner ? partner.id : null,
@@ -188,7 +225,12 @@ export default function PartnerPlay() {
         <tbody>
           {session.players.map((p) => (
             <tr key={p.id}>
-              <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
+              <td>
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
+                {noTrumpUsedIds.has(p.id) && (
+                  <span title="Already used their one Hi-No/Lo-No call this game"> 🌀</span>
+                )}
+              </td>
               <td className={(totals[p.id] || 0) === leaderTotal && leaderTotal > 0 ? "leader" : ""}>
                 {totals[p.id] || 0}
               </td>
@@ -240,7 +282,12 @@ export default function PartnerPlay() {
     <div>
       <h1 className="page-title" style={{ justifyContent: "space-between" }}>
         <span><span className="suit black">🤝</span> Euchre (pick your partner) — Hand {rounds.length + 1}</span>
-        <TvMode gameName="Euchre (pick your partner)" icon="🤝" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
+        <TvMode
+          gameName="Euchre (pick your partner)"
+          icon="🤝"
+          statusLine={`Hand ${rounds.length + 1} · first to ${threshold}${trump ? ` · ${trumpDisplay(trump)}` : ""}`}
+          rows={tvRows}
+        />
       </h1>
       {conflictNotice && <div className="warning-banner">{conflictNotice}</div>}
       {scoreTable}
@@ -253,12 +300,48 @@ export default function PartnerPlay() {
               <span
                 key={p.id}
                 className="player-chip"
-                onClick={() => { setBidderId(p.id); setPhase("bid"); }}
+                onClick={() => { setBidderId(p.id); setPhase("trump"); }}
               >
                 <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                 {shortName(p)}
+                {noTrumpUsedIds.has(p.id) && " 🌀"}
               </span>
             ))}
+          </div>
+          {noTrumpUsedIds.size > 0 && (
+            <p style={{ color: "var(--muted)", fontSize: 13 }}>🌀 = already used their one Hi-No/Lo-No call this game</p>
+          )}
+        </div>
+      )}
+
+      {phase === "trump" && bidder && (
+        <div className="card-surface">
+          <h2>What did <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} call?</h2>
+          {noTrumpUsedIds.has(bidderId) && (
+            <p style={{ color: "var(--muted)", fontSize: 13 }}>
+              {shortName(bidder)} already used their one Hi-No/Lo-No call this game — suits only.
+            </p>
+          )}
+          <div className="chip-row">
+            {TRUMP_OPTIONS.map((opt) => {
+              const disabled = NO_TRUMP_KEYS.has(opt.key) && noTrumpUsedIds.has(bidderId);
+              return (
+                <span
+                  key={opt.key}
+                  className="player-chip"
+                  onClick={() => { if (!disabled) { setTrump(opt.key); setPhase("bid"); } }}
+                  style={disabled ? { opacity: 0.4, cursor: "not-allowed" } : undefined}
+                  title={disabled ? "Already used this game" : undefined}
+                >
+                  {opt.suitColor ? <span className={`suit ${opt.suitColor}`}>{opt.key}</span> : "🌀"} {opt.label}
+                </span>
+              );
+            })}
+          </div>
+          <div className="btn-row" style={{ marginTop: 12 }}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidder")}>
+              ← Back
+            </button>
           </div>
         </div>
       )}
@@ -266,6 +349,7 @@ export default function PartnerPlay() {
       {phase === "bid" && bidder && (
         <div className="card-surface">
           <h2>How much did <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} bid?</h2>
+          <p style={{ color: "var(--muted)", fontSize: 13 }}>Trump: {trumpDisplay(trump)}</p>
           <div className="field">
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <input
@@ -281,7 +365,7 @@ export default function PartnerPlay() {
             </div>
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bidder")}>
+            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("trump")}>
               ← Back
             </button>
             <button className="btn primary" onClick={() => setPhase("tricks")} disabled={bid === ""}>
@@ -382,7 +466,7 @@ export default function PartnerPlay() {
             <thead><tr><th>Player</th><th>Result</th><th>Score</th></tr></thead>
             <tbody>
               <tr>
-                <td><PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} (bid {bidVal})</td>
+                <td><PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} (bid {bidVal}, {trumpDisplay(trump)})</td>
                 <td>{tricksVal} tricks — {bidderMadeIt ? "made it" : "didn't make it"}</td>
                 <td>{bidderDelta >= 0 ? `+${bidderDelta}` : bidderDelta}</td>
               </tr>
