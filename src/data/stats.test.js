@@ -156,7 +156,6 @@ describe("computeAchievements", () => {
     expect(byId["hot-streak"]).toBe(false); // longestStreak < 3
     expect(byId["regular"]).toBe(false); // gamesPlayed < 10
     expect(byId["well-rounded"]).toBe(false); // only 2 distinct games, needs 5
-    expect(byId["sharpshooter"]).toBe(false); // fewer than 5 games played
   });
 
   it("awards Went Alone only when the bidder went alone AND made the bid", () => {
@@ -217,6 +216,99 @@ describe("computeAchievements", () => {
     expect(computeAchievements("p1", players, zeroTricksAllGame).find((b) => b.id === "zero-hero").earned).toBe(true);
   });
 
+  it("awards Survivor for finishing 3-player Euchre with 25+ points", () => {
+    const sessions = [
+      makeSession({ id: "s1", gameType: "euchre-3p", playerIds: ["p1", "p2", "p3"], totals: { p1: 25 }, completedAt: "2026-01-01" }),
+    ];
+    expect(computeAchievements("p1", players, sessions).find((b) => b.id === "survivor").earned).toBe(true);
+
+    const under = [
+      makeSession({ id: "s1", gameType: "euchre-3p", playerIds: ["p1", "p2", "p3"], totals: { p1: 20 }, completedAt: "2026-01-01" }),
+    ];
+    expect(computeAchievements("p1", players, under).find((b) => b.id === "survivor").earned).toBe(false);
+  });
+
+  it("awards Double Trouble only when both other players got set on the SAME round, not just the same game", () => {
+    const sameRound = [
+      makeSession({
+        id: "s1",
+        gameType: "euchre-3p",
+        playerIds: ["p1", "p2", "p3"],
+        rounds: [{ results: { p1: { type: "points", value: 2 }, p2: { type: "set", value: 5 }, p3: { type: "set", value: 5 } } }],
+        completedAt: "2026-01-01",
+      }),
+    ];
+    expect(computeAchievements("p1", players, sameRound).find((b) => b.id === "double-trouble").earned).toBe(true);
+
+    const differentRounds = [
+      makeSession({
+        id: "s2",
+        gameType: "euchre-3p",
+        playerIds: ["p1", "p2", "p3"],
+        rounds: [
+          { results: { p1: { type: "points", value: 2 }, p2: { type: "set", value: 5 }, p3: { type: "points", value: 1 } } },
+          { results: { p1: { type: "points", value: 2 }, p2: { type: "points", value: 1 }, p3: { type: "set", value: 5 } } },
+        ],
+        completedAt: "2026-01-02",
+      }),
+    ];
+    expect(computeAchievements("p1", players, differentRounds).find((b) => b.id === "double-trouble").earned).toBe(false);
+  });
+
+  it("awards Shutout for winning Traditional Euchre while the other team never scored", () => {
+    const shutout = [
+      makeSession({
+        id: "s1",
+        gameType: "euchre-traditional",
+        config: { teamA: ["p1", "p2"], teamB: ["p3"] },
+        playerIds: ["p1", "p2", "p3"],
+        winnerIds: ["p1", "p2"],
+        totals: { p1: 10, p2: 10, p3: 0 },
+        completedAt: "2026-01-01",
+      }),
+    ];
+    expect(computeAchievements("p1", players, shutout).find((b) => b.id === "shutout").earned).toBe(true);
+
+    const notAShutout = [
+      makeSession({
+        id: "s2",
+        gameType: "euchre-traditional",
+        config: { teamA: ["p1", "p2"], teamB: ["p3"] },
+        playerIds: ["p1", "p2", "p3"],
+        winnerIds: ["p1", "p2"],
+        totals: { p1: 10, p2: 10, p3: 3 },
+        completedAt: "2026-01-02",
+      }),
+    ];
+    expect(computeAchievements("p1", players, notAShutout).find((b) => b.id === "shutout").earned).toBe(false);
+  });
+
+  it("awards Skunked for a 12-0 raw split in a single 2-player Euchre hand, either direction", () => {
+    const callerSkunkedThem = [
+      makeSession({
+        id: "s1",
+        gameType: "euchre-2p",
+        playerIds: ["p1", "p2"],
+        rounds: [{ callerId: "p1", callerPoints: 12, made: true, scores: { p1: 12, p2: 0 } }],
+        completedAt: "2026-01-01",
+      }),
+    ];
+    expect(computeAchievements("p1", players, callerSkunkedThem).find((b) => b.id === "skunked").earned).toBe(true);
+    expect(computeAchievements("p2", players, callerSkunkedThem).find((b) => b.id === "skunked").earned).toBe(false);
+
+    const nonCallerSkunkedCaller = [
+      makeSession({
+        id: "s2",
+        gameType: "euchre-2p",
+        playerIds: ["p1", "p2"],
+        rounds: [{ callerId: "p1", callerPoints: 0, made: false, scores: { p1: -7, p2: 12 } }],
+        completedAt: "2026-01-02",
+      }),
+    ];
+    expect(computeAchievements("p2", players, nonCallerSkunkedCaller).find((b) => b.id === "skunked").earned).toBe(true);
+    expect(computeAchievements("p1", players, nonCallerSkunkedCaller).find((b) => b.id === "skunked").earned).toBe(false);
+  });
+
   it("awards Big Flip for a 75+ point Flip7 round, regardless of the game's final total", () => {
     const sessions = [
       makeSession({
@@ -231,64 +323,31 @@ describe("computeAchievements", () => {
     expect(computeAchievements("p2", players, sessions).find((b) => b.id === "big-flip").earned).toBe(false);
   });
 
-  it("awards Nil Streak for hitting a called zero bid 3+ times in a single Oh Heck! game", () => {
-    const threeNils = [
+  it("awards Nil Streak for hitting a called zero bid 10+ times in a single Oh Heck! game", () => {
+    const nilRound = { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } };
+    const nonNilRound = { bids: { p1: 1 }, results: { p1: { hitBid: true, tricksWon: 1, score: 11 } } };
+
+    const tenNils = [
       makeSession({
         id: "s1",
         gameType: "oh-heck",
         playerIds: ["p1", "p2"],
-        rounds: [
-          { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } },
-          { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } },
-          { bids: { p1: 1 }, results: { p1: { hitBid: true, tricksWon: 1, score: 11 } } },
-          { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } },
-        ],
+        rounds: [...Array(10).fill(nilRound), nonNilRound],
         completedAt: "2026-01-01",
       }),
     ];
-    expect(computeAchievements("p1", players, threeNils).find((b) => b.id === "nil-streak").earned).toBe(true);
+    expect(computeAchievements("p1", players, tenNils).find((b) => b.id === "nil-streak").earned).toBe(true);
 
-    const onlyTwoNils = [
+    const onlyNineNils = [
       makeSession({
         id: "s1",
         gameType: "oh-heck",
         playerIds: ["p1", "p2"],
-        rounds: [
-          { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } },
-          { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } },
-        ],
+        rounds: [...Array(9).fill(nilRound), nonNilRound],
         completedAt: "2026-01-01",
       }),
     ];
-    expect(computeAchievements("p1", players, onlyTwoNils).find((b) => b.id === "nil-streak").earned).toBe(false);
-  });
-
-  it("awards Ice Cold for a Flip7 round scored exactly 0", () => {
-    const sessions = [
-      makeSession({
-        id: "s1",
-        gameType: "flip7",
-        playerIds: ["p1", "p2"],
-        rounds: [{ scores: { p1: 0, p2: 40 } }],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, sessions).find((b) => b.id === "ice-cold").earned).toBe(true);
-    expect(computeAchievements("p2", players, sessions).find((b) => b.id === "ice-cold").earned).toBe(false);
-  });
-
-  it("awards Hole in One for a Golf hole scored -4 or lower", () => {
-    const sessions = [
-      makeSession({
-        id: "s1",
-        gameType: "golf",
-        playerIds: ["p1", "p2"],
-        rounds: [{ scores: { p1: -4, p2: 2 } }],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, sessions).find((b) => b.id === "hole-in-one").earned).toBe(true);
-    expect(computeAchievements("p2", players, sessions).find((b) => b.id === "hole-in-one").earned).toBe(false);
+    expect(computeAchievements("p1", players, onlyNineNils).find((b) => b.id === "nil-streak").earned).toBe(false);
   });
 
   it("awards Iron Man for 3+ different games completed on the same calendar day", () => {
@@ -305,6 +364,48 @@ describe("computeAchievements", () => {
       makeSession({ id: "s3", gameType: "golf", playerIds: ["p1"], completedAt: "2026-01-03T20:00:00Z" }),
     ];
     expect(computeAchievements("p1", players, spreadOut).find((b) => b.id === "iron-man").earned).toBe(false);
+  });
+
+  it("groups 'same calendar day' achievements by Central time, not UTC", () => {
+    // All three of these land on the same Central-time evening (Jan 1,
+    // CST = UTC-6) but straddle the UTC Jan 1 -> Jan 2 boundary — a plain
+    // UTC day-key would split them into 2 separate days (1 game, then 2)
+    // and Iron Man would never fire. This guards against regressing back
+    // to that UTC grouping.
+    const sessions = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1"], completedAt: "2026-01-01T23:30:00Z" }), // 5:30pm CST Jan 1
+      makeSession({ id: "s2", gameType: "oh-heck", playerIds: ["p1"], completedAt: "2026-01-02T02:00:00Z" }), // 8pm CST Jan 1
+      makeSession({ id: "s3", gameType: "golf", playerIds: ["p1"], completedAt: "2026-01-02T05:00:00Z" }), // 11pm CST Jan 1
+    ];
+    expect(computeAchievements("p1", players, sessions).find((b) => b.id === "iron-man").earned).toBe(true);
+  });
+
+  it("awards Clean Sweep for winning every game played on a single calendar day (2+ games)", () => {
+    const sweptDay = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1"], winnerIds: ["p1"], completedAt: "2026-01-01T10:00:00Z" }),
+      makeSession({ id: "s2", gameType: "oh-heck", playerIds: ["p1"], winnerIds: ["p1"], completedAt: "2026-01-01T14:00:00Z" }),
+    ];
+    expect(computeAchievements("p1", players, sweptDay).find((b) => b.id === "clean-sweep").earned).toBe(true);
+
+    const oneLossThatDay = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1"], winnerIds: ["p1"], completedAt: "2026-01-01T10:00:00Z" }),
+      makeSession({ id: "s2", gameType: "oh-heck", playerIds: ["p1"], winnerIds: [], completedAt: "2026-01-01T14:00:00Z" }),
+    ];
+    expect(computeAchievements("p1", players, oneLossThatDay).find((b) => b.id === "clean-sweep").earned).toBe(false);
+
+    // A single win that day doesn't count — needs 2+ games.
+    const justOneWin = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1"], winnerIds: ["p1"], completedAt: "2026-01-01T10:00:00Z" }),
+    ];
+    expect(computeAchievements("p1", players, justOneWin).find((b) => b.id === "clean-sweep").earned).toBe(false);
+  });
+
+  it("awards Camera Ready only when a color, avatar, AND photo are all set", () => {
+    const fullyDressed = [{ id: "p1", name: "Marsha", color: "#a12e2e", avatar: "🦄", photo: "data:image/png;base64,xyz" }];
+    expect(computeAchievements("p1", fullyDressed, []).find((b) => b.id === "camera-ready").earned).toBe(true);
+
+    const missingPhoto = [{ id: "p1", name: "Marsha", color: "#a12e2e", avatar: "🦄" }];
+    expect(computeAchievements("p1", missingPhoto, []).find((b) => b.id === "camera-ready").earned).toBe(false);
   });
 });
 
@@ -348,6 +449,7 @@ describe("computeHallOfFame", () => {
     expect(hof.flip7HighScore).toBeNull();
     expect(hof.tableRegular).toBeNull();
     expect(hof.rivalry).toBeNull();
+    expect(hof.biggestAchiever).toBeNull();
   });
 
   it("finds the longest win streak across all players, not just the top scorer", () => {
@@ -414,5 +516,19 @@ describe("computeHallOfFame", () => {
     const winsById = { [hof.rivalry.playerA.id]: hof.rivalry.winsA, [hof.rivalry.playerB.id]: hof.rivalry.winsB };
     expect(winsById.p1).toBe(2);
     expect(winsById.p2).toBe(1);
+  });
+
+  it("finds Biggest Achiever as whoever has unlocked the most badges", () => {
+    const sessions = [
+      // p1: 3 career wins -> First Win + Hot Streak (3-in-a-row) unlocked.
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-01" }),
+      makeSession({ id: "s2", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-02" }),
+      makeSession({ id: "s3", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-03" }),
+      // p2's only win -> just First Win.
+      makeSession({ id: "s4", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], completedAt: "2026-01-04" }),
+    ];
+    const hof = computeHallOfFame(players, sessions);
+    expect(hof.biggestAchiever.player.id).toBe("p1");
+    expect(hof.biggestAchiever.count).toBeGreaterThan(1);
   });
 });

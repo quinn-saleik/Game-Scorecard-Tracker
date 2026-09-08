@@ -44,6 +44,24 @@ function slug(s) {
   return (s || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
+// "Same calendar day" badges (Iron Man, Clean Sweep) group by the day the
+// game was actually played on the couch — Central time — not the UTC day
+// the Firestore timestamp happens to fall on. A game that wraps past
+// midnight UTC (i.e. anything after ~6-7pm Central) would otherwise get
+// silently bucketed into the next day. Intl.DateTimeFormat with an
+// explicit IANA zone (rather than a fixed UTC-6 offset) self-adjusts
+// across the CST/CDT boundary automatically.
+const CENTRAL_DAY_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Chicago",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+function centralDayKey(date) {
+  // en-CA formats numeric dates as YYYY-MM-DD directly.
+  return CENTRAL_DAY_FORMATTER.format(date);
+}
+
 // "Other" sessions carry a user-typed custom game name (config.customName).
 // Group/label by that name (case-insensitively) instead of the flat
 // "other" bucket, so "Poker" and "Yahtzee" show up as distinct games in
@@ -238,9 +256,10 @@ export function computeGameStats(completedSessions) {
 //
 // "Double Trouble" is worth flagging: 3-player Euchre's round record only
 // says whether a given player's own result that hand was "set" or
-// "points" — there's no separate field for who caused it. So this reads
-// as "both opponents got set at least once in a game you were part of",
-// not a claim that this player personally set them both.
+// "points" — there's no separate field for who caused it. So even
+// requiring the SAME round, this reads as "both other players got set on
+// the same hand of a game you were part of", not a claim that this
+// player personally set them both.
 const BADGE_DEFS = [
   { id: "first-win", emoji: "🎉", label: "First Win", description: "Won a game", earned: (d) => d.wins >= 1 },
   { id: "hot-streak", emoji: "🔥", label: "Hot Streak", description: "Won 3 games in a row", earned: (d) => d.longestStreak >= 3 },
@@ -254,13 +273,6 @@ const BADGE_DEFS = [
     label: "Well Rounded",
     description: "Played 5 different games",
     earned: (d) => new Set(d.history.map((h) => h.gameLabel)).size >= 5,
-  },
-  {
-    id: "sharpshooter",
-    emoji: "🎯",
-    label: "Sharpshooter",
-    description: "60%+ win rate (5+ games played)",
-    earned: (d) => d.gamesPlayed >= 5 && d.winPct >= 60,
   },
   {
     id: "went-alone",
@@ -332,14 +344,14 @@ const BADGE_DEFS = [
     id: "nil-streak",
     emoji: "🎣",
     label: "Nil Streak",
-    description: "Called and hit a zero bid 3+ times in a single Oh Heck! game",
+    description: "Called and hit a zero bid 10+ times in a single Oh Heck! game",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "oh-heck") return false;
         const count = (s.rounds || []).filter(
           (r) => r.bids?.[d.playerId] === 0 && r.results?.[d.playerId]?.hitBid === true
         ).length;
-        return count >= 3;
+        return count >= 10;
       }),
   },
   {
@@ -358,21 +370,21 @@ const BADGE_DEFS = [
     id: "survivor",
     emoji: "🩹",
     label: "Survivor",
-    description: "Finished a 3-player Euchre game with 25+ points despite getting set",
+    description: "Finished a 3-player Euchre game with 25+ points",
     earned: (d, sessions) => sessions.some((s) => s.gameType === "euchre-3p" && (s.totals?.[d.playerId] || 0) >= 25),
   },
   {
     id: "double-trouble",
     emoji: "⚔️",
     label: "Double Trouble",
-    description: "Both opponents got set at least once in the same 3-player Euchre game",
+    description: "Both other players got set on the exact same round of a 3-player Euchre game",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "euchre-3p") return false;
         const others = (s.players || []).map((p) => p.id).filter((id) => id !== d.playerId);
         if (others.length < 2) return false;
         const rounds = s.rounds || [];
-        return others.every((oid) => rounds.some((r) => r.results?.[oid]?.type === "set"));
+        return rounds.some((r) => others.every((oid) => r.results?.[oid]?.type === "set"));
       }),
   },
   {
@@ -394,6 +406,32 @@ const BADGE_DEFS = [
       }),
   },
   {
+    id: "shutout",
+    emoji: "🥊",
+    label: "Shutout",
+    description: "Won a Traditional (2v2) Euchre game without the other team ever scoring a point",
+    earned: (d, sessions) =>
+      sessions.some((s) => {
+        if (s.gameType !== "euchre-traditional" || !(s.winnerIds || []).includes(d.playerId)) return false;
+        const teamA = s.config?.teamA || [];
+        const teamB = s.config?.teamB || [];
+        const otherTeam = teamA.includes(d.playerId) ? teamB : teamA;
+        return otherTeam.length > 0 && otherTeam.every((id) => (s.totals?.[id] || 0) === 0);
+      }),
+  },
+  {
+    id: "skunked",
+    emoji: "💀",
+    label: "Skunked",
+    description: "Took all 12 points in a single 2-player Euchre hand — your opponent got zero",
+    earned: (d, sessions) =>
+      sessions.some(
+        (s) =>
+          s.gameType === "euchre-2p" &&
+          (s.rounds || []).some((r) => (r.callerId === d.playerId ? r.callerPoints === 12 : r.callerPoints === 0))
+      ),
+  },
+  {
     id: "big-flip",
     emoji: "💥",
     label: "Big Flip",
@@ -401,26 +439,6 @@ const BADGE_DEFS = [
     earned: (d, sessions) =>
       sessions.some(
         (s) => s.gameType === "flip7" && (s.rounds || []).some((r) => (r.scores?.[d.playerId] || 0) >= 75)
-      ),
-  },
-  {
-    id: "ice-cold",
-    emoji: "🧊",
-    label: "Ice Cold",
-    description: "Scored exactly 0 in a single Flip7 round",
-    earned: (d, sessions) =>
-      sessions.some(
-        (s) => s.gameType === "flip7" && (s.rounds || []).some((r) => (r.scores?.[d.playerId] ?? null) === 0)
-      ),
-  },
-  {
-    id: "hole-in-one",
-    emoji: "⛳",
-    label: "Hole in One",
-    description: "Scored -4 or lower on a single hole in Golf",
-    earned: (d, sessions) =>
-      sessions.some(
-        (s) => s.gameType === "golf" && (s.rounds || []).some((r) => (r.scores?.[d.playerId] ?? 0) <= -4)
       ),
   },
   {
@@ -433,13 +451,39 @@ const BADGE_DEFS = [
       for (const s of sessions) {
         const date = s.completedAt?.toDate?.();
         if (!date) continue;
-        const dayKey = date.toISOString().slice(0, 10);
+        const dayKey = centralDayKey(date);
         const set = byDay.get(dayKey) || new Set();
         set.add(gameGroupKey(s));
         byDay.set(dayKey, set);
       }
       return Array.from(byDay.values()).some((set) => set.size >= 3);
     },
+  },
+  {
+    id: "clean-sweep",
+    emoji: "🧹",
+    label: "Clean Sweep",
+    description: "Won every game played on a single calendar day (2+ games)",
+    earned: (d, sessions) => {
+      const byDay = new Map(); // "YYYY-MM-DD" -> { games, wins }
+      for (const s of sessions) {
+        const date = s.completedAt?.toDate?.();
+        if (!date) continue;
+        const dayKey = centralDayKey(date);
+        const entry = byDay.get(dayKey) || { games: 0, wins: 0 };
+        entry.games += 1;
+        if ((s.winnerIds || []).includes(d.playerId)) entry.wins += 1;
+        byDay.set(dayKey, entry);
+      }
+      return Array.from(byDay.values()).some((e) => e.games >= 2 && e.wins === e.games);
+    },
+  },
+  {
+    id: "camera-ready",
+    emoji: "📸",
+    label: "Camera Ready",
+    description: "Set a color, an emoji avatar, and a photo — the full profile",
+    earned: (d) => Boolean(d.color && d.avatar && d.photo),
   },
 ];
 
@@ -473,6 +517,7 @@ export function computeHallOfFame(players, completedSessions) {
   let euchreRoyalty = null; // {player, wins}
   let flip7HighScore = null; // {player, score, completedAt}
   let tableRegular = null; // {player, opponentCount}
+  let biggestAchiever = null; // {player, count}
 
   const allStats = computePlayerStats(players, completedSessions);
   const mostGamesPlayed = allStats.reduce(
@@ -488,6 +533,17 @@ export function computeHallOfFame(players, completedSessions) {
     const detail = computePlayerDetail(p.id, players, completedSessions);
     if (detail && detail.longestStreak > 0 && (!longestStreakEver || detail.longestStreak > longestStreakEver.streak)) {
       longestStreakEver = { player: p, streak: detail.longestStreak };
+    }
+  }
+
+  // Biggest Achiever: whoever has unlocked the most badges. Runs the exact
+  // same achievement engine PlayerDetail uses per player and counts the
+  // earned ones, so this can never drift out of sync with what's actually
+  // shown as unlocked on someone's own page.
+  for (const p of players) {
+    const count = computeAchievements(p.id, players, completedSessions).filter((b) => b.earned).length;
+    if (count > 0 && (!biggestAchiever || count > biggestAchiever.count)) {
+      biggestAchiever = { player: p, count };
     }
   }
 
@@ -574,5 +630,5 @@ export function computeHallOfFame(players, completedSessions) {
     rivalry = { playerA, playerB, gamesTogether: list.length, winsA, winsB };
   }
 
-  return { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry };
+  return { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry, biggestAchiever };
 }

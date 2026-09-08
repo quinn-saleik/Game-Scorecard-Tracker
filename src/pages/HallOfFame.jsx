@@ -49,7 +49,7 @@ export default function HallOfFame() {
     return <p className="empty-state">Loading…</p>;
   }
 
-  const { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry } =
+  const { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry, biggestAchiever } =
     computeHallOfFame(players, sessions);
 
   return (
@@ -148,6 +148,18 @@ export default function HallOfFame() {
                   {shortName(rivalry.playerB)}
                 </Link>{" "}
                 — <strong>{rivalry.gamesTogether}</strong> games together, {rivalry.winsA} wins to {rivalry.winsB}
+              </p>
+            )}
+          </Trophy>
+
+          <Trophy icon="🏆" title="Biggest Achiever" empty={!biggestAchiever}>
+            {biggestAchiever && (
+              <p style={{ fontSize: 15 }}>
+                <Link to={`/players/${biggestAchiever.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={biggestAchiever.player.color} avatar={biggestAchiever.player.avatar} photo={biggestAchiever.player.photo} />
+                  {shortName(biggestAchiever.player)}
+                </Link>{" "}
+                — <strong>{biggestAchiever.count}</strong> badges unlocked
               </p>
             )}
           </Trophy>
