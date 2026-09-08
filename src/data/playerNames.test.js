@@ -79,4 +79,23 @@ describe("computeShortName", () => {
     expect(computeShortName(null, [])).toBe("");
     expect(computeShortName(undefined, [])).toBe("");
   });
+
+  it("stays first-name-only for a computePlayerStats-shaped row (`.playerId`, not `.id`)", () => {
+    // Regression test: Stats.jsx and Hall of Fame's mostGamesPlayed/mostWins
+    // pass computePlayerStats() rows straight to shortName(), which use
+    // `playerId` instead of `id`. Before idOf() normalized this, the
+    // self-match check below never found "itself" in the roster, appended
+    // a synthetic duplicate of the same person, and then "disambiguated"
+    // against a last name identical to its own — silently showing the
+    // FULL last name for every player, not just real collisions.
+    const roster = [player("1", "Marsha", "Worthington"), player("2", "Doug", "Worthington")];
+    const statsRow = { playerId: "1", firstName: "Marsha", lastName: "Worthington" };
+    expect(computeShortName(statsRow, roster)).toBe("Marsha");
+  });
+
+  it("still disambiguates correctly when a real collision is passed as a `.playerId`-shaped row", () => {
+    const roster = [player("1", "Sarah", "Taylor"), player("2", "Sarah", "Jones")];
+    const statsRow = { playerId: "1", firstName: "Sarah", lastName: "Taylor" };
+    expect(computeShortName(statsRow, roster)).toBe("Sarah T.");
+  });
 });

@@ -11,8 +11,6 @@ import {
   updatePlayerName,
   subscribeToPlayers,
 } from "../data/players";
-import { subscribeToCompletedSessions } from "../data/gameSessions";
-import { computePlayerStats } from "../data/stats";
 import { PLAYER_COLORS } from "../data/playerColors";
 import { PLAYER_AVATARS } from "../data/playerAvatars";
 import { fileToPlayerPhoto } from "../data/photo";
@@ -22,7 +20,6 @@ import { shortName } from "../data/playerNames";
 
 export default function Players() {
   const [players, setPlayers] = useState([]);
-  const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newFirstName, setNewFirstName] = useState("");
   const [newLastName, setNewLastName] = useState("");
@@ -39,10 +36,8 @@ export default function Players() {
       setPlayers(list);
       setLoading(false);
     });
-    const unsubSessions = subscribeToCompletedSessions((list) => setSessions(list));
     return () => {
       unsubPlayers();
-      unsubSessions();
     };
   }, []);
 
@@ -151,8 +146,6 @@ export default function Players() {
 
   const active = players.filter((p) => p.active);
   const inactive = players.filter((p) => !p.active);
-  const stats = computePlayerStats(active, sessions);
-  const statsById = new Map(stats.map((s) => [s.playerId, s]));
   const hasDefaults = players.some((p) => p.isDefault);
 
   return (
@@ -218,17 +211,12 @@ export default function Players() {
                 <th></th>
                 <th></th>
                 <th>Player</th>
-                <th>Played</th>
-                <th>Win %</th>
-                <th>Favorite</th>
-                <th>Last played</th>
                 <th></th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {active.map((p) => {
-                const s = statsById.get(p.id);
                 const pickerOpen = colorPickerFor === p.id;
                 const avatarOpen = avatarPickerFor === p.id;
                 const nameEditOpen = nameEditFor === p.id;
@@ -315,8 +303,8 @@ export default function Players() {
                         )}
                       </td>
                       <td>
-                        <Link to={`/players/${p.id}`} title={p.name} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
-                          {shortName(p)}
+                        <Link to={`/players/${p.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                          {p.name}
                         </Link>
                         <button
                           type="button"
@@ -332,10 +320,6 @@ export default function Players() {
                           ✎
                         </button>
                       </td>
-                      <td>{s?.gamesPlayed || 0}</td>
-                      <td>{s?.gamesPlayed ? `${s.winPct}%` : "—"}</td>
-                      <td>{s?.gamesPlayed ? s.favoriteGame : "—"}</td>
-                      <td>{formatLastPlayed(s?.lastPlayedAt)}</td>
                       <td>
                         <span
                           className="player-chip"
@@ -360,7 +344,7 @@ export default function Players() {
                     </tr>
                     {pickerOpen && (
                       <tr>
-                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
+                        <td colSpan={6} style={{ background: "var(--card-white)" }}>
                           <div className="chip-row" style={{ padding: "10px 4px" }}>
                             {PLAYER_COLORS.map((c) => {
                               const takenBy = active.find(
@@ -415,7 +399,7 @@ export default function Players() {
                     )}
                     {avatarOpen && (
                       <tr>
-                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
+                        <td colSpan={6} style={{ background: "var(--card-white)" }}>
                           <div className="chip-row" style={{ padding: "10px 4px" }}>
                             {PLAYER_AVATARS.map((emoji) => (
                               <button
@@ -475,7 +459,7 @@ export default function Players() {
                     )}
                     {nameEditOpen && (
                       <tr>
-                        <td colSpan={10} style={{ background: "var(--card-white)" }}>
+                        <td colSpan={6} style={{ background: "var(--card-white)" }}>
                           <div className="btn-row" style={{ padding: "10px 4px" }}>
                             <input
                               className="input"

@@ -30,6 +30,18 @@ function lastNameOf(player) {
   return parts.length > 1 ? parts[parts.length - 1] : "";
 }
 
+// Most callers pass a real player doc (`.id`), but several pass a
+// computePlayerStats()/computePlayerDetail() row instead, which uses
+// `.playerId` — same person, different field name. Without normalizing
+// this, the self-match check below would never find "itself" in the
+// roster for a stats-row caller, append a synthetic duplicate of the same
+// person into the collision group, and then "disambiguate" against a
+// last name that's identical to its own — growing the abbreviation all
+// the way out to the full last name for EVERY player, collision or not.
+function idOf(player) {
+  return player?.id ?? player?.playerId ?? null;
+}
+
 // Pure computation, kept separate from the live-cache wiring below so it's
 // unit-testable without touching Firebase: given `player` and the full
 // roster of players the app knows about, return the shortest label that
@@ -45,7 +57,7 @@ export function computeShortName(player, allPlayers) {
   // Make sure `player` itself is represented even if the roster passed in
   // hasn't caught up yet (a session snapshot's embedded copy, or a
   // just-created player the caller's list hasn't been refreshed with).
-  const group = sameFirst.some((p) => p.id === player.id)
+  const group = sameFirst.some((p) => idOf(p) === idOf(player))
     ? sameFirst
     : [...sameFirst, player];
 
@@ -60,7 +72,7 @@ export function computeShortName(player, allPlayers) {
   // people who also share a last initial ("Sarah Johnson" / "Sarah
   // Jones") grow to 2+ letters ("Sarah Jo." vs "Sarah Jon.") until they
   // no longer match, or the full last name is reached.
-  const others = group.filter((p) => p.id !== player.id && lastNameOf(p));
+  const others = group.filter((p) => idOf(p) !== idOf(player) && lastNameOf(p));
   let len = 1;
   while (
     len < last.length &&
