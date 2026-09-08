@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToInProgressSessions, deleteSession } from "../data/gameSessions";
-import { GAME_LABELS } from "../data/stats";
+import { GAME_LABELS, LOWER_IS_BETTER } from "../data/stats";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "./PlayerDot";
 import { shortName } from "../data/playerNames";
-
-// Euchre 3-player and Royal Rum count DOWN (lower is better); Golf and
-// "Other" games decide their own direction per session (Golf is always
-// down; "Other" reads config.scoreDirection — see the sortAsc calculation
-// below); everything else — including "31" lives, where more is safer —
-// counts up.
-const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum", "golf", "phase-10"]);
 
 const UNIT_LABEL = {
   flip7: "Round",

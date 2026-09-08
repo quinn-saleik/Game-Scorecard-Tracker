@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -172,21 +171,16 @@ export default function Flip7Play() {
             {session.players.map((p) => (
               <div className="field" key={p.id}>
                 <label htmlFor={`pt-${p.id}`}><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</label>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <input
-                    id={`pt-${p.id}`}
-                    className="input"
-                    type="number"
-                    placeholder="0"
-                    value={inputs[p.id] ?? ""}
-                    onChange={(e) =>
-                      setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
-                    }
-                  />
-                  <VoiceInputButton
-                    onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
-                  />
-                </div>
+                <input
+                  id={`pt-${p.id}`}
+                  className="input"
+                  type="number"
+                  placeholder="0"
+                  value={inputs[p.id] ?? ""}
+                  onChange={(e) =>
+                    setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))
+                  }
+                />
               </div>
             ))}
             <div className="btn-row">

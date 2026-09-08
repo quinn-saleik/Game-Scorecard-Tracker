@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -351,18 +350,15 @@ export default function PartnerPlay() {
           <h2>How much did <PlayerDot color={bidder.color} avatar={bidder.avatar} photo={bidder.photo} />{shortName(bidder)} bid?</h2>
           <p style={{ color: "var(--muted)", fontSize: 13 }}>Trump: {trumpDisplay(trump)}</p>
           <div className="field">
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <input
-                className="input"
-                type="number"
-                min="0"
-                placeholder="0"
-                value={bid}
-                onChange={(e) => setBid(e.target.value)}
-                autoFocus
-              />
-              <VoiceInputButton onResult={(v) => setBid(v)} />
-            </div>
+            <input
+              className="input"
+              type="number"
+              min="0"
+              placeholder="0"
+              value={bid}
+              onChange={(e) => setBid(e.target.value)}
+              autoFocus
+            />
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("trump")}>
@@ -382,18 +378,15 @@ export default function PartnerPlay() {
             {bid}+ scores that many tricks; short of {bid} scores -{bidVal} instead.
           </p>
           <div className="field">
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <input
-                className="input"
-                type="number"
-                min="0"
-                placeholder="0"
-                value={tricks}
-                onChange={(e) => setTricks(e.target.value)}
-                autoFocus
-              />
-              <VoiceInputButton onResult={(v) => setTricks(v)} />
-            </div>
+            <input
+              className="input"
+              type="number"
+              min="0"
+              placeholder="0"
+              value={tricks}
+              onChange={(e) => setTricks(e.target.value)}
+              autoFocus
+            />
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("bid")}>
@@ -436,17 +429,14 @@ export default function PartnerPlay() {
             Same value applied to <TeamList players={othersPlayers} />.
           </p>
           <div className="field">
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <input
-                className="input"
-                type="number"
-                placeholder="0"
-                value={othersPoints}
-                onChange={(e) => setOthersPoints(e.target.value)}
-                autoFocus
-              />
-              <VoiceInputButton onResult={(v) => setOthersPoints(v)} />
-            </div>
+            <input
+              className="input"
+              type="number"
+              placeholder="0"
+              value={othersPoints}
+              onChange={(e) => setOthersPoints(e.target.value)}
+              autoFocus
+            />
           </div>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("partner")}>

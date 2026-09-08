@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -270,9 +269,6 @@ export default function OtherPlay() {
                   placeholder="0"
                   value={inputs[p.id] ?? ""}
                   onChange={(e) => setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                />
-                <VoiceInputButton
-                  onResult={(v) => setInputs((prev) => ({ ...prev, [p.id]: v }))}
                 />
                 {bidding && (
                   <input

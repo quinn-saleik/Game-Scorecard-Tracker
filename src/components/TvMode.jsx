@@ -16,6 +16,12 @@ import PlayerDot from "./PlayerDot";
 // phone is set to, so colors are hardcoded to the app's "cover" palette
 // rather than pulled from the (possibly-flipped) CSS custom properties.
 //
+// The scoreboard is the point, so the game name/icon/status live in a
+// small, muted topbar rather than a full title block — every pixel not
+// spent on names and scores is space the back row of the couch can't
+// read. There's no footer either; the ✕ button is the only "how do I
+// leave" affordance needed.
+//
 // rows: pre-sorted best-to-worst by the caller (every game's "who's
 // winning" rule is different — lowest wins in Royal Rum, a team total in
 // Catchphrase, lives left in 31 — so TvMode just renders whatever order
@@ -23,6 +29,14 @@ import PlayerDot from "./PlayerDot";
 // isLeader, color?, avatar?, photo? }. Omit color/avatar/photo for
 // team rows (Catchphrase, Codenames, Euchre team variants) — the row
 // still renders fine without a dot.
+//
+// A tablet/phone propped up sideways has width to spare, so past a
+// handful of players the rows split into two CSS-multicolumn columns in
+// landscape (`.tv-mode-rows.two-col`) instead of one long scrollable list
+// — with only a few players a single column already fits and looks less
+// sparse than two half-empty ones.
+const TWO_COL_THRESHOLD = 5;
+
 export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) {
   const [open, setOpen] = useState(false);
 
@@ -57,13 +71,13 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
               ✕
             </button>
 
-            <div className="tv-mode-header">
-              <div className="tv-mode-icon">{icon}</div>
-              <h1 className="tv-mode-title">{gameName}</h1>
-              {statusLine && <p className="tv-mode-status">{statusLine}</p>}
+            <div className="tv-mode-topbar">
+              <span className="tv-mode-topbar-icon">{icon}</span>
+              <span className="tv-mode-topbar-title">{gameName}</span>
+              {statusLine && <span className="tv-mode-topbar-status">{statusLine}</span>}
             </div>
 
-            <div className="tv-mode-rows">
+            <div className={`tv-mode-rows ${rows.length >= TWO_COL_THRESHOLD ? "two-col" : ""}`}>
               {rows.map((r, i) => (
                 <div key={r.key} className={`tv-mode-row ${r.isLeader ? "leader" : ""}`}>
                   <span className="tv-mode-rank">{r.isLeader ? "👑" : `${i + 1}`}</span>
@@ -78,8 +92,6 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
                 </div>
               ))}
             </div>
-
-            <p className="tv-mode-footer">Updates live as scores are entered — tap ✕ or press Esc to exit</p>
           </div>,
           document.body
         )}

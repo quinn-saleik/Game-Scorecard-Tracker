@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { subscribeToSession } from "../data/gameSessions";
+import { subscribeToSession, updateSession } from "../data/gameSessions";
 import { getInitialTotals, getRoundDelta } from "../data/rounds";
 import { gameGroupLabel } from "../data/stats";
 import PlayerDot from "../components/PlayerDot";
@@ -26,10 +26,36 @@ function formatDateStamp(date) {
 export default function GameHistoryDetail() {
   const { sessionId } = useParams();
   const [session, setSession] = useState(null);
+  const [notesDraft, setNotesDraft] = useState("");
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSaved, setNotesSaved] = useState(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
+  // Seed the textarea from the saved note once, the first time this
+  // session loads — not on every snapshot update, or a note someone is
+  // mid-typing would get stomped the moment any other field on the
+  // session changes (e.g. a round edited from another device).
+  useEffect(() => {
+    if (session && !notesLoaded) {
+      setNotesDraft(session.notes || "");
+      setNotesLoaded(true);
+    }
+  }, [session, notesLoaded]);
+
   if (!session) return <p className="empty-state">Loading…</p>;
+
+  async function saveNotes() {
+    setSavingNotes(true);
+    setNotesSaved(false);
+    try {
+      await updateSession(sessionId, { notes: notesDraft });
+      setNotesSaved(true);
+    } finally {
+      setSavingNotes(false);
+    }
+  }
 
   const rounds = session.rounds || [];
   const totals = session.totals || {};
@@ -118,6 +144,36 @@ export default function GameHistoryDetail() {
           </div>
         )}
         <p style={{ color: "var(--muted)", fontSize: 13 }}>Each cell is that round's score, with the running total in parentheses.</p>
+      </div>
+
+      <div className="card-surface">
+        <h2>Notes</h2>
+        <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
+          Any additional info? "Quinn cheated (we think)", "Ryan was a sore loser" — whatever's worth remembering about this one.
+        </p>
+        <div className="field" style={{ marginBottom: 10 }}>
+          <textarea
+            className="input"
+            rows={3}
+            placeholder="Add a note about this game…"
+            value={notesDraft}
+            onChange={(e) => {
+              setNotesDraft(e.target.value);
+              setNotesSaved(false);
+            }}
+          />
+        </div>
+        <div className="btn-row" style={{ alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={saveNotes}
+            disabled={savingNotes || notesDraft === (session.notes || "")}
+          >
+            {savingNotes ? "Saving…" : "Save note"}
+          </button>
+          {notesSaved && <span style={{ color: "var(--muted)", fontSize: 13 }}>Saved.</span>}
+        </div>
       </div>
 
       <div className="btn-row">

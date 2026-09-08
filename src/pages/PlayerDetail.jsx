@@ -24,7 +24,7 @@ export default function PlayerDetail() {
   if (loading) return <p className="empty-state">Loading…</p>;
 
   const detail = computePlayerDetail(playerId, players, sessions);
-  const badges = computeAchievements(detail);
+  const badges = computeAchievements(playerId, players, sessions);
 
   if (!detail) {
     return (
@@ -76,6 +76,36 @@ export default function PlayerDetail() {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="card-surface">
+        <h2>By game</h2>
+        {detail.gamesByType.length === 0 ? (
+          <p className="empty-state">No completed games yet.</p>
+        ) : (
+          <table className="score-table">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Played</th>
+                <th>Win %</th>
+                <th>Avg score</th>
+                <th>Best score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detail.gamesByType.map((g) => (
+                <tr key={g.label}>
+                  <td style={{ fontWeight: 600 }}>{g.label}</td>
+                  <td>{g.gamesPlayed}</td>
+                  <td>{g.winPct}%</td>
+                  <td>{g.avgScore ?? "—"}</td>
+                  <td title={g.bestScoreLabel}>{g.bestScore ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="card-surface">

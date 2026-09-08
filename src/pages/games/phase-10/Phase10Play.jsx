@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -241,19 +240,14 @@ export default function Phase10Play() {
                 <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}
                 {completedPicks[p.id] ? " — completed their phase" : ""}
               </label>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input
-                  id={`pts-${p.id}`}
-                  className="input"
-                  type="number"
-                  placeholder="0"
-                  value={pointsInput[p.id] ?? ""}
-                  onChange={(e) => setPointsInput((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                />
-                <VoiceInputButton
-                  onResult={(v) => setPointsInput((prev) => ({ ...prev, [p.id]: v }))}
-                />
-              </div>
+              <input
+                id={`pts-${p.id}`}
+                className="input"
+                type="number"
+                placeholder="0"
+                value={pointsInput[p.id] ?? ""}
+                onChange={(e) => setPointsInput((prev) => ({ ...prev, [p.id]: e.target.value }))}
+              />
             </div>
           ))}
           <div className="btn-row" style={{ marginTop: 12 }}>

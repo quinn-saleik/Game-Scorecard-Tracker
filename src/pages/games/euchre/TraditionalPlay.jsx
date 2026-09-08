@@ -8,7 +8,6 @@ import {
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
-import VoiceInputButton from "../../../components/VoiceInputButton";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
 
@@ -156,17 +155,11 @@ export default function TraditionalPlay() {
           <form onSubmit={submitRound}>
             <div className="field">
               <label htmlFor="teamA"><TeamNames players={teamAPlayers} /></label>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input id="teamA" className="input" type="number" placeholder="0" value={inputA} onChange={(e) => setInputA(e.target.value)} />
-                <VoiceInputButton onResult={(v) => setInputA(v)} />
-              </div>
+              <input id="teamA" className="input" type="number" placeholder="0" value={inputA} onChange={(e) => setInputA(e.target.value)} />
             </div>
             <div className="field">
               <label htmlFor="teamB"><TeamNames players={teamBPlayers} /></label>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                <input id="teamB" className="input" type="number" placeholder="0" value={inputB} onChange={(e) => setInputB(e.target.value)} />
-                <VoiceInputButton onResult={(v) => setInputB(v)} />
-              </div>
+              <input id="teamB" className="input" type="number" placeholder="0" value={inputB} onChange={(e) => setInputB(e.target.value)} />
             </div>
             <div className="btn-row">
               {rounds.length > 0 && (

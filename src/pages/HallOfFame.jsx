@@ -49,10 +49,8 @@ export default function HallOfFame() {
     return <p className="empty-state">Loading…</p>;
   }
 
-  const { biggestScore, mostGamesPlayed, mostWins, longestStreakEver } = computeHallOfFame(
-    players,
-    sessions
-  );
+  const { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry } =
+    computeHallOfFame(players, sessions);
 
   return (
     <div>
@@ -64,19 +62,6 @@ export default function HallOfFame() {
         </div>
       ) : (
         <>
-          <Trophy icon="💥" title="Biggest score ever" empty={!biggestScore}>
-            {biggestScore && (
-              <p style={{ fontSize: 15 }}>
-                <Link to={`/players/${biggestScore.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
-                  <PlayerDot color={biggestScore.player.color} avatar={biggestScore.player.avatar} photo={biggestScore.player.photo} />
-                  {shortName(biggestScore.player)}
-                </Link>{" "}
-                — <strong>{biggestScore.score}</strong> in {biggestScore.gameLabel}
-                {biggestScore.completedAt ? ` (${formatLastPlayed(biggestScore.completedAt)})` : ""}
-              </p>
-            )}
-          </Trophy>
-
           <Trophy icon="🃏" title="Most games played" empty={!mostGamesPlayed}>
             {mostGamesPlayed && (
               <p style={{ fontSize: 15 }}>
@@ -109,6 +94,60 @@ export default function HallOfFame() {
                   {shortName(longestStreakEver.player)}
                 </Link>{" "}
                 — <strong>{longestStreakEver.streak}</strong> games in a row
+              </p>
+            )}
+          </Trophy>
+
+          <Trophy icon="♦️" title="Euchre Royalty" empty={!euchreRoyalty}>
+            {euchreRoyalty && (
+              <p style={{ fontSize: 15 }}>
+                <Link to={`/players/${euchreRoyalty.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={euchreRoyalty.player.color} avatar={euchreRoyalty.player.avatar} photo={euchreRoyalty.player.photo} />
+                  {shortName(euchreRoyalty.player)}
+                </Link>{" "}
+                — <strong>{euchreRoyalty.wins}</strong> wins across every Euchre variant combined
+              </p>
+            )}
+          </Trophy>
+
+          <Trophy icon="💥" title="Flip7 High Score" empty={!flip7HighScore}>
+            {flip7HighScore && (
+              <p style={{ fontSize: 15 }}>
+                <Link to={`/players/${flip7HighScore.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={flip7HighScore.player.color} avatar={flip7HighScore.player.avatar} photo={flip7HighScore.player.photo} />
+                  {shortName(flip7HighScore.player)}
+                </Link>{" "}
+                — <strong>{flip7HighScore.score}</strong> in a single round
+                {flip7HighScore.completedAt ? ` (${formatLastPlayed(flip7HighScore.completedAt)})` : ""}
+              </p>
+            )}
+          </Trophy>
+
+          <Trophy icon="🍻" title="Table Regular" empty={!tableRegular}>
+            {tableRegular && (
+              <p style={{ fontSize: 15 }}>
+                <Link to={`/players/${tableRegular.player.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={tableRegular.player.color} avatar={tableRegular.player.avatar} photo={tableRegular.player.photo} />
+                  {shortName(tableRegular.player)}
+                </Link>{" "}
+                — played with <strong>{tableRegular.opponentCount}</strong> different people
+              </p>
+            )}
+          </Trophy>
+
+          <Trophy icon="⚔️" title="Rivalry" empty={!rivalry}>
+            {rivalry && (
+              <p style={{ fontSize: 15 }}>
+                <Link to={`/players/${rivalry.playerA.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={rivalry.playerA.color} avatar={rivalry.playerA.avatar} photo={rivalry.playerA.photo} />
+                  {shortName(rivalry.playerA)}
+                </Link>{" "}
+                vs{" "}
+                <Link to={`/players/${rivalry.playerB.id}`} style={{ color: "var(--text-on-surface)", fontWeight: 600 }}>
+                  <PlayerDot color={rivalry.playerB.color} avatar={rivalry.playerB.avatar} photo={rivalry.playerB.photo} />
+                  {shortName(rivalry.playerB)}
+                </Link>{" "}
+                — <strong>{rivalry.gamesTogether}</strong> games together, {rivalry.winsA} wins to {rivalry.winsB}
               </p>
             )}
           </Trophy>
