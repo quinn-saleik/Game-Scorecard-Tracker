@@ -31,6 +31,7 @@ export default function OtherPlay() {
   const gameName = session.config?.customName || session.gameLabel || "Other";
   const icon = session.config?.icon || "🃏";
   const direction = session.config?.scoreDirection === "down" ? "down" : "up";
+  const startingScore = typeof session.config?.startingScore === "number" ? session.config.startingScore : 0;
   const targetScore = typeof session.config?.targetScore === "number" ? session.config.targetScore : null;
   const bidding = Boolean(session.config?.bidding);
   const houseRules = (session.config?.houseRules || "").trim();
@@ -61,11 +62,22 @@ export default function OtherPlay() {
   // Players who've crossed the configured winning score, if any — purely
   // informational (see the banner below); nothing here ends the game
   // automatically.
+  //
+  // Which side counts as "crossed" is derived from starting score vs.
+  // target, NOT from `direction` (who wins). Those are separate ideas: a
+  // game can count UP toward a ceiling (Sky-Jo: starts at 0, rounds only
+  // add, ends once someone reaches 100) while the LOWEST total still
+  // wins. Tying "crossed" to `direction` would mean it never fires for a
+  // game exactly like that (every total is always "<= 100" from turn
+  // one). Comparing starting score to target instead answers "which way
+  // is this game approaching its target" independent of who that
+  // favors.
+  const approachesFromBelow = targetScore != null && startingScore < targetScore;
   const reachedPlayers =
     targetScore == null
       ? []
       : session.players.filter((p) =>
-          direction === "down" ? (totals[p.id] || 0) <= targetScore : (totals[p.id] || 0) >= targetScore
+          approachesFromBelow ? (totals[p.id] || 0) >= targetScore : (totals[p.id] || 0) <= targetScore
         );
 
   const tvRows = session.players
@@ -130,10 +142,14 @@ export default function OtherPlay() {
   }
 
   function openFinish() {
-    // Default-check whoever hit the winning score, or otherwise whoever's
-    // currently leading — still fully adjustable, since for some "Other"
-    // games the number on the board doesn't decide the winner.
-    const preselect = reachedPlayers.length > 0 ? reachedPlayers : session.players.filter((p) => (totals[p.id] || 0) === leaderTotal && leaderTotal != null);
+    // Default-check whoever's currently leading (best total for this
+    // game's direction) — NOT whoever crossed the winning score, since
+    // those aren't always the same player: hitting the target ends a
+    // game like Sky-Jo, but the winner is whoever finishes with the
+    // LOWEST total, which can easily be someone else. Still fully
+    // adjustable — ties, teams, and games where the board doesn't decide
+    // the winner all just mean picking something different here.
+    const preselect = session.players.filter((p) => (totals[p.id] || 0) === leaderTotal && leaderTotal != null);
     setSelectedWinners(preselect.map((p) => p.id));
     setFinishing(true);
   }
@@ -225,8 +241,8 @@ export default function OtherPlay() {
 
       {reachedPlayers.length > 0 && (
         <div className="warning-banner">
-          🎯 {reachedPlayers.map((p) => shortName(p)).join(" & ")} reached the winning score
-          ({targetScore}).{" "}
+          🎯 {reachedPlayers.map((p) => shortName(p)).join(" & ")} hit the target score
+          ({targetScore}) — time to finish up.{" "}
           <button
             type="button"
             className="btn primary small"

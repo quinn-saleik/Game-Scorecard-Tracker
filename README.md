@@ -52,6 +52,7 @@ Every game's Play screen has an entry into **TV mode** — a fullscreen, always-
 - **Per-player stats** (`/players/:id`): overview numbers, current/longest win streak, then a game-by-game breakdown (games played, win %, average score, best score — direction-aware, so a 3-player Euchre "best" is the lowest finish) for every game that player has history in.
 - **Stats page** (`/stats`): roster-wide play counts and favorite games; `/hall-of-fame` and each player's own page cover the record-keeping above.
 - **Game notes**: any past game's scorecard (`/history/:sessionId`) has a free-text notes field — a casual, unstructured "anything worth remembering about this one?" box, not part of any stat.
+- **Fixing a wrong winner**: any completed game's scorecard has an "✎ Edit winner" control — tap to select who actually won, no reason needed. Winner selection is manual everywhere in this app (scores never auto-decide a winner), so this is also how to correct a game recorded under the wrong rule or a plain misclick at the table.
 - **Post-game recap**: confetti, final standings, and a one-tap "Rematch — same players" button that starts a fresh session with the same roster and settings.
 
 ## One-time setup (~15 minutes)

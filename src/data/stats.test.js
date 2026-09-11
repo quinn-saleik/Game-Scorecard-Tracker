@@ -426,6 +426,36 @@ describe("computePlayerDetail — per-game breakdown", () => {
     const euchre3p = detail.gamesByType.find((g) => g.label === "Euchre (3-player)");
     expect(euchre3p.bestScore).toBe(0); // lower is better — 0 beats 10
   });
+
+  it("looks up a custom 'Other' game's CURRENT direction from customGames, not each session's own frozen config", () => {
+    // Both sessions were played while Sky-Jo's frozen per-session config
+    // still said "up" (as OtherPlay.jsx would have read it live) — but
+    // the customGames doc has since been edited to "down". Regression
+    // guard: bestScore must follow the live customGames doc so a later
+    // direction change is reflected across every past game under that
+    // name too, with no need to touch old session documents.
+    const sessions = [
+      makeSession({
+        id: "s1", gameType: "other", playerIds: ["p1"], totals: { p1: 15 },
+        config: { customName: "Sky-Jo", scoreDirection: "up" }, completedAt: "2026-01-01",
+      }),
+      makeSession({
+        id: "s2", gameType: "other", playerIds: ["p1"], totals: { p1: 40 },
+        config: { customName: "Sky-Jo", scoreDirection: "up" }, completedAt: "2026-01-02",
+      }),
+    ];
+    const customGames = [{ id: "sky-jo", name: "Sky-Jo", config: { scoreDirection: "down" } }];
+
+    const detail = computePlayerDetail("p1", players, sessions, customGames);
+    const skyJo = detail.gamesByType.find((g) => g.label === "Sky-Jo");
+    expect(skyJo.bestScore).toBe(15); // low score wins per the CURRENT customGames setting
+    expect(skyJo.bestScoreLabel).toBe("Best (lowest)");
+
+    // No customGames passed (or the game isn't found there) — falls back
+    // to "higher is better" rather than guessing, same as before this fix.
+    const detailNoLookup = computePlayerDetail("p1", players, sessions);
+    expect(detailNoLookup.gamesByType.find((g) => g.label === "Sky-Jo").bestScore).toBe(40);
+  });
 });
 
 describe("computeHallOfFame", () => {

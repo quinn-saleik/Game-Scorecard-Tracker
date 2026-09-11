@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
+import { subscribeToCustomGames } from "../data/customGames";
 import { computePlayerDetail, computeAchievements } from "../data/stats";
 import { formatLastPlayed } from "../data/format";
 import PlayerDot from "../components/PlayerDot";
@@ -10,6 +11,7 @@ export default function PlayerDetail() {
   const { playerId } = useParams();
   const [players, setPlayers] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [customGames, setCustomGames] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,12 +20,13 @@ export default function PlayerDetail() {
     const check = () => { if (playersLoaded && sessionsLoaded) setLoading(false); };
     const unsub1 = subscribeToPlayers((list) => { setPlayers(list); playersLoaded = true; check(); });
     const unsub2 = subscribeToCompletedSessions((list) => { setSessions(list); sessionsLoaded = true; check(); });
-    return () => { unsub1(); unsub2(); };
+    const unsub3 = subscribeToCustomGames(setCustomGames);
+    return () => { unsub1(); unsub2(); unsub3(); };
   }, []);
 
   if (loading) return <p className="empty-state">Loading…</p>;
 
-  const detail = computePlayerDetail(playerId, players, sessions);
+  const detail = computePlayerDetail(playerId, players, sessions, customGames);
   const badges = computeAchievements(playerId, players, sessions);
 
   if (!detail) {

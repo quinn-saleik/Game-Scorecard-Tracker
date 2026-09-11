@@ -6,6 +6,15 @@ import { gameGroupLabel } from "../data/stats";
 import PlayerDot from "../components/PlayerDot";
 import { shortName } from "../data/playerNames";
 
+// Compare two winnerId arrays as sets — order shouldn't matter for "did
+// this actually change" (used to gate the Save button so re-picking the
+// same people isn't treated as a pending edit).
+function sameIds(a, b) {
+  if (a.length !== b.length) return false;
+  const setB = new Set(b);
+  return a.every((id) => setB.has(id));
+}
+
 function formatDateStamp(date) {
   if (!date) return "—";
   return date.toLocaleString(undefined, {
@@ -30,6 +39,9 @@ export default function GameHistoryDetail() {
   const [notesLoaded, setNotesLoaded] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSaved, setNotesSaved] = useState(false);
+  const [editingWinner, setEditingWinner] = useState(false);
+  const [selectedWinners, setSelectedWinners] = useState([]);
+  const [savingWinner, setSavingWinner] = useState(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
 
@@ -54,6 +66,35 @@ export default function GameHistoryDetail() {
       setNotesSaved(true);
     } finally {
       setSavingNotes(false);
+    }
+  }
+
+  // Corrects a game that was finished with the wrong winner(s) tapped —
+  // a misclick, a mixed-up rule at the table, or (as Quinn's grandparents
+  // found out with Sky-Jo) genuine confusion about which way the scoring
+  // even went. Winner selection is manual everywhere in this app, so
+  // there's no way to catch this at score-entry time; this is the fix
+  // after the fact. Reuses the same tap-to-select chip pattern as every
+  // game's own "who won?" screen, seeded from the winner(s) already on
+  // file. Plain `updateSession` — stats/Hall of Fame/achievements are all
+  // computed live from `winnerIds` on read, so nothing else needs
+  // recalculating or migrating once this is saved.
+  function openEditWinner() {
+    setSelectedWinners(session.winnerIds || []);
+    setEditingWinner(true);
+  }
+
+  function toggleWinner(id) {
+    setSelectedWinners((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+
+  async function saveWinner() {
+    setSavingWinner(true);
+    try {
+      await updateSession(sessionId, { winnerIds: selectedWinners });
+      setEditingWinner(false);
+    } finally {
+      setSavingWinner(false);
     }
   }
 
@@ -84,11 +125,67 @@ export default function GameHistoryDetail() {
       </p>
 
       <div className="card-surface">
-        <h2>
-          {session.status === "completed"
-            ? `🏆 ${winners.map((p) => shortName(p)).join(" & ") || "—"}`
-            : "Final scores so far"}
-        </h2>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <h2 style={{ margin: 0 }}>
+            {session.status === "completed"
+              ? `🏆 ${winners.map((p) => shortName(p)).join(" & ") || "—"}`
+              : "Final scores so far"}
+          </h2>
+          {session.status === "completed" && !editingWinner && (
+            <button
+              type="button"
+              className="btn ghost small"
+              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
+              onClick={openEditWinner}
+            >
+              ✎ Edit winner
+            </button>
+          )}
+        </div>
+
+        {editingWinner && (
+          <div style={{ marginTop: 12 }}>
+            <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 0 }}>
+              Tap to fix who actually won — for a game recorded under the wrong rule, or a
+              plain misclick at the table. Doesn't touch the scores or rounds, just who's
+              credited with the win.
+            </p>
+            <div className="chip-row">
+              {players.map((p) => (
+                <span
+                  key={p.id}
+                  className={`player-chip ${selectedWinners.includes(p.id) ? "selected" : ""}`}
+                  onClick={() => toggleWinner(p.id)}
+                >
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                  {shortName(p)} ({totals[p.id] || 0})
+                </span>
+              ))}
+            </div>
+            <div className="btn-row" style={{ marginTop: 12, alignItems: "center" }}>
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
+                onClick={() => setEditingWinner(false)}
+                disabled={savingWinner}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn primary"
+                onClick={saveWinner}
+                disabled={savingWinner || selectedWinners.length === 0 || sameIds(selectedWinners, session.winnerIds || [])}
+              >
+                {savingWinner ? "Saving…" : "Save winner"}
+              </button>
+            </div>
+            {selectedWinners.length === 0 && (
+              <p className="empty-state">Pick at least one winner.</p>
+            )}
+          </div>
+        )}
+
         <table className="score-table">
           <thead><tr><th>Player</th><th>Total</th></tr></thead>
           <tbody>

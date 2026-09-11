@@ -32,12 +32,12 @@ export const GAME_LABELS = {
 };
 
 // Euchre 3-player and Royal Rum count DOWN (lower is better); Golf and
-// Phase 10 are always down; "Other" games decide their own direction per
-// session (config.scoreDirection — read at the call site since it's a
-// per-session setting, not per-gameType); everything else — including
-// "31" lives, where more is safer — counts up. Shared between
-// OngoingGames (ranking in-progress standings) and this file's per-game
-// "best score" direction below.
+// Phase 10 are always down; everything else — including "31" lives,
+// where more is safer — counts up. Shared with OngoingGames (ranking
+// in-progress standings). Every custom "Other" game shares the literal
+// gameType "other", so it can never be listed here by name — its
+// direction is looked up separately, per game, in computePlayerDetail's
+// "best score" logic below.
 export const LOWER_IS_BETTER = new Set(["euchre-3p", "royal-rum", "golf", "phase-10"]);
 
 function slug(s) {
@@ -149,7 +149,7 @@ export function computePlayerStats(players, completedSessions) {
 // gamesByType below), and streak info. Win streaks only — no loss-streak
 // tracking, just a "last game won" signal per the family-app framing
 // (nobody needs their losing streak highlighted).
-export function computePlayerDetail(playerId, players, completedSessions) {
+export function computePlayerDetail(playerId, players, completedSessions, customGames = []) {
   const player = players.find((p) => p.id === playerId);
   if (!player) return null;
 
@@ -192,6 +192,19 @@ export function computePlayerDetail(playerId, players, completedSessions) {
   // works uniformly for every game type. "Best" respects each game's own
   // direction (LOWER_IS_BETTER) so a 3-player Euchre "best" is their
   // lowest finish, not their highest.
+  //
+  // Every custom "Other" game shares the literal gameType "other", so
+  // LOWER_IS_BETTER can't tell them apart by type. Instead, look up each
+  // one's CURRENT direction from the live customGames doc (matched by
+  // slugified name, same id scheme customGames.js uses) rather than any
+  // one session's frozen config snapshot. That's a deliberate difference
+  // from OtherPlay.jsx (which always reads a session's own frozen
+  // config, so gameplay never shifts under someone mid-session): this is
+  // just a stats display, so if a custom game's direction is edited
+  // later, "best score" re-reads as low-or-high consistently across every
+  // game under that name, past and future, with no per-session data to
+  // migrate.
+  const customGameDirectionById = new Map(customGames.map((g) => [g.id, g.config?.scoreDirection]));
   const byGame = new Map(); // gameLabel -> { label, gameType, played, wins, scores }
   for (const g of playerSessions) {
     const entry = byGame.get(g.gameLabel) || { label: g.gameLabel, gameType: g.gameType, played: 0, wins: 0, scores: [] };
@@ -202,7 +215,10 @@ export function computePlayerDetail(playerId, players, completedSessions) {
   }
   const gamesByType = Array.from(byGame.values())
     .map((e) => {
-      const lowerIsBetter = LOWER_IS_BETTER.has(e.gameType);
+      const lowerIsBetter =
+        e.gameType === "other"
+          ? customGameDirectionById.get(slug(e.label)) === "down"
+          : LOWER_IS_BETTER.has(e.gameType);
       const avgScore = e.scores.length ? e.scores.reduce((a, b) => a + b, 0) / e.scores.length : null;
       const bestScore = e.scores.length ? (lowerIsBetter ? Math.min(...e.scores) : Math.max(...e.scores)) : null;
       return {
