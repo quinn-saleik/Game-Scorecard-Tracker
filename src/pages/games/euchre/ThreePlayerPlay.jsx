@@ -241,7 +241,10 @@ export default function ThreePlayerPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+      </h1>
       {undoButton}
       <div className="card-surface">
         <h2><PlayerDot color={currentPlayer.color} avatar={currentPlayer.avatar} photo={currentPlayer.photo} />{shortName(currentPlayer)} — what happened?</h2>

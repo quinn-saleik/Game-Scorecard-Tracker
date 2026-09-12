@@ -211,7 +211,10 @@ export default function RoyalRumPlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">♦</span> Royal Rum — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">♦</span> Royal Rum — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Royal Rum" icon="♦" statusLine={`Hand ${rounds.length + 1} · lowest score among finishers wins`} rows={tvRows} />
+      </h1>
       {scoreTable}
 
       {phase === "goals" && (

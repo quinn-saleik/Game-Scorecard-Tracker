@@ -50,19 +50,21 @@ export default function OtherPlay() {
   const totals = session.totals || {};
   const rounds = session.rounds || [];
 
-  // "Leader" highlighting respects this game's configured direction —
-  // lowest total wins for a count-down game, highest for count-up — and
-  // stays off entirely while everyone's still tied (usually just the
-  // start of the game), rather than the old "0 doesn't count" special case
-  // that only made sense for count-up games.
-  const totalValues = session.players.map((p) => totals[p.id] || 0);
-  const allTied = totalValues.every((v) => v === totalValues[0]);
-  const leaderTotal = allTied ? null : direction === "down" ? Math.min(...totalValues) : Math.max(...totalValues);
+  // "Leader" — whoever's ahead per this game's configured direction —
+  // computed as a function of a totals map rather than a one-off value,
+  // so submitRound (below) can ask "who's leading with the totals this
+  // round is ABOUT to produce" before that round has round-tripped
+  // through Firestore and come back through the session subscription.
+  // Stays off entirely while everyone's tied (usually just the start of
+  // the game) rather than the old "0 doesn't count" special case that
+  // only made sense for count-up games.
+  function leaderTotalOf(totalsMap) {
+    const values = session.players.map((p) => totalsMap[p.id] || 0);
+    const allTied = values.every((v) => v === values[0]);
+    return allTied ? null : direction === "down" ? Math.min(...values) : Math.max(...values);
+  }
+  const leaderTotal = leaderTotalOf(totals);
 
-  // Players who've crossed the configured winning score, if any — purely
-  // informational (see the banner below); nothing here ends the game
-  // automatically.
-  //
   // Which side counts as "crossed" is derived from starting score vs.
   // target, NOT from `direction` (who wins). Those are separate ideas: a
   // game can count UP toward a ceiling (Sky-Jo: starts at 0, rounds only
@@ -73,12 +75,19 @@ export default function OtherPlay() {
   // is this game approaching its target" independent of who that
   // favors.
   const approachesFromBelow = targetScore != null && startingScore < targetScore;
-  const reachedPlayers =
-    targetScore == null
-      ? []
-      : session.players.filter((p) =>
-          approachesFromBelow ? (totals[p.id] || 0) >= targetScore : (totals[p.id] || 0) <= targetScore
-        );
+  function crossedTargetPlayers(totalsMap) {
+    if (targetScore == null) return [];
+    return session.players.filter((p) =>
+      approachesFromBelow ? (totalsMap[p.id] || 0) >= targetScore : (totalsMap[p.id] || 0) <= targetScore
+    );
+  }
+  // Purely informational on its own (see the banner below) — nothing
+  // here ends the game automatically by itself. submitRound is what
+  // actually acts on this, jumping straight to the finish screen the
+  // moment a round crosses it (see below); this stays around as a
+  // fallback for reopening an already-over-target game (e.g. after a
+  // page refresh) where that auto-jump never got a chance to fire.
+  const reachedPlayers = crossedTargetPlayers(totals);
 
   const tvRows = session.players
     .slice()
@@ -111,6 +120,20 @@ export default function OtherPlay() {
       await updateSession(sessionId, { rounds: [...rounds, newRound], totals: newTotals });
       setInputs({});
       setBidInputs({});
+
+      // The whole point of setting a winning score is that the game
+      // actually ends there — jump straight to the "who won?" confirm
+      // screen the instant this round pushes someone past it, preselected
+      // with the real leader (see leaderTotalOf), instead of leaving
+      // Quinn to notice the banner and tap "Finish game" himself. Still
+      // one explicit tap to lock it in (ties, mis-entered scores, "actually
+      // let's keep going") rather than a silent auto-complete.
+      if (crossedTargetPlayers(newTotals).length > 0) {
+        const lead = leaderTotalOf(newTotals);
+        const preselect = session.players.filter((p) => (newTotals[p.id] || 0) === lead && lead != null);
+        setSelectedWinners(preselect.map((p) => p.id));
+        setFinishing(true);
+      }
     } finally {
       setSaving(false);
     }

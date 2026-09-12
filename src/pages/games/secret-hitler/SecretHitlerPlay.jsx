@@ -6,6 +6,7 @@ import {
 } from "../../../data/gameSessions";
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
+import TvMode from "../../../components/TvMode";
 
 export default function SecretHitlerPlay() {
   const { sessionId } = useParams();
@@ -29,6 +30,20 @@ export default function SecretHitlerPlay() {
     );
   }
 
+  // Secret Hitler has no running score to show — the whole game plays out
+  // off-app, with this screen only used once at the very end to record
+  // the winning side. TV mode here just puts the seated lineup up on the
+  // big screen (handy for confirming who's in) rather than a scoreboard.
+  const tvRows = session.players.map((p) => ({
+    key: p.id,
+    label: shortName(p),
+    score: "",
+    isLeader: false,
+    color: p.color,
+    avatar: p.avatar,
+    photo: p.photo,
+  }));
+
   function toggle(id) {
     setWinners((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   }
@@ -47,8 +62,9 @@ export default function SecretHitlerPlay() {
 
   return (
     <div>
-      <h1 className="page-title">
-        <span className="suit black">🎭</span> Secret Hitler
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">🎭</span> Secret Hitler</span>
+        <TvMode gameName="Secret Hitler" icon="🎭" statusLine="Who's playing" rows={tvRows} />
       </h1>
 
       <div className="card-surface">

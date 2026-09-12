@@ -203,7 +203,10 @@ export default function Phase10Play() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit black">🔟</span> Phase 10 — Hand {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit black">🔟</span> Phase 10 — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Phase 10" icon="🔟" statusLine={`Hand ${rounds.length + 1} · lowest score among finishers wins`} rows={tvRows} />
+      </h1>
       {scoreTable}
 
       {phase === "phase" && (

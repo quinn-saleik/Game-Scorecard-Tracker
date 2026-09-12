@@ -178,7 +178,10 @@ export default function ThirtyOnePlay() {
 
   return (
     <div>
-      <h1 className="page-title"><span className="suit red">🂱</span> 31 — Round {rounds.length + 1}</h1>
+      <h1 className="page-title" style={{ justifyContent: "space-between" }}>
+        <span><span className="suit red">🂱</span> 31 — Round {rounds.length + 1}</span>
+        <TvMode gameName="31" icon="🂱" statusLine={`Round ${rounds.length + 1} · most lives wins`} rows={tvRows} unitLabel="❤️" />
+      </h1>
       {scoreTable}
 
       <div className="card-surface">

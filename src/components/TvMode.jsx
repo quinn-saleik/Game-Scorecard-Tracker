@@ -79,7 +79,14 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
 
             <div className={`tv-mode-rows ${rows.length >= TWO_COL_THRESHOLD ? "two-col" : ""}`}>
               {rows.map((r, i) => (
-                <div key={r.key} className={`tv-mode-row ${r.isLeader ? "leader" : ""}`}>
+                <div
+                  key={r.key}
+                  className={`tv-mode-row ${r.isLeader ? "leader" : ""}`}
+                  style={{
+                    "--name-len": Math.max(String(r.label || "").length, 1),
+                    "--score-len": Math.max(String(r.score ?? "").length, 1),
+                  }}
+                >
                   <span className="tv-mode-rank">{r.isLeader ? "👑" : `${i + 1}`}</span>
                   {(r.color || r.avatar || r.photo) && (
                     <PlayerDot color={r.color} avatar={r.avatar} photo={r.photo} />

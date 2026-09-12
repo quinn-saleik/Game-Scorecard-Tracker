@@ -505,9 +505,24 @@ table.score-table td.leader {
   border-color: #ab8a3f;
 }
 
-.tv-mode-rank { font-size: clamp(16px, 38cqh, 40px); color: #90a0b2; width: 2ch; flex-shrink: 0; }
+.tv-mode-rank { font-size: clamp(16px, 38cqmin, 40px); color: #90a0b2; width: 2ch; flex-shrink: 0; }
+/* Name/score font size used to come purely from row height (cqh/cqmin)
+   with a flat max px cap — fine for a short name, but with few players
+   (3-4) rows get tall enough that both hit their absolute cap
+   regardless of how much WIDTH is actually available, and that cap was
+   sized for something like "Quinn" (5 chars), not "Charlotte" or
+   "Grandpa". Name had nowhere to shrink but ellipsis, so anything 4+
+   characters next to a double-digit score would truncate — every time,
+   independent of player count, since nothing tied the cap to the row
+   actually being narrower than it was tall.
+   Fix: TvMode sets --name-len/--score-len per row from the actual
+   label/score text, and font-size is the SMALLEST of the old
+   height-based value, the flat cap, and a width-based budget divided by
+   how many characters that row's text has. A short name/score still
+   grows all the way to the cap (dividing by a small length keeps the
+   budget high); a long one shrinks to fit instead of ellipsizing. */
 .tv-mode-name {
-  font-size: clamp(18px, 44cqh, 52px);
+  font-size: clamp(18px, min(44cqmin, 78cqi / var(--name-len, 6)), 52px);
   font-weight: 700;
   color: #eef1f6;
   overflow: hidden;
@@ -519,7 +534,7 @@ table.score-table td.leader {
 .tv-mode-score {
   font-family: "Courier Prime", "Courier New", monospace;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(20px, 50cqh, 60px);
+  font-size: clamp(20px, min(50cqmin, 60cqi / var(--score-len, 2)), 60px);
   font-weight: 700;
   color: #eef1f6;
   flex-shrink: 0;
