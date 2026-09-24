@@ -50,7 +50,10 @@ function slug(s) {
 // midnight UTC (i.e. anything after ~6-7pm Central) would otherwise get
 // silently bucketed into the next day. Intl.DateTimeFormat with an
 // explicit IANA zone (rather than a fixed UTC-6 offset) self-adjusts
-// across the CST/CDT boundary automatically.
+// across the CST/CDT boundary automatically. This one is intentionally
+// pinned to Central (unlike data/format.js's device-local formatLastPlayed)
+// since it's about which couch the game was actually played on, not about
+// how a given viewer's phone is set.
 const CENTRAL_DAY_FORMATTER = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Chicago",
   year: "numeric",
