@@ -10,6 +10,8 @@ import {
 } from "../data/gameSessions";
 import { computePlayerStats, computeGameStats, gameGroupLabel } from "../data/stats";
 import { subscribeToCustomGames } from "../data/customGames";
+import { useVisiblePlayers, useSessionGroupFilter } from "../data/groupVisibility";
+import { useWhoamiId } from "../data/whoami";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
@@ -48,23 +50,39 @@ export default function Stats() {
     };
   }, []);
 
-  const playerStats = computePlayerStats(players, sessions);
+  const whoamiId = useWhoamiId();
+  const groupVisiblePlayers = useVisiblePlayers(players);
+  const sessionInMyGroups = useSessionGroupFilter(players);
+  // Group filtering is UI convenience, not a lock (see data/groups.js) — it
+  // only narrows what's shown when you've picked who you are AND joined a
+  // group. Applies to games and their derived stats, same scope.
+  const groupSessions = sessions.filter(sessionInMyGroups);
+
+  const playerStats = computePlayerStats(players, groupSessions);
   // Every custom game gets a row too, even at 0 plays — same reasoning as
   // visiblePlayerStats below: a game someone just added to the home screen
   // shouldn't be invisible in Stats until after its first completed game.
-  const playedStats = computeGameStats(sessions);
+  const playedStats = computeGameStats(groupSessions);
   const playedKeys = new Set(playedStats.map((g) => g.groupKey));
   const unplayedCustomGames = customGames
     .filter((g) => !playedKeys.has(`other:${g.id}`))
     .map((g) => ({ groupKey: `other:${g.id}`, gameType: "other", label: g.name, count: 0 }));
   const gameStats = [...playedStats, ...unplayedCustomGames];
-  // Show every active player, not just ones with a completed game — a
-  // brand-new player with no history yet should show up with "—"
+  // Show every group-visible active player, not just ones with a completed
+  // game — a brand-new player with no history yet should show up with "—"
   // placeholders, not disappear from the table entirely. A removed
   // (inactive) player still shows up if they have real history to keep,
   // but drops off once they have none.
-  const activeIds = new Set(players.filter((p) => p.active).map((p) => p.id));
-  const visiblePlayerStats = playerStats.filter((p) => p.gamesPlayed > 0 || activeIds.has(p.playerId));
+  const groupVisibleIds = new Set(groupVisiblePlayers.map((p) => p.id));
+  const visiblePlayerStats = playerStats.filter(
+    (p) => p.gamesPlayed > 0 || groupVisibleIds.has(p.playerId)
+  );
+  // Your own row floats to the top — everything else keeps its existing order.
+  visiblePlayerStats.sort((a, b) => {
+    if (a.playerId === whoamiId) return -1;
+    if (b.playerId === whoamiId) return 1;
+    return 0;
+  });
 
   async function handleDelete(session) {
     const label = gameGroupLabel(session);
@@ -200,7 +218,7 @@ export default function Stats() {
 
           <div className="card-surface">
             <h2>Recent games</h2>
-            {sessions.length === 0 ? (
+            {groupSessions.length === 0 ? (
               <p className="empty-state">No completed games yet — finish a game and it'll show up here.</p>
             ) : (
               <>
@@ -219,7 +237,7 @@ export default function Stats() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sessions.map((s) => {
+                    {groupSessions.map((s) => {
                       const winners = (s.players || []).filter((p) => (s.winnerIds || []).includes(p.id));
                       return (
                         <tr key={s.id}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
+import { useVisiblePlayers } from "../../../data/groupVisibility";
 import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
@@ -18,7 +19,7 @@ export default function TraditionalSetup() {
 
   useEffect(() => subscribeToPlayers((list) => setPlayers(list)), []);
 
-  const active = players.filter((p) => p.active);
+  const active = useVisiblePlayers(players);
 
   function toggle(id) {
     if (teamA.includes(id)) return setTeamA((s) => s.filter((x) => x !== id));

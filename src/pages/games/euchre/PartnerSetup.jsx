@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
+import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
@@ -12,13 +14,23 @@ const MIN_PLAYERS = 3;
 export default function PartnerSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]);
+  const whoamiId = useWhoamiId();
   const [threshold, setThreshold] = useState(10);
   const [starting, setStarting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => subscribeToPlayers((list) => setPlayers(list)), []);
 
-  const active = players.filter((p) => p.active);
+  const active = useVisiblePlayers(players);
+
+  // Default to yourself when starting a new game — still fully
+  // adjustable, just saves the common case of re-tapping your own
+  // chip every time (see data/whoami.js).
+  useEffect(() => {
+    if (selected.length === 0 && whoamiId && active.some((p) => p.id === whoamiId)) {
+      setSelected([whoamiId]);
+    }
+  }, [active, whoamiId]);
 
   // No fixed player count — any table of 3 or more can play, since the
   // bidder either calls one partner or goes it alone and everyone else just

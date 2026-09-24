@@ -1,12 +1,14 @@
-import { lazy } from "react";
+import { lazy, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
+import { migrateToGroupsIfNeeded } from "./data/groupsMigration";
 
 // Code-split everything except Home: a given visit only ever plays one game,
 // so there's no reason to ship every game's Setup/Play bundle up front.
 // Layout's <Suspense> around <Outlet/> covers the load gap.
 const Players = lazy(() => import("./pages/Players"));
+const Me = lazy(() => import("./pages/Me"));
 const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const Stats = lazy(() => import("./pages/Stats"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
@@ -54,10 +56,18 @@ const Phase10Setup = lazy(() => import("./pages/games/phase-10/Phase10Setup"));
 const Phase10Play = lazy(() => import("./pages/games/phase-10/Phase10Play"));
 
 function App() {
+  // Runs once per app load; the migration itself guards against re-running
+  // (idempotent by "does a `groups` doc already exist" — see
+  // data/groupsMigration.js), so this is safe even across route changes.
+  useEffect(() => {
+    migrateToGroupsIfNeeded();
+  }, []);
+
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/me" element={<Me />} />
         <Route path="/players" element={<Players />} />
         <Route path="/players/:playerId" element={<PlayerDetail />} />
         <Route path="/stats" element={<Stats />} />

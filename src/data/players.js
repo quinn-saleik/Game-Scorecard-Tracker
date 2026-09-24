@@ -26,7 +26,7 @@ function slugify(name) {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
-export async function addPlayer(firstName, lastName) {
+export async function addPlayer(firstName, lastName, groupIds = []) {
   await authReady;
   const first = (firstName || "").trim();
   const last = (lastName || "").trim();
@@ -67,6 +67,7 @@ export async function addPlayer(firstName, lastName) {
     name: fullName,
     active: true,
     isDefault: false,
+    groupIds: Array.isArray(groupIds) ? groupIds : [],
     createdAt: serverTimestamp(),
   });
   return id;
@@ -139,6 +140,13 @@ export async function setPlayerColor(playerId, color) {
 export async function setPlayerAvatar(playerId, avatar) {
   await authReady;
   await updateDoc(doc(playersCol, playerId), { avatar });
+}
+
+// Full replace, not add/remove — callers pass the complete membership list
+// (a group checklist naturally has the full set on hand already).
+export async function setPlayerGroups(playerId, groupIds) {
+  await authReady;
+  await updateDoc(doc(playersCol, playerId), { groupIds: Array.isArray(groupIds) ? groupIds : [] });
 }
 
 // photo: a small data: URI (already resized/cropped client-side — see

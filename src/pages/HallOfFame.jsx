@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computeHallOfFame } from "../data/stats";
+import { useSessionGroupFilter } from "../data/groupVisibility";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
@@ -45,20 +46,27 @@ export default function HallOfFame() {
     };
   }, []);
 
+  const sessionInMyGroups = useSessionGroupFilter(players);
+
   if (loading) {
     return <p className="empty-state">Loading…</p>;
   }
 
+  const groupSessions = sessions.filter(sessionInMyGroups);
   const { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry, biggestAchiever } =
-    computeHallOfFame(players, sessions);
+    computeHallOfFame(players, groupSessions);
 
   return (
     <div>
       <h1 className="page-title">🏆 Hall of Fame</h1>
 
-      {sessions.length === 0 ? (
+      {groupSessions.length === 0 ? (
         <div className="card-surface">
-          <p className="empty-state">No games logged yet — finish a game to start filling this in.</p>
+          <p className="empty-state">
+            {sessions.length === 0
+              ? "No games logged yet — finish a game to start filling this in."
+              : "No games yet among your groups — finish one to start filling this in."}
+          </p>
         </div>
       ) : (
         <>

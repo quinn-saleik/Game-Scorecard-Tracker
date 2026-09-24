@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
+import { useVisiblePlayers } from "../../../data/groupVisibility";
 import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
@@ -18,7 +19,7 @@ export default function Euchre15Setup() {
 
   useEffect(() => subscribeToPlayers((list) => setPlayers(list)), []);
 
-  const active = players.filter((p) => p.active);
+  const active = useVisiblePlayers(players);
 
   // Fill Team 1's 2 slots before Team 2 gets any, matching the on-screen
   // caption ("First 2 taps go to Team 1, next 2 to Team 2") — this used to

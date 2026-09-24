@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
+import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import {
   subscribeToCustomGames,
@@ -24,6 +26,7 @@ export default function OtherSetup() {
   const [customGames, setCustomGames] = useState([]);
   const [customGamesLoaded, setCustomGamesLoaded] = useState(false);
   const [selected, setSelected] = useState([]);
+  const whoamiId = useWhoamiId();
 
   const [gameName, setGameName] = useState("");
   const [icon, setIcon] = useState(GAME_ICONS[0]);
@@ -47,7 +50,16 @@ export default function OtherSetup() {
     []
   );
 
-  const active = players.filter((p) => p.active);
+  const active = useVisiblePlayers(players);
+
+  // Default to yourself when starting a new game — still fully
+  // adjustable, just saves the common case of re-tapping your own
+  // chip every time (see data/whoami.js).
+  useEffect(() => {
+    if (selected.length === 0 && whoamiId && active.some((p) => p.id === whoamiId)) {
+      setSelected([whoamiId]);
+    }
+  }, [active, whoamiId]);
   const loadedGame = gameId ? customGames.find((g) => g.id === gameId) : null;
   const notFound = Boolean(gameId) && customGamesLoaded && !loadedGame;
   const loading = Boolean(gameId) && !customGamesLoaded;

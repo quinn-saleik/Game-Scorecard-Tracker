@@ -1,6 +1,7 @@
 import { Suspense, useState } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
+import WhoAmI from "./WhoAmI";
 import FirstRunTour from "./FirstRunTour";
 import { hasSeenTour } from "../data/tourState";
 
@@ -20,6 +21,7 @@ export default function Layout() {
           Scorecard
         </Link>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <WhoAmI />
           <button
             type="button"
             className="btn ghost small"
@@ -54,9 +56,12 @@ export default function Layout() {
           <span className="nav-icon">🎲</span>
           Games
         </NavLink>
-        <NavLink to="/players" className={({ isActive }) => (isActive ? "active" : "")}>
-          <span className="nav-icon">👪</span>
-          Players
+        <NavLink
+          to="/me"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
+          <span className="nav-icon">👤</span>
+          Me
         </NavLink>
         <NavLink to="/stats" className={({ isActive }) => (isActive ? "active" : "")}>
           <span className="nav-icon">📊</span>

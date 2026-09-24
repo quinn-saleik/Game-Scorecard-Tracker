@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
+import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
 import OngoingGames from "../../../components/OngoingGames";
@@ -13,6 +15,7 @@ const MIN_PLAYERS = 3;
 export default function OhHeckSetup() {
   const [players, setPlayers] = useState([]);
   const [selected, setSelected] = useState([]); // preserves tap order = seating order
+  const whoamiId = useWhoamiId();
   const [startingCards, setStartingCards] = useState(8);
   const [bidRule, setBidRule] = useState("traditional");
   const [starting, setStarting] = useState(false);
@@ -20,7 +23,16 @@ export default function OhHeckSetup() {
 
   useEffect(() => subscribeToPlayers((list) => setPlayers(list)), []);
 
-  const active = players.filter((p) => p.active);
+  const active = useVisiblePlayers(players);
+
+  // Default to yourself when starting a new game — still fully
+  // adjustable, just saves the common case of re-tapping your own
+  // chip every time (see data/whoami.js).
+  useEffect(() => {
+    if (selected.length === 0 && whoamiId && active.some((p) => p.id === whoamiId)) {
+      setSelected([whoamiId]);
+    }
+  }, [active, whoamiId]);
 
   function toggle(id) {
     setSelected((s) =>
