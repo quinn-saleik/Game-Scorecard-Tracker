@@ -44,7 +44,7 @@ export const CHANGELOG = [
       "The settings and \"Who are you?\" pop-ups read clearly in both modes.",
       "Delete and NEW badges keep the same red with white text in both modes.",
       "Locked achievements are easier to read.",
-      "New icons: Euchre is now a Jack and Royal Rum a crown.",
+      "New icons: Euchre is now corn (🌽), Oh Heck a target (🎯), and Royal Rum a crown (👑).",
       "Custom games (like King's Corner) can change their icon: open the game, tap Edit rules, pick an icon, and Save changes.",
     ],
   },

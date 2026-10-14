@@ -376,7 +376,7 @@ h3 {
   opacity: 0.55;
   cursor: not-allowed;
 }
-/* The emoji sits in a glossy color badge. Text-style glyphs (♣ ♦ 🂡) take
+/* The emoji sits in a glossy color badge. Text-style glyphs (♣ ♦) take
    their color from `color`, so it's forced white here to stay visible. */
 .game-tile .icon {
   width: 58px;

@@ -63,7 +63,7 @@ export default function ThreePlayerSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">🃛</span> Euchre (3-player) — Who's playing?
+        <span className="suit black">🌽</span> Euchre (3-player) — Who's playing?
       </h1>
       <OngoingGames gameType="euchre-3p" />
 

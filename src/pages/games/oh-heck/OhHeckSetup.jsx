@@ -73,7 +73,7 @@ export default function OhHeckSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">🂡</span> Oh Heck! — Who's playing?
+        <span className="suit black">🎯</span> Oh Heck! — Who's playing?
       </h1>
       <OngoingGames gameType="oh-heck" />
 

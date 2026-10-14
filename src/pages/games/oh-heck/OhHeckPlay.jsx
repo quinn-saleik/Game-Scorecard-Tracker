@@ -169,8 +169,8 @@ export default function OhHeckPlay() {
     return (
       <div>
         <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-          <span><span className="suit black">🂡</span> Oh Heck! — Final round complete</span>
-          <TvMode gameName="Oh Heck!" icon="🂡" statusLine="Final round complete" rows={tvRows} />
+          <span><span className="suit black">🎯</span> Oh Heck! — Final round complete</span>
+          <TvMode gameName="Oh Heck!" icon="🎯" statusLine="Final round complete" rows={tvRows} />
         </h1>
         <div className="card-surface">
           <h2>🏆 {winners.map((p) => shortName(p)).join(" & ")}</h2>
@@ -220,8 +220,8 @@ export default function OhHeckPlay() {
 
   const header = (
     <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-      <span><span className="suit black">🂡</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
-      <TvMode gameName="Oh Heck!" icon="🂡" statusLine={statusLine} rows={tvRows} />
+      <span><span className="suit black">🎯</span> Oh Heck! — Round {roundIndex + 1} of {roundSequence.length} ({cardsThisRound} cards)</span>
+      <TvMode gameName="Oh Heck!" icon="🎯" statusLine={statusLine} rows={tvRows} />
     </h1>
   );
 

@@ -12,7 +12,7 @@ export default function EuchreVariationSelect() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">🃛</span> Euchre — Select variation
+        <span className="suit black">🌽</span> Euchre — Select variation
       </h1>
       <div className="game-grid">
         {VARIATIONS.map((v) =>

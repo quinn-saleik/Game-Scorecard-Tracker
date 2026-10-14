@@ -61,7 +61,7 @@ export default function TwoPlayerSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">🃛</span> Euchre (2-player) — Who's playing?
+        <span className="suit black">🌽</span> Euchre (2-player) — Who's playing?
       </h1>
       <OngoingGames gameType="euchre-2p" />
 

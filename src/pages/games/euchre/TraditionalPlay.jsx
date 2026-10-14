@@ -115,8 +115,8 @@ export default function TraditionalPlay() {
   return (
     <div>
       <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-        <span><span className="suit black">🃛</span> Euchre — Hand {rounds.length + 1}</span>
-        <TvMode gameName="Euchre" icon="🃛" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
+        <span><span className="suit black">🌽</span> Euchre — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Euchre" icon="🌽" statusLine={`Hand ${rounds.length + 1} · first to ${threshold}`} rows={tvRows} />
       </h1>
 
       <div className="card-surface">

@@ -73,7 +73,7 @@ export default function TraditionalSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">🃛</span> Euchre (traditional) — Teams
+        <span className="suit black">🌽</span> Euchre (traditional) — Teams
       </h1>
       <OngoingGames gameType="euchre-traditional" />
 
