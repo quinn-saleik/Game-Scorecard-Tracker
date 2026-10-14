@@ -6,24 +6,26 @@ import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { submitFeedback } from "../data/feedback";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
 
+// `family` picks the tile's color (see .fam-* in index.css): the four suits
+// for card games, plus party / deduction / custom.
 // `gameTypes` is every session.gameType this tile's plays should count
 // toward — an array because the "Euchre" tile fans out to 5 real variants
 // (2p/3p/traditional/15-card/partner) that all need to add up to one tile.
 const GAMES = [
-  { icon: "🂡", label: "Oh Heck!", path: "/oh-heck/setup", soon: false, gameTypes: ["oh-heck"] },
-  { icon: "🔥", label: "Flip7", path: "/flip7/setup", soon: false, gameTypes: ["flip7"] },
-  { icon: "♣", label: "Euchre", path: "/euchre", soon: false, gameTypes: ["euchre-2p", "euchre-3p", "euchre-traditional", "euchre-15card", "euchre-partner"] },
-  { icon: "♦", label: "Royal Rum", path: "/royal-rum/setup", soon: false, gameTypes: ["royal-rum"] },
-  { icon: "🎤", label: "Catchphrase", path: "/catchphrase/setup", soon: false, gameTypes: ["catchphrase"] },
-  { icon: "🂱", label: "31", path: "/thirty-one/setup", soon: false, gameTypes: ["thirty-one"] },
-  { icon: "⛳", label: "Golf", path: "/golf/setup", soon: false, gameTypes: ["golf"] },
-  { icon: "🎭", label: "Secret Hitler", path: "/secret-hitler/setup", soon: false, gameTypes: ["secret-hitler"] },
-  { icon: "🔺", label: "Dutch Blitz", path: "/dutch-blitz/setup", soon: false, gameTypes: ["dutch-blitz"] },
-  { icon: "⚡", label: "Nertz", path: "/nertz/setup", soon: false, gameTypes: ["nertz"] },
-  { icon: "🕵️", label: "Codenames", path: "/codenames/setup", soon: false, gameTypes: ["codenames"] },
-  { icon: "✋", label: "Egyptian Ratscrew", path: "/egyptian-ratscrew/setup", soon: false, gameTypes: ["egyptian-ratscrew"] },
-  { icon: "🔢", label: "Skip-Bo", path: "/skip-bo/setup", soon: false, gameTypes: ["skip-bo"] },
-  { icon: "🔟", label: "Phase 10", path: "/phase-10/setup", soon: false, gameTypes: ["phase-10"] },
+  { icon: "🂡", label: "Oh Heck!", family: "spade", path: "/oh-heck/setup", soon: false, gameTypes: ["oh-heck"] },
+  { icon: "🔥", label: "Flip7", family: "heart", path: "/flip7/setup", soon: false, gameTypes: ["flip7"] },
+  { icon: "♣", label: "Euchre", family: "club", path: "/euchre", soon: false, gameTypes: ["euchre-2p", "euchre-3p", "euchre-traditional", "euchre-15card", "euchre-partner"] },
+  { icon: "♦", label: "Royal Rum", family: "diamond", path: "/royal-rum/setup", soon: false, gameTypes: ["royal-rum"] },
+  { icon: "🎤", label: "Catchphrase", family: "party", path: "/catchphrase/setup", soon: false, gameTypes: ["catchphrase"] },
+  { icon: "🂱", label: "31", family: "heart", path: "/thirty-one/setup", soon: false, gameTypes: ["thirty-one"] },
+  { icon: "⛳", label: "Golf", family: "club", path: "/golf/setup", soon: false, gameTypes: ["golf"] },
+  { icon: "🎭", label: "Secret Hitler", family: "deduce", path: "/secret-hitler/setup", soon: false, gameTypes: ["secret-hitler"] },
+  { icon: "🔺", label: "Dutch Blitz", family: "heart", path: "/dutch-blitz/setup", soon: false, gameTypes: ["dutch-blitz"] },
+  { icon: "⚡", label: "Nertz", family: "club", path: "/nertz/setup", soon: false, gameTypes: ["nertz"] },
+  { icon: "🕵️", label: "Codenames", family: "deduce", path: "/codenames/setup", soon: false, gameTypes: ["codenames"] },
+  { icon: "✋", label: "Egyptian Ratscrew", family: "spade", path: "/egyptian-ratscrew/setup", soon: false, gameTypes: ["egyptian-ratscrew"] },
+  { icon: "🔢", label: "Skip-Bo", family: "spade", path: "/skip-bo/setup", soon: false, gameTypes: ["skip-bo"] },
+  { icon: "🔟", label: "Phase 10", family: "diamond", path: "/phase-10/setup", soon: false, gameTypes: ["phase-10"] },
 ];
 
 export default function Home() {
@@ -73,6 +75,7 @@ export default function Home() {
       label: g.name,
       path: `/other/setup/${g.id}`,
       soon: false,
+      family: "custom",
       key: `custom-${g.id}`,
       playCount: playCountByCustomName[g.name] || 0,
     }));
@@ -124,13 +127,13 @@ export default function Home() {
             scratch every time it comes up. */}
         {sortedTiles.map((g) =>
           g.soon ? (
-            <div className="game-tile disabled" key={g.key}>
+            <div className={`game-tile fam-${g.family} disabled`} key={g.key}>
               <span className="icon">{g.icon}</span>
               <span>{g.label}</span>
               <span className="soon">Coming soon</span>
             </div>
           ) : (
-            <Link className="game-tile" to={g.path} key={g.key}>
+            <Link className={`game-tile fam-${g.family}`} to={g.path} key={g.key}>
               <span className="icon">{g.icon}</span>
               <span>{g.label}</span>
             </Link>

@@ -3,6 +3,14 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-color-tiles",
+    date: "2026-10-15",
+    title: "Color-coded game tiles",
+    items: [
+      "Game tiles have a fresh look: each game's icon sits in a color badge. Card games use the four suit colors, party games and your custom games get their own.",
+    ],
+  },
+  {
     id: "2026-10-dealer-and-negatives",
     date: "2026-10-14",
     title: "Phase 10 dealer + negative scores",

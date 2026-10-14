@@ -28,6 +28,17 @@
   --divider: #d7dfe8;
   --border-soft: #c3ceda;
 
+  /* Game-tile "families": the four suit colors for card games, plus one
+     each for party/word, deduction, and custom games. Mid-tone on purpose
+     so a white emoji reads on the badge in both themes. */
+  --fam-spade: #2c3e52;
+  --fam-heart: #c0392b;
+  --fam-diamond: #c98a1b;
+  --fam-club: #2e7d5b;
+  --fam-party: #d9623b;
+  --fam-deduce: #2a8c9a;
+  --fam-custom: #7a5ea8;
+
   --font-display: "Bitter", Georgia, "Iowan Old Style", serif;
   --font-body: "Bitter", Georgia, "Iowan Old Style", serif;
   --font-mono: "Courier Prime", "Courier New", monospace;
@@ -49,6 +60,13 @@ html.dark {
   --divider: #33404f;
   --border-soft: #435063;
   --red-suit: #d1615a;
+  --fam-spade: #5d7a9c;
+  --fam-heart: #d4574a;
+  --fam-diamond: #d99a2b;
+  --fam-club: #3d9a74;
+  --fam-party: #e0764f;
+  --fam-deduce: #34a0b0;
+  --fam-custom: #8f72bf;
   color-scheme: dark;
 }
 
@@ -228,32 +246,59 @@ h3 {
 }
 
 .game-tile {
+  --c: var(--gold);
   background: var(--card-white);
-  border-radius: var(--radius);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--c) 20%, var(--card-white)),
+    color-mix(in srgb, var(--c) 5%, var(--card-white))
+  );
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  padding: 18px 14px;
+  padding: 16px 12px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  border: 3px solid transparent;
+  gap: 10px;
+  border: 2px solid var(--border-soft);
+  border-color: color-mix(in srgb, var(--c) 45%, transparent);
   transition: transform 0.1s ease, border-color 0.15s ease;
   text-decoration: none;
   color: var(--text-on-surface);
+  font-weight: 600;
 }
+.game-tile.fam-spade { --c: var(--fam-spade); }
+.game-tile.fam-heart { --c: var(--fam-heart); }
+.game-tile.fam-diamond { --c: var(--fam-diamond); }
+.game-tile.fam-club { --c: var(--fam-club); }
+.game-tile.fam-party { --c: var(--fam-party); }
+.game-tile.fam-deduce { --c: var(--fam-deduce); }
+.game-tile.fam-custom { --c: var(--fam-custom); }
 @media (hover: hover) and (pointer: fine) {
   .game-tile:hover {
     transform: translateY(-2px);
-    border-color: var(--gold);
+    border-color: var(--c);
   }
 }
 .game-tile.disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
+/* The emoji sits in a glossy color badge. Text-style glyphs (♣ ♦ 🂡) take
+   their color from `color`, so it's forced white here to stay visible. */
 .game-tile .icon {
-  font-size: 34px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  line-height: 1;
+  color: #fff;
+  background: var(--c);
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--c) 50%, transparent);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 }
 .game-tile .soon {
   font-size: 12px;

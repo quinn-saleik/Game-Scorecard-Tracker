@@ -17,13 +17,13 @@ export default function EuchreVariationSelect() {
       <div className="game-grid">
         {VARIATIONS.map((v) =>
           v.soon ? (
-            <div className="game-tile disabled" key={v.label}>
+            <div className="game-tile fam-club disabled" key={v.label}>
               <span className="icon">{v.icon}</span>
               <span>{v.label}</span>
               <span className="soon">Coming soon</span>
             </div>
           ) : (
-            <Link className="game-tile" to={v.path} key={v.label}>
+            <Link className="game-tile fam-club" to={v.path} key={v.label}>
               <span className="icon">{v.icon}</span>
               <span>{v.label}</span>
             </Link>
