@@ -8,10 +8,11 @@ import {
   restoreSession,
   deleteSession,
 } from "../data/gameSessions";
-import { computePlayerStats, computeGameStats, gameGroupLabel, addWinPercentiles, MIN_GAMES_FOR_RATING } from "../data/stats";
+import { computePlayerStats, computeGameStats, gameGroupLabel, MIN_GAMES_FOR_RATING } from "../data/stats";
 import { subscribeToCustomGames } from "../data/customGames";
 import { useVisiblePlayers, useInScope, useSessionFilter } from "../data/favoriteVisibility";
 import ScopeToggle from "../components/ScopeToggle";
+import ParBadge from "../components/ParBadge";
 import { useWhoamiId } from "../data/whoami";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
@@ -77,10 +78,8 @@ export default function Stats() {
   // (inactive) player still shows up if they have real history to keep,
   // but drops off once they have none.
   const visibleIds = new Set(visiblePlayersList.map((p) => p.id));
-  // Percentiles are computed AFTER scoping, so with Favorites on they rank you
-  // among the people you're looking at, not everyone who ever opened the app.
-  const visiblePlayerStats = addWinPercentiles(
-    playerStats.filter((p) => playerInScope(p.playerId) && (p.gamesPlayed > 0 || visibleIds.has(p.playerId)))
+  const visiblePlayerStats = playerStats.filter(
+    (p) => playerInScope(p.playerId) && (p.gamesPlayed > 0 || visibleIds.has(p.playerId))
   );
   // Your own row floats to the top — everything else keeps its existing order.
   visiblePlayerStats.sort((a, b) => {
@@ -219,8 +218,7 @@ export default function Stats() {
                         {p.gamesPlayed > 0 && <span className="cell-sub">par {p.parPct}%</span>}
                       </td>
                       <td>
-                        {p.gamesPlayed >= MIN_GAMES_FOR_RATING && p.winIndex !== null ? `${p.winIndex.toFixed(1)}×` : "—"}
-                        {p.winPercentile !== null && <span className="cell-sub">ahead of {p.winPercentile}%</span>}
+                        <ParBadge player={p} />
                       </td>
                       <td>{p.favoriteGame}</td>
                     </tr>
@@ -230,9 +228,9 @@ export default function Stats() {
             )}
             {visiblePlayerStats.length > 0 && (
               <p style={{ color: "var(--muted)", fontSize: 12, margin: "10px 0 0", lineHeight: 1.45 }}>
-                <strong>par</strong> is the win % luck alone would give you, since a 2-player game is 50% and an
-                8-player game is 12.5%. <strong>vs par</strong> is your wins divided by that: 1.0× is exactly par, 2.0× is
-                twice as often. "Ahead of" ranks you among the players shown who have {MIN_GAMES_FOR_RATING}+ games.
+                <strong>par</strong> is the win % luck alone would give you (a 2-player game is 50%, an 8-player
+                game is 12.5%). <strong>vs par</strong> is your wins divided by that: 1.0× is exactly par, higher is
+                better. It shows once you've played {MIN_GAMES_FOR_RATING} games.
               </p>
             )}
           </div>

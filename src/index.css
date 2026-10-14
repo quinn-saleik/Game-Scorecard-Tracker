@@ -53,6 +53,10 @@
      is too pale to carry white lettering as a fill. */
   --danger: #e0284f;
 
+  /* Above / below par (vs par column) — text colors for ivory cards. */
+  --par-good: #1a7f4b;
+  --par-bad: #c8243f;
+
   /* Game-tile "families": the four suit colors for card games, plus one
      each for party/word, deduction, and custom games. Mid-tone on purpose
      so a white emoji reads on the badge in both themes. */
@@ -85,6 +89,8 @@ html.dark {
   --surface-divider: #2a3d7a;
   --surface-border: #4a62b0;
   --surface-ghost: #6f86cf;
+  --par-good: #5fd08e;
+  --par-bad: #ff7a90;
   --red-suit: #ff6b86;
   --outline: #02050f;
   --fam-spade: #5d7a9c;
@@ -880,3 +886,6 @@ table.score-table.tight td {
 table.score-table.tight th {
   font-size: 12px;
 }
+
+.par-good { color: var(--par-good); font-weight: 700; }
+.par-bad { color: var(--par-bad); font-weight: 700; }

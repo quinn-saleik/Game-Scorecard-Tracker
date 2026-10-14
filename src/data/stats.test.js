@@ -5,7 +5,6 @@ import {
   computeGameStats,
   computeAchievements,
   computeHallOfFame,
-  addWinPercentiles,
 } from "./stats";
 
 // Firestore Timestamps expose .toDate() — every consumer in stats.js reads
@@ -618,25 +617,5 @@ describe("win % vs par (table-size adjusted)", () => {
 
   it("leaves winIndex null when there are no games", () => {
     expect(computePlayerStats(roster, []).every((r) => r.winIndex === null)).toBe(true);
-  });
-});
-
-describe("addWinPercentiles", () => {
-  const row = (playerId, gamesPlayed, winIndex) => ({ playerId, gamesPlayed, winIndex });
-  const pct = (rows) => Object.fromEntries(addWinPercentiles(rows).map((r) => [r.playerId, r.winPercentile]));
-
-  it("ranks among players with 5+ games; ties share the middle", () => {
-    const p = pct([row("a", 10, 2), row("b", 10, 1), row("c", 10, 1), row("d", 10, 0.5)]);
-    expect(p).toEqual({ a: 88, b: 50, c: 50, d: 13 });
-  });
-
-  it("leaves players under 5 games blank and doesn't count them in the ranking", () => {
-    const p = pct([row("a", 10, 2), row("b", 10, 1), row("new", 2, 4)]);
-    expect(p.new).toBeNull();
-    expect(p).toMatchObject({ a: 75, b: 25 });
-  });
-
-  it("is blank for everyone when fewer than two players qualify", () => {
-    expect(pct([row("a", 10, 2), row("b", 3, 1)])).toEqual({ a: null, b: null });
   });
 });

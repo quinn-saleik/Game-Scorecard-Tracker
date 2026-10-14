@@ -22,6 +22,7 @@ import { PLAYER_COLORS } from "../data/playerColors";
 import { PLAYER_AVATARS } from "../data/playerAvatars";
 import { fileToPlayerPhoto } from "../data/photo";
 import PlayerDot from "../components/PlayerDot";
+import ParBadge from "../components/ParBadge";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
 
@@ -323,7 +324,7 @@ export default function Me() {
             </tr>
             <tr>
               <td>vs par <span style={{ color: "var(--muted)", fontSize: 12 }}>(1.0× = luck)</span></td>
-              <td>{detail.gamesPlayed >= MIN_GAMES_FOR_RATING && detail.winIndex !== null ? `${detail.winIndex.toFixed(1)}×` : `needs ${MIN_GAMES_FOR_RATING}+ games`}</td>
+              <td>{detail.gamesPlayed >= MIN_GAMES_FOR_RATING ? <ParBadge player={detail} /> : `needs ${MIN_GAMES_FOR_RATING}+ games`}</td>
             </tr>
             <tr><td>Favorite game</td><td>{detail.favoriteGame}</td></tr>
             <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>

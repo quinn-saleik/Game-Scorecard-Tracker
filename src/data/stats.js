@@ -161,25 +161,8 @@ export function computePlayerStats(players, completedSessions) {
 }
 
 // Fewer games than this and a single lucky/unlucky night swings the ratio, so
-// "vs par" and the percentile stay blank rather than overclaim.
+// "vs par" stays blank rather than overclaim.
 export const MIN_GAMES_FOR_RATING = 5;
-
-// Adds `winPercentile` (0-100) to each row: the share of qualifying players
-// this player's winIndex beats (ties count half), among everyone in `rows`
-// with MIN_GAMES_FOR_RATING+ games. So the top of six players reads 92, never
-// a harsh 0 for the bottom one. Null when the player hasn't played enough,
-// or when fewer than two people qualify (a percentile of one is meaningless).
-// Callers pass whichever rows are in scope (e.g. your favorites), so the
-// ranking is always "among the people you're looking at."
-export function addWinPercentiles(rows) {
-  const eligible = rows.filter((r) => r.gamesPlayed >= MIN_GAMES_FOR_RATING && r.winIndex !== null);
-  return rows.map((r) => {
-    if (eligible.length < 2 || !eligible.includes(r)) return { ...r, winPercentile: null };
-    const below = eligible.filter((o) => o.winIndex < r.winIndex).length;
-    const equal = eligible.filter((o) => o.winIndex === r.winIndex).length;
-    return { ...r, winPercentile: Math.round(((below + equal / 2) / eligible.length) * 100) };
-  });
-}
 
 // Full detail for one player's page: summary numbers (reusing the same
 // definitions as computePlayerStats), game-by-game history newest first,
