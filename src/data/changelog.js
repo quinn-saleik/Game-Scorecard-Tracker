@@ -3,8 +3,20 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-header-and-dock",
+    date: "2026-10-14",
+    title: "Tidier top and bottom bars",
+    summary: "Cleaner header, floating bottom bar.",
+    items: [
+      "The app icon now sits right next to the name, and your player shows as a round avatar instead of a wide button. Tap it to switch players.",
+      "The bottom bar floats like a card, with a yellow dot on the page you're on.",
+      "Headings use a lighter weight so they're easier to read.",
+      "Bigger screens get a wider layout, so the games grid and bottom bar don't stretch edge to edge.",
+    ],
+  },
+  {
     id: "2026-10-arcade-pop",
-    date: "2026-10-15",
+    date: "2026-10-14",
     title: "A fresh look",
     summary: "New look, same games.",
     items: [
@@ -18,7 +30,7 @@ export const CHANGELOG = [
     id: "2026-10-dealer-and-negatives",
     date: "2026-10-14",
     title: "Phase 10 dealer + negative scores",
-    summary: "Phase 10 dealer and negative scores.",
+    summary: "Know who's dealing, and score below zero.",
     items: [
       "Phase 10: tap players in seating order. The first player picked deals first and the deal passes around the table each hand (look for the 🃏).",
       "Custom games (like Sky-Jo) have a ± button next to every score box, so a negative score is a single tap.",

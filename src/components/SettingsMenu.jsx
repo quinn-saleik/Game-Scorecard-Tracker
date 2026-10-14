@@ -18,15 +18,7 @@ export default function SettingsMenu() {
     <div style={{ position: "relative" }}>
       <button
         type="button"
-        className="btn ghost small"
-        style={{
-          padding: "6px 9px",
-          minHeight: "auto",
-          border: "1px solid rgba(238, 241, 246, 0.3)",
-          borderRadius: 10,
-          fontSize: 15,
-          lineHeight: 1,
-        }}
+        className="icon-btn"
         onClick={() => setOpen((o) => !o)}
         aria-label="Display settings"
       >

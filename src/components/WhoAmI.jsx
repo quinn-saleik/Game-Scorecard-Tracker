@@ -8,6 +8,19 @@ import { useWhoamiId, setWhoamiId } from "../data/whoami";
 import { shortName } from "../data/playerNames";
 import PlayerDot from "./PlayerDot";
 
+// Round face for the top-bar button: photo if there is one, else the emoji
+// avatar, else the first initial — always on the player's color.
+function AvatarFace({ me }) {
+  if (me.photo) {
+    return <img src={me.photo} alt="" aria-hidden="true" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />;
+  }
+  return (
+    <span aria-hidden="true" style={{ fontSize: me.avatar ? 19 : 16, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+      {me.avatar || (me.name || "?").trim().charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 export default function WhoAmI() {
   const [players, setPlayers] = useState([]);
   const [open, setOpen] = useState(false);
@@ -27,33 +40,13 @@ export default function WhoAmI() {
     <div style={{ position: "relative" }}>
       <button
         type="button"
-        className="btn ghost small"
-        style={{
-          padding: "6px 10px",
-          minHeight: "auto",
-          border: "1px solid rgba(238, 241, 246, 0.3)",
-          borderRadius: 10,
-          fontSize: 13,
-          lineHeight: 1,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: me ? 0 : 4,
-          maxWidth: 120,
-        }}
+        className={me ? "avatar-btn" : "icon-btn invite"}
+        style={me ? { background: me.photo ? "var(--wood)" : me.color || "#c0392b" } : undefined}
         onClick={() => setOpen((o) => !o)}
         aria-label={me ? `You're playing as ${me.name}. Change?` : "Who are you?"}
         title={me ? `You're playing as ${me.name}` : "Who are you?"}
       >
-        {me ? (
-          <>
-            <PlayerDot color={me.color} avatar={me.avatar} photo={me.photo} />
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {shortName(me)}
-            </span>
-          </>
-        ) : (
-          <>👤 Who are you?</>
-        )}
+        {me ? <AvatarFace me={me} /> : "👤"}
       </button>
       {open && (
         <>

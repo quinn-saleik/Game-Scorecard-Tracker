@@ -2,6 +2,7 @@ import { Suspense, useState } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
 import SettingsMenu from "./SettingsMenu";
 import WhoAmI from "./WhoAmI";
+import AppIcon from "./AppIcon";
 import FirstRunTour from "./FirstRunTour";
 import { hasSeenTour } from "../data/tourState";
 
@@ -16,23 +17,14 @@ export default function Layout() {
     <>
       <div className="top-bar">
         <Link to="/" className="brand">
-          <span className="suit red">♥</span>
-          <span className="suit black">♠</span>
-          Scorecard
+          <AppIcon size={34} />
+          <span>Scorecard</span>
         </Link>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="top-actions">
           <WhoAmI />
           <button
             type="button"
-            className="btn ghost small"
-            style={{
-              padding: "6px 9px",
-              minHeight: "auto",
-              border: "1px solid rgba(238, 241, 246, 0.3)",
-              borderRadius: 10,
-              fontSize: 15,
-              lineHeight: 1,
-            }}
+            className="icon-btn"
             onClick={() => setTourOpen(true)}
             aria-label="Show the guided tour"
             title="Show the guided tour"

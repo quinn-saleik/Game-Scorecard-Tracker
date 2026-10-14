@@ -17,6 +17,7 @@
   --ink: #0f1b3d;
   --muted: #5d6a8f;
   --outline: #050b1f;
+  --page-max: 720px;
   --radius: 14px;
   --shadow: 3px 3px 0 var(--outline);
 
@@ -72,6 +73,14 @@ html.dark {
   color-scheme: dark;
 }
 
+/* Desktop: a slightly wider column (more tiles per row), and the bottom nav's
+   buttons stay grouped inside that column instead of spreading edge to edge. */
+@media (min-width: 900px) {
+  :root {
+    --page-max: 880px;
+  }
+}
+
 /* Text size — applied as a page zoom (not per-rule font-size math) so
    spacing and tap targets scale along with the text, not just the type.
    `zoom` reflows properly (unlike transform: scale) and is supported on
@@ -101,6 +110,9 @@ html.text-xl .tv-mode-overlay {
    here instead, body's box stopped at one viewport tall and the
    navy gradient below tiled to fill the rest of the page — a visible
    seam wherever it repeated. */
+html {
+  background: var(--felt);
+}
 html,
 body,
 #root {
@@ -118,6 +130,10 @@ body {
 #root {
   display: flex;
   flex-direction: column;
+  /* Fill the window so the bottom nav sits at the bottom even on a short
+     page (matters on a tall desktop window; phones were already fine). */
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 a {
@@ -132,7 +148,7 @@ button {
 .app-main {
   flex: 1;
   width: 100%;
-  max-width: 720px;
+  max-width: var(--page-max);
   margin: 0 auto;
   padding: 14px 16px 96px;
 }
@@ -157,17 +173,16 @@ h3 {
   margin-top: 0;
   color: var(--heading-on-surface);
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .page-title {
   color: var(--cream);
-  text-shadow: 2px 2px 0 var(--outline);
   margin: 6px 0 14px;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.01em;
 }
 
@@ -292,6 +307,11 @@ h3 {
     border-color: var(--c);
   }
 }
+.game-tile:focus-visible,
+.btn:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
 .game-tile.disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -367,56 +387,118 @@ h3 {
 .whatsnew-examples { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--gold) 16%, var(--card-white)); border: 2px solid var(--border-soft); }
 .whatsnew-examples h3 { margin: 0 0 6px; font-size: 16px; }
 .whatsnew-examples p { margin: 6px 0; line-height: 1.45; font-size: 14.5px; }
-.whatsnew-section { color: var(--cream); font-size: 18px; margin: 20px 0 10px; text-shadow: 2px 2px 0 var(--outline); }
+.whatsnew-section { color: var(--cream); font-size: 18px; margin: 20px 0 10px; }
 
+/* Bottom nav — a floating ivory "dock": outlined, with the hard offset
+   shadow, inset from the screen edges and kept inside the page column on a
+   wide desktop window. The active tab gets a yellow coin behind its icon. */
 .nav-bar {
   position: sticky;
   bottom: 0;
+  z-index: 10;
   display: flex;
   justify-content: space-around;
-  background: var(--wood-dark);
-  border-top: 2.5px solid var(--outline);
-  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  gap: 4px;
+  width: calc(100% - 24px);
+  max-width: calc(var(--page-max) - 32px);
+  margin: 0 auto calc(10px + env(safe-area-inset-bottom));
+  padding: 8px 6px;
+  background: var(--card-white);
+  color: var(--text-on-surface);
+  border: 2.5px solid var(--outline);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
 }
 .nav-bar a {
-  color: rgba(243, 246, 255, 0.65);
+  color: var(--text-on-surface);
+  opacity: 0.72;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 10px;
+  gap: 2px;
+  padding: 2px 10px;
+  border-radius: 12px;
 }
 .nav-bar a.active {
-  color: var(--gold);
-  background: rgba(255, 210, 63, 0.14);
+  opacity: 1;
 }
 .nav-bar .nav-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid transparent;
   font-size: 20px;
+  line-height: 1;
+}
+.nav-bar a.active .nav-icon {
+  background: var(--gold);
+  border-color: var(--outline);
 }
 
+/* Top bar — solid midnight (also under the iPhone status bar, so there's no
+   fade), stuck to the top. Padding mirrors the page column so the contents
+   line up with it on a wide window. */
 .top-bar {
-  max-width: 720px;
-  margin: 0 auto;
-  /* iOS's status bar is set to overlay the page (black-translucent, see
-     index.html), so without this the clock/signal/battery icons sit right
-     on top of the brand and settings button. env() falls back to 0 on
-     browsers that don't support it (nothing extra needed there). */
-  padding: calc(16px + env(safe-area-inset-top)) 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  /* iOS's status bar overlays the page (black-translucent, see index.html),
+     so the safe-area inset keeps the clock/battery off the brand. env()
+     falls back to 0 where unsupported. */
+  padding: calc(10px + env(safe-area-inset-top)) max(16px, calc((100% - var(--page-max)) / 2 + 16px)) 10px;
+  background: var(--felt);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
 }
 .top-bar .brand {
   color: var(--cream);
-  font-size: 20px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
   text-decoration: none;
   display: flex;
   align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.top-actions {
+  display: flex;
   gap: 8px;
+  align-items: center;
+}
+.icon-btn,
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--cream);
+  flex: none;
+}
+.icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(243, 246, 255, 0.35);
+}
+.icon-btn.invite {
+  border-color: var(--gold);
+}
+.avatar-btn {
+  border: 2.5px solid var(--gold);
+  box-shadow: 2px 2px 0 var(--outline);
+  overflow: hidden;
 }
 
 .player-chip {
