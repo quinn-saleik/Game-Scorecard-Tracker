@@ -3,6 +3,15 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-feedback-popup",
+    date: "2026-10-14",
+    title: "Tell me what you think",
+    summary: "Feedback pop-up, fairer win %, favorites, light/dark polish, new icons, new look, tidier bars, Phase 10 dealer, negative scores.",
+    items: [
+      "The feedback box moved: tap \"Tell me what you think!\" under What's new on the home screen and a pop-up opens to type it in. Same place it always went.",
+    ],
+  },
+  {
     id: "2026-10-fair-win-rate",
     date: "2026-10-14",
     title: "Fairer win %",

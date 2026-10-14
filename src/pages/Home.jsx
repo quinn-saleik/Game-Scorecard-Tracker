@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import OngoingGames from "../components/OngoingGames";
 import { subscribeToCustomGames } from "../data/customGames";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
-import { submitFeedback } from "../data/feedback";
+import FeedbackPopup from "../components/FeedbackPopup";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
 import { splitTiles } from "../data/tileFolding";
 
@@ -32,9 +32,7 @@ const GAMES = [
 export default function Home() {
   const [customGames, setCustomGames] = useState([]);
   const [completedSessions, setCompletedSessions] = useState([]);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   useEffect(() => subscribeToCustomGames(setCustomGames), []);
   useEffect(() => subscribeToCompletedSessions(setCompletedSessions), []);
@@ -123,21 +121,6 @@ export default function Home() {
       </Link>
     );
 
-  async function handleSendFeedback(e) {
-    e.preventDefault();
-    if (!feedbackText.trim()) return;
-    setSending(true);
-    try {
-      await submitFeedback(feedbackText);
-      setFeedbackText("");
-      setSent(true);
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setSending(false);
-    }
-  }
-
   return (
     <div>
       <h1 className="page-title">
@@ -157,6 +140,19 @@ export default function Home() {
           <span style={{ background: "var(--danger)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
         )}
       </Link>
+      <button
+        type="button"
+        className="card-surface"
+        onClick={() => setFeedbackOpen(true)}
+        style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", font: "inherit", cursor: "pointer", color: "var(--text-on-surface)", padding: "10px 14px" }}
+      >
+        <span aria-hidden="true">💬</span>
+        <span style={{ flex: 1, fontSize: 14 }}>
+          <strong>Tell me what you think!</strong>
+        </span>
+        <span aria-hidden="true" style={{ color: "var(--muted)" }}>›</span>
+      </button>
+      {feedbackOpen && <FeedbackPopup onClose={() => setFeedbackOpen(false)} />}
       <div className="game-grid">
         {/* Most-played first (ties keep their designed/fetch order — see
             sortedTiles above). Includes both the built-in games and any
@@ -176,46 +172,6 @@ export default function Home() {
           <div className="game-grid">{moreTiles.map(renderTile)}</div>
         </details>
       )}
-
-      <div className="card-surface" style={{ opacity: 0.85, marginTop: 28 }}>
-        {sent ? (
-          <p style={{ margin: 0, fontSize: 14 }}>
-            Thanks — got it! 🙏{" "}
-            <button
-              type="button"
-              onClick={() => setSent(false)}
-              style={{ background: "none", border: "none", padding: 0, color: "var(--muted)", textDecoration: "underline", cursor: "pointer", fontSize: 14 }}
-            >
-              Send another
-            </button>
-          </p>
-        ) : (
-          <form onSubmit={handleSendFeedback}>
-            <div className="field" style={{ marginBottom: 8 }}>
-              <label htmlFor="feedback" style={{ fontSize: 13, color: "var(--muted)" }}>
-                Have ideas or find a bug? Let me know!
-              </label>
-              <textarea
-                id="feedback"
-                className="input"
-                rows={2}
-                style={{ resize: "vertical", fontFamily: "inherit", fontSize: 14 }}
-                placeholder="What's on your mind…"
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                disabled={sending}
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn ghost small"
-              disabled={sending || !feedbackText.trim()}
-            >
-              {sending ? "Sending…" : "Send"}
-            </button>
-          </form>
-        )}
-      </div>
     </div>
   );
 }
