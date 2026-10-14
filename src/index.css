@@ -307,6 +307,28 @@ h3 {
   letter-spacing: 0.05em;
 }
 
+/* "More games" fold on Home (rarely-played tiles, see data/tileFolding.js) */
+.more-games {
+  margin-top: 16px;
+}
+.more-games > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 99px;
+  border: 2px solid rgba(238, 241, 246, 0.4);
+  color: var(--cream);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.more-games > summary::-webkit-details-marker { display: none; }
+.more-games > summary::after { content: "▾"; transition: transform 0.15s ease; }
+.more-games[open] > summary::after { transform: rotate(180deg); }
+
 .nav-bar {
   position: sticky;
   bottom: 0;

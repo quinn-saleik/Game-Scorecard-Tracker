@@ -7,6 +7,7 @@ export const CHANGELOG = [
     date: "2026-10-15",
     title: "Color-coded game tiles",
     items: [
+      "Games nobody plays much now tuck into a \"More games\" section at the bottom, and pop back up automatically when you start playing them again.",
       "Game tiles have a fresh look: each game's icon sits in a color badge. Card games use the four suit colors, party games and your custom games get their own.",
     ],
   },

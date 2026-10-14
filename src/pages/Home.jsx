@@ -5,6 +5,7 @@ import { subscribeToCustomGames } from "../data/customGames";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { submitFeedback } from "../data/feedback";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
+import { splitTiles } from "../data/tileFolding";
 
 // `family` picks the tile's color (see .fam-* in index.css): the four suits
 // for card games, plus party / deduction / custom.
@@ -50,6 +51,20 @@ export default function Home() {
     return counts;
   }, [completedSessions]);
 
+  // Most recent finished game per type / custom name — feeds the "More"
+  // folding rule so a game someone just started playing again stays out of
+  // it (see data/tileFolding.js).
+  const lastPlayedByKey = useMemo(() => {
+    const last = {};
+    for (const s of completedSessions) {
+      const d = s.completedAt?.toDate?.();
+      if (!d) continue;
+      const key = s.gameType === "other" ? `other:${s.config?.customName || "Other"}` : s.gameType;
+      if (!last[key] || d > last[key]) last[key] = d;
+    }
+    return last;
+  }, [completedSessions]);
+
   // Every "Other" custom game shares the literal gameType "other" in
   // Firestore, so they can't be told apart by gameType alone — count each
   // one by matching its own saved name instead (same distinction Stats
@@ -69,6 +84,10 @@ export default function Home() {
       ...g,
       key: g.label,
       playCount: g.gameTypes.reduce((sum, gt) => sum + (playCountByType[gt] || 0), 0),
+      lastPlayedAt: g.gameTypes.reduce((best, gt) => {
+        const d = lastPlayedByKey[gt];
+        return d && (!best || d > best) ? d : best;
+      }, null),
     }));
     const custom = customGames.map((g) => ({
       icon: g.icon || "🃏",
@@ -78,12 +97,31 @@ export default function Home() {
       family: "custom",
       key: `custom-${g.id}`,
       playCount: playCountByCustomName[g.name] || 0,
+      lastPlayedAt: lastPlayedByKey[`other:${g.name}`] || null,
     }));
     // Stable sort: builtin games keep their designed order among themselves
     // when tied, custom games keep their fetch order among themselves, and
     // only an actual play-count lead moves a tile up.
     return [...builtin, ...custom].sort((a, b) => b.playCount - a.playCount);
-  }, [customGames, playCountByType, playCountByCustomName]);
+  }, [customGames, playCountByType, playCountByCustomName, lastPlayedByKey]);
+
+  // Rarely-played games fold into a "More" section at the end; the rule
+  // adapts to how much the family has actually played.
+  const { main: mainTiles, more: moreTiles } = useMemo(() => splitTiles(sortedTiles), [sortedTiles]);
+
+  const renderTile = (g) =>
+    g.soon ? (
+      <div className={`game-tile fam-${g.family} disabled`} key={g.key}>
+        <span className="icon">{g.icon}</span>
+        <span>{g.label}</span>
+        <span className="soon">Coming soon</span>
+      </div>
+    ) : (
+      <Link className={`game-tile fam-${g.family}`} to={g.path} key={g.key}>
+        <span className="icon">{g.icon}</span>
+        <span>{g.label}</span>
+      </Link>
+    );
 
   async function handleSendFeedback(e) {
     e.preventDefault();
@@ -125,25 +163,19 @@ export default function Home() {
             "Other" games someone's made up, saved so everyone sees the same
             tile with the same rules instead of re-describing the game from
             scratch every time it comes up. */}
-        {sortedTiles.map((g) =>
-          g.soon ? (
-            <div className={`game-tile fam-${g.family} disabled`} key={g.key}>
-              <span className="icon">{g.icon}</span>
-              <span>{g.label}</span>
-              <span className="soon">Coming soon</span>
-            </div>
-          ) : (
-            <Link className={`game-tile fam-${g.family}`} to={g.path} key={g.key}>
-              <span className="icon">{g.icon}</span>
-              <span>{g.label}</span>
-            </Link>
-          )
-        )}
+        {mainTiles.map(renderTile)}
         <Link className="game-tile" to="/other/setup" key="other-new">
           <span className="icon">➕</span>
           <span>New game</span>
         </Link>
       </div>
+
+      {moreTiles.length > 0 && (
+        <details className="more-games">
+          <summary>More games ({moreTiles.length})</summary>
+          <div className="game-grid">{moreTiles.map(renderTile)}</div>
+        </details>
+      )}
 
       <div className="card-surface" style={{ opacity: 0.85, marginTop: 28 }}>
         {sent ? (
