@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { submitFeedback } from "../data/feedback";
+import { subscribeToPlayers } from "../data/players";
+import { useWhoamiId } from "../data/whoami";
+import { shortName } from "../data/playerNames";
 
 // Popup text box for "tell me what you think". Writes through the same
 // submitFeedback() as before, so notes land in scorecard_notes untouched.
@@ -9,6 +12,10 @@ export default function FeedbackPopup({ onClose }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [players, setPlayers] = useState([]);
+  const whoamiId = useWhoamiId();
+  useEffect(() => subscribeToPlayers(setPlayers), []);
+  const me = players.find((p) => p.id === whoamiId) || null;
 
   useEffect(() => {
     function onKey(e) {
@@ -73,7 +80,7 @@ export default function FeedbackPopup({ onClose }) {
             <h2 style={{ marginTop: 0 }}>Tell me what you think!</h2>
             <div className="field">
               <label htmlFor="feedback-text" style={{ fontSize: 13, color: "var(--muted)" }}>
-                Ideas, bugs, anything — it goes straight to me.
+                Ideas, bugs, anything — it goes straight to me. Sending as {me ? shortName(me) : "Anonymous"}.
               </label>
               <textarea
                 id="feedback-text"

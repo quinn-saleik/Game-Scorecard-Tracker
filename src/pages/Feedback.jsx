@@ -56,7 +56,7 @@ export default function Feedback() {
               <div>
                 <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{item.text}</p>
                 <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--muted)" }}>
-                  {formatLastPlayed(item.createdAt?.toDate?.() || null)}
+                  <strong>{item.fromName || "Anonymous"}</strong> · {formatLastPlayed(item.createdAt?.toDate?.() || null)}
                   {item.path ? ` · ${item.path}` : ""}
                 </p>
               </div>

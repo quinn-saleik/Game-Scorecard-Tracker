@@ -9,12 +9,14 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
 } from "firebase/firestore";
 import { db, authReady } from "../firebase";
+import { getWhoamiId } from "./whoami";
 
 // Named "scorecard_notes", not "feedback" — the Firestore collection name
 // becomes part of the literal request URL
@@ -48,13 +50,32 @@ function withTimeout(promise, ms, message) {
   });
 }
 
+// Who sent it: the player this device is signed in as (data/whoami.js), or
+// anonymous. The name is stored on the note itself (not just the id) so it
+// still reads right if that player is later renamed or removed. Any lookup
+// trouble falls back to anonymous rather than blocking the send.
+async function senderInfo() {
+  const id = getWhoamiId();
+  if (!id) return { fromId: null, fromName: "Anonymous" };
+  try {
+    const snap = await withTimeout(getDoc(doc(collection(db, "players"), id)), 4000, "timeout");
+    const name = snap.exists() ? snap.data().name : null;
+    if (name) return { fromId: id, fromName: String(name).slice(0, 121) };
+  } catch {
+    // fall through
+  }
+  return { fromId: null, fromName: "Anonymous" };
+}
+
 export async function submitFeedback(text) {
   const trimmed = (text || "").trim();
   if (!trimmed) throw new Error("Type something first.");
   await withTimeout(authReady, 10000, "Still trying to connect — check your internet connection and try again.");
+  const sender = await senderInfo();
   await withTimeout(
     addDoc(feedbackCol, {
       text: trimmed,
+      ...sender,
       // Which page they were on when they hit send — small bit of context
       // for a bug report ("scores wouldn't save") without asking them to
       // explain where they were.
