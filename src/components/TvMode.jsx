@@ -30,12 +30,52 @@ import PlayerDot from "./PlayerDot";
 // team rows (Catchphrase, Codenames, Euchre team variants) — the row
 // still renders fine without a dot.
 //
+// Optional per-row extras (all structured, so layout stays consistent
+// instead of cramming text into the name):
+//   dealer: true                yellow card pin on the top-right of the avatar
+//   badges: [{ text, tone? }]  small pills by the name ("🃏 Dealer",
+//                               "Bidding…"); tone: "accent" | "good"
+//   pips:   [{ label, done, current? }]  a checklist strip under the name
+//                               (Phase 10 phases, Royal Rum goals); done =
+//                               green, current = yellow
+//   chip:   { label, value, tone? }  big pill by the score (Oh Heck bid)
+//   sub:    string              one muted line under the name
+
+//
 // A tablet/phone propped up sideways has width to spare, so past a
 // handful of players the rows split into two CSS-multicolumn columns in
 // landscape (`.tv-mode-rows.two-col`) instead of one long scrollable list
 // — with only a few players a single column already fits and looks less
 // sparse than two half-empty ones.
 const TWO_COL_THRESHOLD = 5;
+
+function TvAvatar({ color, avatar, photo }) {
+  if (photo) {
+    return <img className="tv-avatar" src={photo} alt="" aria-hidden="true" style={{ borderColor: color || "rgba(255,255,255,0.35)" }} />;
+  }
+  if (avatar || color) {
+    return (
+      <span className="tv-avatar" aria-hidden="true" style={{ background: color || "rgba(255,255,255,0.15)" }}>
+        {avatar}
+      </span>
+    );
+  }
+  return null;
+}
+
+// Avatar (or, for team rows with none, just the rank) with a small rank
+// pin in the corner — crown for the leader. Keeps rank visible without
+// spending a whole column of width on it.
+function TvMarker({ rank, leader, dealer, color, avatar, photo }) {
+  const hasAvatar = !!(color || avatar || photo);
+  return (
+    <span className={`tv-marker ${hasAvatar ? "" : "no-avatar"}`}>
+      {hasAvatar && <TvAvatar color={color} avatar={avatar} photo={photo} />}
+      <span className={`tv-rankpin ${leader ? "leader" : ""}`}>{leader ? "👑" : rank}</span>
+      {dealer && <span className="tv-dealerpin" title="Dealer" role="img" aria-label="Dealer">🃏</span>}
+    </span>
+  );
+}
 
 export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) {
   const [open, setOpen] = useState(false);
@@ -77,27 +117,55 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
               {statusLine && <span className="tv-mode-topbar-status">{statusLine}</span>}
             </div>
 
-            <div className={`tv-mode-rows ${rows.length >= TWO_COL_THRESHOLD ? "two-col" : ""}`}>
-              {rows.map((r, i) => (
-                <div
-                  key={r.key}
-                  className={`tv-mode-row ${r.isLeader ? "leader" : ""}`}
-                  style={{
-                    "--name-len": Math.max(String(r.label || "").length, 1),
-                    "--score-len": Math.max(String(r.score ?? "").length, 1),
-                  }}
-                >
-                  <span className="tv-mode-rank">{r.isLeader ? "👑" : `${i + 1}`}</span>
-                  {(r.color || r.avatar || r.photo) && (
-                    <PlayerDot color={r.color} avatar={r.avatar} photo={r.photo} />
-                  )}
-                  <span className="tv-mode-name">{r.label}</span>
-                  <span className={`tv-mode-score ${r.isLeader ? "leader" : ""}`}>
-                    {r.score}
-                    {unitLabel && <span className="tv-mode-unit">{unitLabel}</span>}
-                  </span>
-                </div>
-              ))}
+            <div
+              className={`tv-mode-rows ${rows.length >= TWO_COL_THRESHOLD ? "two-col" : ""} ${rows.length <= 3 ? "few" : ""}`}
+              style={{ "--tv-half": Math.ceil(rows.length / 2) }}
+            >
+              {rows.map((r, i) => {
+                const extras = !!(r.sub || r.chip || (r.badges && r.badges.length));
+                return (
+                  <div
+                    key={r.key}
+                    className={`tv-mode-row ${r.isLeader ? "leader" : ""} ${extras || r.pips ? "has-extras" : ""}`}
+                    style={{
+                      "--name-len": Math.max(String(r.label || "").length, 1),
+                      "--score-len": Math.max(String(r.score ?? "").length, 1),
+                    }}
+                  >
+                    <TvMarker rank={i + 1} leader={r.isLeader} dealer={r.dealer} color={r.color} avatar={r.avatar} photo={r.photo} />
+                    <div className="tv-mode-id">
+                      <span className="tv-mode-name">{r.label}</span>
+                      {extras && (
+                        <div className="tv-mode-extras">
+                          {(r.badges || []).map((bd, bi) => (
+                            <span key={bi} className={`tv-mode-badge ${bd.tone || ""}`}>{bd.text}</span>
+                          ))}
+                          {r.chip && (
+                            <span className={`tv-mode-chip ${r.chip.tone || ""}`}>
+                              <span className="tv-mode-chip-label">{r.chip.label}</span>
+                              <span className="tv-mode-chip-value">{r.chip.value}</span>
+                            </span>
+                          )}
+                          {r.sub && <span className="tv-mode-sub">{r.sub}</span>}
+                        </div>
+                      )}
+                      {r.pips && (
+                        <div className="tv-mode-pips" aria-hidden="true">
+                          {r.pips.map((pp, pi) => (
+                            <span key={pi} className={`tv-mode-pip ${pp.done ? "done" : ""} ${pp.current ? "current" : ""}`}>{pp.label}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="tv-mode-scorebox">
+                      <span className={`tv-mode-score ${r.isLeader ? "leader" : ""}`}>
+                        {r.score}
+                        {unitLabel && <span className="tv-mode-unit">{unitLabel}</span>}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>,
           document.body

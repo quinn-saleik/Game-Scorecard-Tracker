@@ -3,6 +3,19 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-tv-mode",
+    date: "2026-10-14",
+    title: "Bigger TV mode",
+    summary: "Bigger TV mode, feedback pop-up, fairer win %, favorites, light/dark polish, new icons, new look, tidier bars, Phase 10 dealer, negative scores.",
+    items: [
+      "TV mode is redone to fill the screen: bigger names and scores, bigger avatars, and a small rank badge (👑 for the leader). With only a couple of players in portrait, the score sits big under the name.",
+      "Phase 10 shows each player's phases 1-10: green when done, yellow for the one they're on.",
+      "Royal Rum shows each player's goals 6-12, green once done.",
+      "Oh Heck shows each player's bid, and what they got once scored.",
+      "A yellow 🃏 card on a player's icon marks the dealer in Phase 10 and Oh Heck.",
+    ],
+  },
+  {
     id: "2026-10-feedback-popup",
     date: "2026-10-14",
     title: "Tell me what you think",

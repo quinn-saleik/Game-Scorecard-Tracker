@@ -100,18 +100,23 @@ export default function OhHeckPlay() {
     .slice()
     .sort((a, b) => (totals[b.id] || 0) - (totals[a.id] || 0))
     .map((p) => {
-      let label = shortName(p);
+      const badges = [];
+      let chip;
       if (phase === "bidding") {
-        if (bids[p.id] !== undefined) label += ` · bid ${bids[p.id]}`;
-        else if (p.id === currentBidderId) label += " · bidding…";
-      } else if ((phase === "scoring" || phase === "declare") && results[p.id] === undefined && bids[p.id] !== undefined) {
-        label += ` · bid ${bids[p.id]}`;
+        if (bids[p.id] !== undefined) chip = { label: "Bid", value: bids[p.id] };
+        else if (p.id === currentBidderId) badges.push({ text: "Bidding…", tone: "good" });
       } else if (phase === "scoring" && results[p.id] !== undefined) {
-        label += ` · got ${results[p.id].tricksWon}`;
+        const won = results[p.id].tricksWon;
+        chip = { label: `Bid ${bids[p.id]} · got`, value: won, tone: won === bids[p.id] ? "good" : undefined };
+      } else if ((phase === "scoring" || phase === "declare") && bids[p.id] !== undefined) {
+        chip = { label: "Bid", value: bids[p.id] };
       }
       return {
         key: p.id,
-        label,
+        label: shortName(p),
+        dealer: !allRoundsDone && p.id === dealer.id,
+        badges,
+        chip,
         score: totals[p.id] || 0,
         isLeader: (totals[p.id] || 0) === currentMax && currentMax > 0,
         color: p.color,

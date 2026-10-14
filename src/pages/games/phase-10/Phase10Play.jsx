@@ -66,13 +66,21 @@ export default function Phase10Play() {
     ? finishers.filter((p) => (totals[p.id] ?? 0) === lowestAmongFinishers)
     : [];
 
+  // Dealer passes one seat each hand, starting with whoever was picked
+  // first at setup. Derived from the hand count (not stored), so undoing
+  // or deleting a hand automatically rewinds the dealer too.
+  const dealer = session.players[rounds.length % session.players.length];
+
   const lowestTotal = Math.min(0, ...Object.values(totals));
   const tvRows = session.players
     .slice()
     .sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0))
     .map((p) => ({
       key: p.id,
-      label: shortName(p) + (doneCounts[p.id] >= TOTAL_PHASES ? " ✅" : ` (phase ${doneCounts[p.id] + 1})`),
+      label: shortName(p),
+      dealer: !pendingFinish && p.id === dealer.id,
+      badges: doneCounts[p.id] >= TOTAL_PHASES ? [{ text: "✅ Finished", tone: "good" }] : [],
+      pips: Array.from({ length: TOTAL_PHASES }, (_, i) => ({ label: i + 1, done: i < doneCounts[p.id], current: i === doneCounts[p.id] })),
       score: totals[p.id] ?? 0,
       isLeader: (totals[p.id] ?? 0) === lowestTotal,
       color: p.color,
@@ -136,10 +144,6 @@ export default function Phase10Play() {
     }
   }
 
-  // Dealer passes one seat each hand, starting with whoever was picked
-  // first at setup. Derived from the hand count (not stored), so undoing
-  // or deleting a hand automatically rewinds the dealer too.
-  const dealer = session.players[rounds.length % session.players.length];
 
   const scoreTable = (
     <div className="card-surface">

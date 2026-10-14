@@ -74,7 +74,9 @@ export default function RoyalRumPlay() {
     .sort((a, b) => (totals[a.id] ?? 0) - (totals[b.id] ?? 0))
     .map((p) => ({
       key: p.id,
-      label: shortName(p) + (checklists[p.id].size === GOALS.length ? " ✅" : ""),
+      label: shortName(p),
+      badges: checklists[p.id].size === GOALS.length ? [{ text: "✅ Finished", tone: "good" }] : [],
+      pips: GOALS.map((g) => ({ label: g, done: checklists[p.id].has(g) })),
       score: totals[p.id] ?? 0,
       isLeader: (totals[p.id] ?? 0) === lowestTotal,
       color: p.color,
