@@ -285,7 +285,7 @@ export default function Me() {
                   }}
                 >
                   <span style={{ width: 22, height: 22, borderRadius: "50%", background: c.hex, border: "1px solid rgba(0,0,0,0.15)" }} />
-                  <span style={{ fontSize: 11, color: "var(--muted)" }}>{takenBy ? shortName(takenBy) : c.name}</span>
+                  <span style={{ fontSize: 11, color: "var(--muted)" }}>{takenBy ? `${c.name} (${shortName(takenBy)})` : c.name}</span>
                 </button>
               );
             })}

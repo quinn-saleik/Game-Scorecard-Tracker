@@ -9,7 +9,7 @@ export const CHANGELOG = [
     summary: "New identity tiles, bigger TV mode, feedback pop-up, fairer win %, favorites, light/dark polish, new icons, new look.",
     items: [
       "Me tab: Color, Avatar and Photo are now three big tiles. Tap one to set or change it, and tap Remove under it to clear it.",
-      "When you pick a color someone else already uses, their name shows under it (just first name, plus a last initial if needed).",
+      "When you pick a color someone else already uses, their name shows under it (color name, plus their first name and a last initial if needed).",
       "Feedback now shows who sent it, or Anonymous if no one was signed in.",
     ],
   },

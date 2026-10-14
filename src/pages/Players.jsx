@@ -417,7 +417,7 @@ export default function Players() {
                                     }}
                                   />
                                   <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                                    {takenBy ? shortName(takenBy) : c.name}
+                                    {takenBy ? `${c.name} (${shortName(takenBy)})` : c.name}
                                   </span>
                                 </button>
                               );
