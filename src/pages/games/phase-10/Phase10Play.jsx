@@ -195,7 +195,7 @@ export default function Phase10Play() {
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
             {rounds.length > 0 && (
-              <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+              <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
                 ← Undo last hand
               </button>
             )}
@@ -262,7 +262,7 @@ export default function Phase10Play() {
             </div>
           ))}
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("phase")}>
+            <button type="button" className="btn ghost" onClick={() => setPhase("phase")}>
               ← Back
             </button>
             <button className="btn primary" onClick={() => setPhase("confirm")}>Continue</button>
@@ -289,7 +289,7 @@ export default function Phase10Play() {
             </tbody>
           </table>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("points")}>
+            <button type="button" className="btn ghost" onClick={() => setPhase("points")}>
               ← Edit
             </button>
             <button className="btn primary" onClick={saveRound} disabled={saving}>

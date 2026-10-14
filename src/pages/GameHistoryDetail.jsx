@@ -135,7 +135,6 @@ export default function GameHistoryDetail() {
             <button
               type="button"
               className="btn ghost small"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={openEditWinner}
             >
               ✎ Edit winner
@@ -166,7 +165,6 @@ export default function GameHistoryDetail() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => setEditingWinner(false)}
                 disabled={savingWinner}
               >
@@ -274,7 +272,7 @@ export default function GameHistoryDetail() {
       </div>
 
       <div className="btn-row">
-        <Link className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} to="/stats">
+        <Link className="btn ghost" to="/stats">
           ← Back to Stats
         </Link>
       </div>

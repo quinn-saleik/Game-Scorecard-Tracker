@@ -195,7 +195,7 @@ export default function RoyalRumPlay() {
           <p>Double-check the last hand before locking it in.</p>
           <div className="btn-row">
             {rounds.length > 0 && (
-              <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+              <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
                 ← Undo last hand
               </button>
             )}
@@ -277,7 +277,7 @@ export default function RoyalRumPlay() {
             </div>
           ))}
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("goals")}>
+            <button type="button" className="btn ghost" onClick={() => setPhase("goals")}>
               ← Back
             </button>
             <button className="btn primary" onClick={() => setPhase("confirm")}>Continue</button>
@@ -305,7 +305,7 @@ export default function RoyalRumPlay() {
             </tbody>
           </table>
           <div className="btn-row" style={{ marginTop: 12 }}>
-            <button type="button" className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setPhase("scores")}>
+            <button type="button" className="btn ghost" onClick={() => setPhase("scores")}>
               ← Edit
             </button>
             <button className="btn primary" onClick={saveRound} disabled={saving}>

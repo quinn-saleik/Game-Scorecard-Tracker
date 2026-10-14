@@ -58,7 +58,6 @@ export default function RoundHistory({ session, rounds, gameType, unitLabel = "R
                     <button
                       type="button"
                       className="btn ghost small"
-                      style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                       onClick={() => setConfirmIdx(null)}
                     >
                       Cancel
@@ -68,7 +67,6 @@ export default function RoundHistory({ session, rounds, gameType, unitLabel = "R
                   <button
                     type="button"
                     className="btn ghost small"
-                    style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                     disabled={busy}
                     onClick={() => setConfirmIdx(i)}
                   >

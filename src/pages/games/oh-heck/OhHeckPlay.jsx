@@ -192,7 +192,7 @@ export default function OhHeckPlay() {
           </table>
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
               ← Undo last round
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -227,7 +227,7 @@ export default function OhHeckPlay() {
 
   const undoButton = rounds.length > 0 && (
     <div className="btn-row" style={{ marginBottom: 12 }}>
-      <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={undoLastRound} disabled={saving}>
+      <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
         ← Undo last round
       </button>
     </div>
@@ -310,7 +310,6 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => {
                   const prevBidder = bidOrder[biddingIdx - 1];
                   const newBids = { ...bids };
@@ -357,7 +356,6 @@ export default function OhHeckPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={() => updateLive({ phase: "bidding", biddingIdx: 0 })}
             >
               ← Edit bids
@@ -430,7 +428,6 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => updateLive({ scoringIdx: scoringIdx - 1 })}
               >
                 ← Edit last score
@@ -497,7 +494,6 @@ export default function OhHeckPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={() => updateLive({ scoringIdx: scoringIdx - 1 })}
               >
                 ← Back

@@ -162,7 +162,7 @@ export default function ThirtyOnePlay() {
           <p>Double-check the last round before locking it in.</p>
           <div className="btn-row">
             {rounds.length > 0 && (
-              <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+              <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
                 ← Undo last round
               </button>
             )}
@@ -209,7 +209,6 @@ export default function ThirtyOnePlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={undoLastRound}
               disabled={saving}
             >

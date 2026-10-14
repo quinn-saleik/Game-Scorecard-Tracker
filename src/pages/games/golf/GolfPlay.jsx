@@ -158,7 +158,7 @@ export default function GolfPlay() {
           </table>
           <p>Double-check the last hole before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
               ← Undo last hole
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -258,7 +258,6 @@ export default function GolfPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={undoLastRound}
                 disabled={saving}
               >

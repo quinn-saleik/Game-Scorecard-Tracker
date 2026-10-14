@@ -255,7 +255,7 @@ export default function Me() {
               onClick={() => setPlayerPhoto(me.id, null)}
               disabled={busy}
               className="btn ghost small"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
+             
             >
               Remove photo
             </button>
@@ -263,7 +263,6 @@ export default function Me() {
           <button
             type="button"
             className="btn ghost small"
-            style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
             onClick={() => {
               setNameEditing((v) => !v);
               setEditFirstName(me.firstName || me.name?.split(" ")[0] || "");
@@ -291,7 +290,7 @@ export default function Me() {
                     alignItems: "center",
                     gap: 4,
                     background: "none",
-                    border: me.color === c.hex ? "2px solid var(--wood)" : "2px solid transparent",
+                    border: me.color === c.hex ? "2px solid var(--ghost-border)" : "2px solid transparent",
                     borderRadius: 10,
                     padding: 6,
                     cursor: "pointer",
@@ -302,7 +301,7 @@ export default function Me() {
                 </button>
               );
             })}
-            <button type="button" className="btn ghost small" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)", alignSelf: "center" }} onClick={() => pickColor(null)} disabled={busy}>
+            <button type="button" className="btn ghost small" style={{ alignSelf: "center" }} onClick={() => pickColor(null)} disabled={busy}>
               No color
             </button>
           </div>
@@ -316,12 +315,12 @@ export default function Me() {
                 key={emoji}
                 onClick={() => pickAvatar(emoji)}
                 disabled={busy}
-                style={{ background: "none", border: me.avatar === emoji ? "2px solid var(--wood)" : "2px solid transparent", borderRadius: 10, padding: 6, fontSize: 20, cursor: "pointer" }}
+                style={{ background: "none", border: me.avatar === emoji ? "2px solid var(--ghost-border)" : "2px solid transparent", borderRadius: 10, padding: 6, fontSize: 20, cursor: "pointer" }}
               >
                 {emoji}
               </button>
             ))}
-            <button type="button" className="btn ghost small" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)", alignSelf: "center" }} onClick={() => pickAvatar(null)} disabled={busy}>
+            <button type="button" className="btn ghost small" style={{ alignSelf: "center" }} onClick={() => pickAvatar(null)} disabled={busy}>
               No avatar
             </button>
           </div>
@@ -332,7 +331,7 @@ export default function Me() {
             <input className="input" style={{ flex: 1, minWidth: 120 }} placeholder="First name" value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} disabled={busy} />
             <input className="input" style={{ flex: 1, minWidth: 120 }} placeholder="Last name" value={editLastName} onChange={(e) => setEditLastName(e.target.value)} disabled={busy} />
             <button type="button" className="btn primary small" onClick={saveEditName} disabled={busy}>Save</button>
-            <button type="button" className="btn ghost small" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={() => setNameEditing(false)} disabled={busy}>Cancel</button>
+            <button type="button" className="btn ghost small" onClick={() => setNameEditing(false)} disabled={busy}>Cancel</button>
           </div>
         )}
       </div>
@@ -442,7 +441,7 @@ export default function Me() {
                 textAlign: "center",
                 background: b.earned ? "var(--card-white)" : "transparent",
                 border: `2px solid ${b.earned ? "var(--gold, var(--gold))" : "var(--border-soft)"}`,
-                opacity: b.earned ? 1 : 0.4,
+                opacity: b.earned ? 1 : 0.6,
               }}
             >
               <span style={{ fontSize: 26 }}>{b.emoji}</span>
@@ -457,12 +456,11 @@ export default function Me() {
         <button
           type="button"
           className="btn ghost"
-          style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
           onClick={() => setWhoamiId(null)}
         >
           Not {shortName(me)}? Switch
         </button>
-        <Link className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} to="/players">
+        <Link className="btn ghost" to="/players">
           Manage all players →
         </Link>
       </div>

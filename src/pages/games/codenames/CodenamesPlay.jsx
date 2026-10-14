@@ -136,7 +136,7 @@ export default function CodenamesPlay() {
           <h2>🏆 {winningTeamPlayers.map((p) => shortName(p)).join(" & ")} reached {threshold}!</h2>
           <p>Double-check the last game before locking it in.</p>
           <div className="btn-row">
-            <button className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} onClick={undoLastRound} disabled={saving}>
+            <button className="btn ghost" onClick={undoLastRound} disabled={saving}>
               ← Undo last game
             </button>
             <button className="btn primary" onClick={confirmFinish} disabled={saving}>
@@ -160,7 +160,6 @@ export default function CodenamesPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={undoLastRound}
                 disabled={saving}
               >

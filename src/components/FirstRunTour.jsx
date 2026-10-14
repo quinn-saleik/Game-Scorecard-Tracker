@@ -137,7 +137,6 @@ export default function FirstRunTour({ onClose }) {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={() => setStep((s) => s - 1)}
             >
               ← Back

@@ -15,20 +15,43 @@
   --gold: #ffd23f;
   --red-suit: #e0284f;
   --ink: #0f1b3d;
-  --muted: #5d6a8f;
   --outline: #050b1f;
   --page-max: 720px;
   --radius: 14px;
   --shadow: 3px 3px 0 var(--outline);
 
-  /* Semantic "text on a card-surface" colors, kept separate from --ink and
-     --wood-dark above: those two also color things that must NOT flip in
-     dark mode (black-suit icons, primary-button text, the nav bar), so
-     card-surface text gets its own variables instead of reusing them. */
-  --text-on-surface: var(--ink);
-  --heading-on-surface: #0f1b3d;
-  --divider: #e5e8f4;
-  --border-soft: #c8d0ea;
+  /* Two color "scopes". The page itself is always the midnight cover, so
+     text sitting directly on it (page titles, intro copy, ghost buttons,
+     "Back" links) must be light in BOTH themes. Ivory cards flip in dark
+     mode, so text on a card follows the theme. Components just use the
+     generic tokens below (--text-on-surface, --muted, --divider, ...) and
+     the scope they sit in decides the value: .app-main resolves them to the
+     cover (--on-cover-*) values, and any card-like surface (.card-surface,
+     tiles, chips, inputs, the nav dock, the settings popup) resolves them
+     to the --surface-* values, which are what html.dark changes. */
+  --surface-text: var(--ink);
+  --surface-heading: #0f1b3d;
+  --surface-muted: #5d6a8f;
+  --surface-divider: #e5e8f4;
+  --surface-border: #c8d0ea;
+  --surface-ghost: var(--wood);
+
+  --on-cover: #f3f6ff;
+  --on-cover-muted: #a9b6df;
+  --on-cover-divider: rgba(243, 246, 255, 0.18);
+  --on-cover-border: rgba(243, 246, 255, 0.45);
+
+  --text-on-surface: var(--surface-text);
+  --heading-on-surface: var(--surface-heading);
+  --muted: var(--surface-muted);
+  --divider: var(--surface-divider);
+  --border-soft: var(--surface-border);
+  --ghost-border: var(--surface-ghost);
+
+  /* Solid "danger" fill (Delete, NEW/LATEST badges): same red and white text
+     in both themes — --red-suit lightens in dark mode for use as TEXT, which
+     is too pale to carry white lettering as a fill. */
+  --danger: #e0284f;
 
   /* Game-tile "families": the four suit colors for card games, plus one
      each for party/word, deduction, and custom games. Mid-tone on purpose
@@ -56,11 +79,12 @@
    since it's an explicit in-app setting. */
 html.dark {
   --card-white: #17275a;
-  --text-on-surface: #f3f6ff;
-  --heading-on-surface: #ffd23f;
-  --muted: #9fb0e0;
-  --divider: #2a3d7a;
-  --border-soft: #4a62b0;
+  --surface-text: #f3f6ff;
+  --surface-heading: #ffd23f;
+  --surface-muted: #9fb0e0;
+  --surface-divider: #2a3d7a;
+  --surface-border: #4a62b0;
+  --surface-ghost: #6f86cf;
   --red-suit: #ff6b86;
   --outline: #02050f;
   --fam-spade: #5d7a9c;
@@ -71,6 +95,36 @@ html.dark {
   --fam-deduce: #34a0b0;
   --fam-custom: #8f72bf;
   color-scheme: dark;
+}
+
+/* The cover scope (see the token block above): everything inside the page
+   column resolves the generic tokens to their on-the-cover values... */
+.app-main {
+  --text-on-surface: var(--on-cover);
+  --heading-on-surface: var(--on-cover);
+  --muted: var(--on-cover-muted);
+  --divider: var(--on-cover-divider);
+  --border-soft: var(--on-cover-border);
+  --ghost-border: var(--on-cover-border);
+  color: var(--text-on-surface);
+}
+/* ...and each ivory surface inside it switches back to the theme's
+   surface values. List any new card-like element here. */
+.card-surface,
+.game-tile,
+.player-chip,
+.warning-banner,
+.field input,
+.field select,
+.field textarea,
+.input {
+  --text-on-surface: var(--surface-text);
+  --heading-on-surface: var(--surface-heading);
+  --muted: var(--surface-muted);
+  --divider: var(--surface-divider);
+  --border-soft: var(--surface-border);
+  --ghost-border: var(--surface-ghost);
+  color: var(--text-on-surface);
 }
 
 /* Desktop: a slightly wider column (more tiles per row), and the bottom nav's
@@ -193,7 +247,7 @@ h3 {
   color: var(--red-suit);
 }
 .suit.black {
-  color: var(--ink);
+  color: var(--text-on-surface);
 }
 .page-title .suit.black {
   color: var(--cream);
@@ -237,14 +291,14 @@ h3 {
   }
 }
 .btn.danger {
-  background: var(--red-suit);
-  color: var(--cream);
+  background: var(--danger);
+  color: #fff;
 }
 .btn.ghost {
   background: transparent;
-  color: var(--cream);
+  color: var(--text-on-surface);
   box-shadow: none;
-  border: 2px solid rgba(243, 246, 255, 0.45);
+  border: 2px solid var(--ghost-border);
 }
 .btn.ghost:active {
   box-shadow: none;
@@ -379,7 +433,7 @@ h3 {
 .whatsnew-title strong { font-family: var(--font-display); font-size: 18px; color: var(--heading-on-surface); }
 .whatsnew-sum { font-size: 14px; color: var(--muted); }
 .whatsnew-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 12px; color: var(--muted); white-space: nowrap; }
-.whatsnew-latest { background: var(--red-suit); color: #fff; border-radius: 99px; padding: 1px 8px; font-weight: 700; letter-spacing: 0.05em; font-size: 11px; }
+.whatsnew-latest { background: var(--danger); color: #fff; border-radius: 99px; padding: 1px 8px; font-weight: 700; letter-spacing: 0.05em; font-size: 11px; }
 .whatsnew-chev { font-size: 18px; transition: transform 0.15s ease; }
 .whatsnew-chev.open { transform: rotate(180deg); }
 .whatsnew-body { padding: 0 16px 16px; border-top: 1px solid var(--divider); }
@@ -507,15 +561,17 @@ h3 {
   gap: 8px;
   padding: 8px 14px;
   border-radius: 999px;
-  background: var(--cream);
-  border: 2px solid var(--wood);
+  background: color-mix(in srgb, var(--text-on-surface) 6%, var(--card-white));
+  color: var(--text-on-surface);
+  border: 2px solid var(--ghost-border);
   font-weight: 600;
   cursor: pointer;
   user-select: none;
 }
 .player-chip.selected {
   background: var(--gold);
-  border-color: var(--gold);
+  border-color: var(--outline);
+  color: var(--ink);
 }
 .player-chip.inactive {
   opacity: 0.4;

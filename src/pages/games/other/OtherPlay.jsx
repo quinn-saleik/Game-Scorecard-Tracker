@@ -217,7 +217,6 @@ export default function OtherPlay() {
             <button
               type="button"
               className="btn ghost"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               onClick={() => setFinishing(false)}
               disabled={saving}
             >
@@ -315,7 +314,6 @@ export default function OtherPlay() {
                 <button
                   type="button"
                   className={`btn ${isNegative(inputs[p.id], negs[p.id]) ? "primary" : "ghost"} small`}
-                  style={isNegative(inputs[p.id], negs[p.id]) ? undefined : { color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                   aria-label={`Toggle negative score for ${shortName(p)}`}
                   aria-pressed={isNegative(inputs[p.id], negs[p.id])}
                   onClick={() => {
@@ -345,7 +343,6 @@ export default function OtherPlay() {
               <button
                 type="button"
                 className="btn ghost"
-                style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                 onClick={undoLastRound}
                 disabled={saving}
               >

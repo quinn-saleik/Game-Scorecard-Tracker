@@ -157,7 +157,6 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "traditional" ? "primary" : "ghost"}`}
-              style={bidRule !== "traditional" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
               onClick={() => setBidRule("traditional")}
             >
               Traditional
@@ -165,7 +164,6 @@ export default function OhHeckSetup() {
             <button
               type="button"
               className={`btn small ${bidRule === "bang-em" ? "primary" : "ghost"}`}
-              style={bidRule !== "bang-em" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
               onClick={() => setBidRule("bang-em")}
             >
               Bang 'em

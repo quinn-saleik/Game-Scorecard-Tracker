@@ -256,7 +256,6 @@ export default function OtherSetup() {
                   <button
                     type="button"
                     className="btn ghost small"
-                    style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                     onClick={() => setEditingRules((v) => !v)}
                   >
                     {editingRules ? "Hide rules" : "✎ Edit rules"}
@@ -288,7 +287,6 @@ export default function OtherSetup() {
                   <button
                     type="button"
                     className={`btn small ${direction === "up" ? "primary" : "ghost"}`}
-                    style={direction !== "up" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
                     onClick={() => setDirection("up")}
                   >
                     ⬆ Count up — highest wins
@@ -296,7 +294,6 @@ export default function OtherSetup() {
                   <button
                     type="button"
                     className={`btn small ${direction === "down" ? "primary" : "ghost"}`}
-                    style={direction !== "down" ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
                     onClick={() => setDirection("down")}
                   >
                     ⬇ Count down — lowest wins
@@ -345,7 +342,6 @@ export default function OtherSetup() {
                   <button
                     type="button"
                     className={`btn small ${bidding ? "primary" : "ghost"}`}
-                    style={!bidding ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
                     onClick={() => setBidding(true)}
                   >
                     Bidding: On
@@ -353,7 +349,6 @@ export default function OtherSetup() {
                   <button
                     type="button"
                     className={`btn small ${!bidding ? "primary" : "ghost"}`}
-                    style={bidding ? { color: "var(--text-on-surface)", border: "2px solid var(--wood)" } : undefined}
                     onClick={() => setBidding(false)}
                   >
                     Bidding: Off

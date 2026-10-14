@@ -158,7 +158,6 @@ export default function Stats() {
                             <button
                               type="button"
                               className="btn ghost small"
-                              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
                               onClick={() => handleRestore(s)}
                               disabled={busyId === s.id}
                             >

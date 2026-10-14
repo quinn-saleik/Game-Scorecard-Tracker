@@ -227,7 +227,7 @@ export default function Recap() {
             />
             <div className="btn-row" style={{ justifyContent: "center" }}>
               <button className="btn primary" onClick={shareCard}>📤 Share</button>
-              <a className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} href={cardUrl} download={`${gameLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-recap.png`}>
+              <a className="btn ghost" href={cardUrl} download={`${gameLabel.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-recap.png`}>
                 ⬇️ Download image
               </a>
             </div>
@@ -241,8 +241,8 @@ export default function Recap() {
         <button className="btn primary" onClick={playAgain} disabled={rematching}>
           {rematching ? "Starting…" : "🔁 Rematch — same players"}
         </button>
-        <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={() => navigate("/")}>Play another game</button>
-        <button className="btn ghost" style={{ color: "var(--cream)" }} onClick={() => navigate("/stats")}>View stats</button>
+        <button className="btn ghost" onClick={() => navigate("/")}>Play another game</button>
+        <button className="btn ghost" onClick={() => navigate("/stats")}>View stats</button>
       </div>
     </div>
   );

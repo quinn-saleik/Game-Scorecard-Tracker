@@ -128,7 +128,7 @@ export default function PlayerDetail() {
                 textAlign: "center",
                 background: b.earned ? "var(--card-white)" : "transparent",
                 border: `2px solid ${b.earned ? "var(--gold, var(--gold))" : "var(--border-soft)"}`,
-                opacity: b.earned ? 1 : 0.4,
+                opacity: b.earned ? 1 : 0.6,
               }}
             >
               <span style={{ fontSize: 26 }}>{b.emoji}</span>
@@ -170,7 +170,7 @@ export default function PlayerDetail() {
         )}
       </div>
 
-      <Link className="btn ghost" style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }} to="/players">
+      <Link className="btn ghost" to="/players">
         ← Back to Players
       </Link>
     </div>

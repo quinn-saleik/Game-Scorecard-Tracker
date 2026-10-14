@@ -154,7 +154,7 @@ export default function Home() {
           <strong>What's new:</strong> {CHANGELOG[0].summary}
         </span>
         {hasUnseenChangelog() && (
-          <span style={{ background: "var(--red-suit)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
+          <span style={{ background: "var(--danger)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
         )}
       </Link>
       <div className="game-grid">
@@ -209,7 +209,6 @@ export default function Home() {
             <button
               type="submit"
               className="btn ghost small"
-              style={{ color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
               disabled={sending || !feedbackText.trim()}
             >
               {sending ? "Sending…" : "Send"}
