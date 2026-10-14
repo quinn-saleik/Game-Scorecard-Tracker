@@ -81,10 +81,10 @@ export default function Recap() {
     setFired(true);
     // canvas-confetti draws straight to <canvas>, so these need literal hex —
     // CSS custom properties don't resolve outside the DOM/CSSOM. Keep in
-    // sync with the --gold/--wood/--red-suit/--cream tokens below by hand.
-    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ["#ab8a3f", "#1f2a3a", "#a12e2e", "#eef1f6"] });
+    // sync with the --gold/--wood/--red-suit/--cream tokens (Arcade Pop values) below by hand.
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ["#ffd23f", "#2b4aa8", "#ff4d6d", "#f3f6ff"] });
     const t = setTimeout(
-      () => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, colors: ["#ab8a3f", "#1f2a3a", "#a12e2e"] }),
+      () => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, colors: ["#ffd23f", "#2b4aa8", "#ff4d6d"] }),
       300
     );
     return () => clearTimeout(t);

@@ -7,10 +7,10 @@
 // engine — it only ever draws this one card shape.
 
 const SIZE = 1080;
-const GOLD = "#c9ab68";
-const GOLD_DEEP = "#ab8a3f";
-const CREAM = "#eef1f6";
-const MUTED = "#90a0b2";
+const GOLD = "#ffd23f";
+const GOLD_DEEP = "#ffd23f";
+const CREAM = "#f3f6ff";
+const MUTED = "#9fb0e0";
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -112,14 +112,14 @@ export async function generateRecapCardBlob({
   canvas.height = SIZE;
   const ctx = canvas.getContext("2d");
 
-  // Make sure the Ledger fonts are actually loaded before any fillText —
+  // Make sure the Arcade Pop fonts are actually loaded before any fillText —
   // canvas silently falls back to a system font otherwise, with no error.
   try {
     await Promise.all([
-      document.fonts.load('800 64px "Bitter"'),
-      document.fonts.load('700 40px "Bitter"'),
-      document.fonts.load('400 34px "Bitter"'),
-      document.fonts.load('700 30px "Courier Prime"'),
+      document.fonts.load('700 64px "Fredoka"'),
+      document.fonts.load('700 40px "Fredoka"'),
+      document.fonts.load('400 34px "Fredoka"'),
+      document.fonts.load('700 30px "Fredoka"'),
       document.fonts.ready,
     ]);
   } catch {
@@ -129,15 +129,15 @@ export async function generateRecapCardBlob({
 
   // --- Background ------------------------------------------------------
   const bgGrad = ctx.createRadialGradient(SIZE / 2, SIZE * 0.32, 80, SIZE / 2, SIZE * 0.32, SIZE * 0.9);
-  bgGrad.addColorStop(0, "#223247");
-  bgGrad.addColorStop(1, "#10161f");
+  bgGrad.addColorStop(0, "#17275a");
+  bgGrad.addColorStop(1, "#0a1330");
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, SIZE, SIZE);
 
   // --- Header -----------------------------------------------------------
   ctx.textAlign = "center";
   ctx.fillStyle = GOLD;
-  ctx.font = '700 26px "Courier Prime", monospace';
+  ctx.font = '700 26px "Fredoka", monospace';
   ctx.fillText("S C O R E C A R D", SIZE / 2, 84);
   ctx.strokeStyle = "rgba(201,171,104,0.4)";
   ctx.lineWidth = 2;
@@ -153,19 +153,19 @@ export async function generateRecapCardBlob({
 
   ctx.fillStyle = CREAM;
   let nameSize = 68;
-  ctx.font = `800 ${nameSize}px "Bitter", Georgia, serif`;
+  ctx.font = `700 ${nameSize}px "Fredoka", sans-serif`;
   while (ctx.measureText(winnerLabel).width > SIZE - 120 && nameSize > 36) {
     nameSize -= 4;
-    ctx.font = `800 ${nameSize}px "Bitter", Georgia, serif`;
+    ctx.font = `700 ${nameSize}px "Fredoka", sans-serif`;
   }
   ctx.fillText(winnerLabel, SIZE / 2, circleY + circleR + 92);
 
   ctx.fillStyle = GOLD;
-  ctx.font = '700 30px "Courier Prime", monospace';
+  ctx.font = '700 30px "Fredoka", monospace';
   ctx.fillText(standings.length > 1 && winnerLabel.includes("&") ? "W I N !" : "W I N S !", SIZE / 2, circleY + circleR + 134);
 
   ctx.fillStyle = MUTED;
-  ctx.font = '400 34px "Bitter", Georgia, serif';
+  ctx.font = '400 34px "Fredoka", sans-serif';
   ctx.fillText(`${icon || "🃏"}  ${gameName}`, SIZE / 2, circleY + circleR + 182);
 
   // --- Ledger scoreboard panel ------------------------------------------
@@ -201,18 +201,18 @@ export async function generateRecapCardBlob({
     ctx.fill();
 
     ctx.fillStyle = p.isWinner ? GOLD : CREAM;
-    ctx.font = `${p.isWinner ? "700" : "400"} 34px "Bitter", Georgia, serif`;
+    ctx.font = `${p.isWinner ? "700" : "400"} 34px "Fredoka", sans-serif`;
     ctx.fillText(p.name, panelX + 64, rowY + 12);
 
     ctx.textAlign = "right";
-    ctx.font = `700 36px "Courier Prime", monospace`;
+    ctx.font = `700 36px "Fredoka", monospace`;
     ctx.fillText(String(p.score), panelX + panelW - 30, rowY + 12);
     ctx.textAlign = "left";
   });
   if (standings.length > visibleRows) {
     ctx.textAlign = "center";
     ctx.fillStyle = MUTED;
-    ctx.font = '400 26px "Bitter", Georgia, serif';
+    ctx.font = '400 26px "Fredoka", sans-serif';
     ctx.fillText(`+ ${standings.length - visibleRows} more`, SIZE / 2, panelY + panelH - 10);
   }
 
@@ -220,14 +220,14 @@ export async function generateRecapCardBlob({
   if (standoutStat) {
     ctx.textAlign = "center";
     ctx.fillStyle = GOLD;
-    ctx.font = '400 32px "Bitter", Georgia, serif';
+    ctx.font = '400 32px "Fredoka", sans-serif';
     drawWrapped(ctx, standoutStat, SIZE / 2, panelY + panelH + 70, SIZE - 160, 40);
   }
 
   // --- Footer -------------------------------------------------------------
   ctx.textAlign = "center";
   ctx.fillStyle = MUTED;
-  ctx.font = '400 26px "Bitter", Georgia, serif';
+  ctx.font = '400 26px "Fredoka", sans-serif';
   ctx.fillText(dateLabel, SIZE / 2, SIZE - 56);
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));

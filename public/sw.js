@@ -3,7 +3,7 @@
 // Firestore handles its own realtime connection and offline queueing —
 // this only touches same-origin GET requests for the app's own files.
 
-const CACHE_NAME = "scorecard-shell-v2";
+const CACHE_NAME = "scorecard-shell-v3";
 
 self.addEventListener("install", () => {
   self.skipWaiting();

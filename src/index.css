@@ -1,32 +1,33 @@
-/* "Ledger" theme — the app as a ruled account book instead of a card
-   table: a navy cloth cover, pale ruled-paper cards, a brass/stamp-red
-   accent pair, and Courier Prime numerals wherever a column of digits
-   needs to line up. Token NAMES are unchanged from the old felt/wood
-   theme on purpose (--felt/--wood/etc. still mean "the dark cover chrome"
-   and --gold/--red-suit still mean "the two accent colors") — only the
-   values moved, so no component below needed touching. */
+/* "Arcade Pop" theme — midnight-blue cover, ivory cards, an electric-yellow
+   accent, and thick dark outlines with hard offset shadows on every card,
+   tile and button (sticker / arcade-cabinet feel). Fredoka for headings and
+   numerals, Nunito for body text. Token NAMES are unchanged from the older
+   felt/wood and Ledger themes on purpose (--felt/--wood/etc. still mean
+   "the dark cover chrome", --gold/--red-suit "the accent colors") — only
+   the values moved, so components didn't need touching. */
 :root {
-  --felt: #1b2534;
-  --felt-dark: #10161f;
-  --wood: #223247;
-  --wood-dark: #16202c;
-  --cream: #eef1f6;
-  --card-white: #fdfeff;
-  --gold: #ab8a3f;
-  --red-suit: #a12e2e;
-  --ink: #1f2a3a;
-  --muted: #626e7d;
-  --radius: 8px;
-  --shadow: 0 2px 8px rgba(15, 23, 33, 0.16), 0 1px 0 rgba(15, 23, 33, 0.05);
+  --felt: #0f1b3d;
+  --felt-dark: #0a1330;
+  --wood: #2b4aa8;
+  --wood-dark: #0a1330;
+  --cream: #f3f6ff;
+  --card-white: #fffdf4;
+  --gold: #ffd23f;
+  --red-suit: #e0284f;
+  --ink: #0f1b3d;
+  --muted: #5d6a8f;
+  --outline: #050b1f;
+  --radius: 14px;
+  --shadow: 3px 3px 0 var(--outline);
 
   /* Semantic "text on a card-surface" colors, kept separate from --ink and
      --wood-dark above: those two also color things that must NOT flip in
      dark mode (black-suit icons, primary-button text, the nav bar), so
      card-surface text gets its own variables instead of reusing them. */
   --text-on-surface: var(--ink);
-  --heading-on-surface: #2c3e52;
-  --divider: #d7dfe8;
-  --border-soft: #c3ceda;
+  --heading-on-surface: #0f1b3d;
+  --divider: #e5e8f4;
+  --border-soft: #c8d0ea;
 
   /* Game-tile "families": the four suit colors for card games, plus one
      each for party/word, deduction, and custom games. Mid-tone on purpose
@@ -39,9 +40,9 @@
   --fam-deduce: #2a8c9a;
   --fam-custom: #7a5ea8;
 
-  --font-display: "Bitter", Georgia, "Iowan Old Style", serif;
-  --font-body: "Bitter", Georgia, "Iowan Old Style", serif;
-  --font-mono: "Courier Prime", "Courier New", monospace;
+  --font-display: "Fredoka", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, sans-serif;
+  --font-mono: "Fredoka", "Nunito", system-ui, sans-serif;
 
   font-family: var(--font-body);
   color-scheme: light;
@@ -53,13 +54,14 @@
    class on <html> (src/data/preferences.js), not prefers-color-scheme,
    since it's an explicit in-app setting. */
 html.dark {
-  --card-white: #1c2531;
-  --text-on-surface: #e7ecf2;
-  --heading-on-surface: #c9ab68;
-  --muted: #90a0b2;
-  --divider: #33404f;
-  --border-soft: #435063;
-  --red-suit: #d1615a;
+  --card-white: #17275a;
+  --text-on-surface: #f3f6ff;
+  --heading-on-surface: #ffd23f;
+  --muted: #9fb0e0;
+  --divider: #2a3d7a;
+  --border-soft: #4a62b0;
+  --red-suit: #ff6b86;
+  --outline: #02050f;
   --fam-spade: #5d7a9c;
   --fam-heart: #d4574a;
   --fam-diamond: #d99a2b;
@@ -139,6 +141,7 @@ button {
   background: var(--card-white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  border: 2.5px solid var(--outline);
   padding: 16px;
   margin-bottom: 12px;
   /* Wide content (mainly the multi-column Stats/Players tables) scrolls
@@ -159,7 +162,7 @@ h3 {
 
 .page-title {
   color: var(--cream);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 2px 2px 0 var(--outline);
   margin: 6px 0 14px;
   display: flex;
   align-items: center;
@@ -177,6 +180,9 @@ h3 {
 .suit.black {
   color: var(--ink);
 }
+.page-title .suit.black {
+  color: var(--cream);
+}
 
 .btn {
   display: inline-flex;
@@ -185,17 +191,18 @@ h3 {
   gap: 8px;
   padding: 14px 20px;
   border-radius: 12px;
-  border: none;
+  border: 2.5px solid var(--outline);
   font-size: 16px;
   font-weight: 600;
   background: var(--wood);
   color: var(--cream);
   box-shadow: var(--shadow);
-  transition: transform 0.08s ease, background 0.15s ease;
+  transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.08s ease;
   min-height: 48px;
 }
 .btn:active {
-  transform: scale(0.97);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--outline);
 }
 .btn.primary {
   background: var(--gold);
@@ -211,7 +218,7 @@ h3 {
     background: var(--wood-dark);
   }
   .btn.primary:hover {
-    background: #8f712f;
+    background: #e6b92a;
   }
 }
 .btn.danger {
@@ -222,7 +229,10 @@ h3 {
   background: transparent;
   color: var(--cream);
   box-shadow: none;
-  border: 2px solid rgba(238, 241, 246, 0.4);
+  border: 2px solid rgba(243, 246, 255, 0.45);
+}
+.btn.ghost:active {
+  box-shadow: none;
 }
 .btn.small {
   padding: 8px 14px;
@@ -253,7 +263,7 @@ h3 {
     color-mix(in srgb, var(--c) 20%, var(--card-white)),
     color-mix(in srgb, var(--c) 5%, var(--card-white))
   );
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--shadow);
   padding: 16px 12px;
   text-align: center;
@@ -261,12 +271,13 @@ h3 {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  border: 2px solid var(--border-soft);
-  border-color: color-mix(in srgb, var(--c) 45%, transparent);
+  border: 2.5px solid var(--outline);
   transition: transform 0.1s ease, border-color 0.15s ease;
   text-decoration: none;
   color: var(--text-on-surface);
+  font-family: var(--font-display);
   font-weight: 600;
+  font-size: 16px;
 }
 .game-tile.fam-spade { --c: var(--fam-spade); }
 .game-tile.fam-heart { --c: var(--fam-heart); }
@@ -297,7 +308,8 @@ h3 {
   line-height: 1;
   color: #fff;
   background: var(--c);
-  box-shadow: 0 3px 8px color-mix(in srgb, var(--c) 50%, transparent);
+  border: 2.5px solid var(--outline);
+  box-shadow: 2px 2px 0 var(--outline);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 }
 .game-tile .soon {
@@ -319,7 +331,7 @@ h3 {
   gap: 8px;
   padding: 9px 16px;
   border-radius: 99px;
-  border: 2px solid rgba(238, 241, 246, 0.4);
+  border: 2px solid rgba(243, 246, 255, 0.45);
   color: var(--cream);
   font-weight: 600;
   font-size: 14px;
@@ -329,17 +341,45 @@ h3 {
 .more-games > summary::after { content: "▾"; transition: transform 0.15s ease; }
 .more-games[open] > summary::after { transform: rotate(180deg); }
 
+/* What's new — expandable entries */
+.whatsnew-entry { padding: 0; overflow: hidden; }
+.whatsnew-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  color: var(--text-on-surface);
+  text-align: left;
+  font: inherit;
+}
+.whatsnew-title { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.whatsnew-title strong { font-family: var(--font-display); font-size: 18px; color: var(--heading-on-surface); }
+.whatsnew-sum { font-size: 14px; color: var(--muted); }
+.whatsnew-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.whatsnew-latest { background: var(--red-suit); color: #fff; border-radius: 99px; padding: 1px 8px; font-weight: 700; letter-spacing: 0.05em; font-size: 11px; }
+.whatsnew-chev { font-size: 18px; transition: transform 0.15s ease; }
+.whatsnew-chev.open { transform: rotate(180deg); }
+.whatsnew-body { padding: 0 16px 16px; border-top: 1px solid var(--divider); }
+.whatsnew-body ul { margin: 12px 0 0; padding-left: 20px; line-height: 1.5; }
+.whatsnew-examples { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--gold) 16%, var(--card-white)); border: 2px solid var(--border-soft); }
+.whatsnew-examples h3 { margin: 0 0 6px; font-size: 16px; }
+.whatsnew-examples p { margin: 6px 0; line-height: 1.45; font-size: 14.5px; }
+.whatsnew-section { color: var(--cream); font-size: 18px; margin: 20px 0 10px; text-shadow: 2px 2px 0 var(--outline); }
+
 .nav-bar {
   position: sticky;
   bottom: 0;
   display: flex;
   justify-content: space-around;
   background: var(--wood-dark);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.25);
+  border-top: 2.5px solid var(--outline);
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
 }
 .nav-bar a {
-  color: rgba(238, 241, 246, 0.65);
+  color: rgba(243, 246, 255, 0.65);
   text-decoration: none;
   font-size: 13px;
   display: flex;
@@ -350,8 +390,8 @@ h3 {
   border-radius: 10px;
 }
 .nav-bar a.active {
-  color: var(--cream);
-  background: rgba(171, 138, 63, 0.25);
+  color: var(--gold);
+  background: rgba(255, 210, 63, 0.14);
 }
 .nav-bar .nav-icon {
   font-size: 20px;
@@ -438,11 +478,11 @@ table.score-table td.leader {
 }
 
 .warning-banner {
-  background: #f2ead9;
-  border: 2px solid var(--gold);
+  background: #fff4c2;
+  border: 2.5px solid var(--outline);
   border-radius: 12px;
   padding: 12px 14px;
-  color: var(--wood);
+  color: var(--ink);
   font-weight: 600;
   margin-bottom: 14px;
 }
@@ -486,12 +526,12 @@ table.score-table td.leader {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: radial-gradient(ellipse at top, #223247 0%, #10161f 70%);
-  color: #eef1f6;
+  background: radial-gradient(ellipse at top, #17275a 0%, #0a1330 70%);
+  color: #f3f6ff;
   display: flex;
   flex-direction: column;
   padding: max(14px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  font-family: "Bitter", Georgia, "Iowan Old Style", serif;
+  font-family: var(--font-display);
 }
 
 .tv-mode-close {
@@ -500,7 +540,7 @@ table.score-table td.leader {
   right: 12px;
   background: rgba(238, 241, 246, 0.1);
   border: 2px solid rgba(238, 241, 246, 0.35);
-  color: #eef1f6;
+  color: #f3f6ff;
   border-radius: 10px;
   width: 38px;
   height: 38px;
@@ -522,11 +562,11 @@ table.score-table td.leader {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #eef1f6;
+  color: #f3f6ff;
 }
 .tv-mode-topbar-status {
   font-size: clamp(10px, 1.4vh, 13px);
-  color: #c9ab68;
+  color: #ffd23f;
   letter-spacing: 0.02em;
 }
 
@@ -569,10 +609,10 @@ table.score-table td.leader {
 }
 .tv-mode-row.leader {
   background: rgba(171, 138, 63, 0.22);
-  border-color: #ab8a3f;
+  border-color: #ffd23f;
 }
 
-.tv-mode-rank { font-size: clamp(16px, 38cqmin, 40px); color: #90a0b2; width: 2ch; flex-shrink: 0; }
+.tv-mode-rank { font-size: clamp(16px, 38cqmin, 40px); color: #9fb0e0; width: 2ch; flex-shrink: 0; }
 /* Name/score font size used to come purely from row height (cqh/cqmin)
    with a flat max px cap — fine for a short name, but with few players
    (3-4) rows get tall enough that both hit their absolute cap
@@ -591,7 +631,7 @@ table.score-table td.leader {
 .tv-mode-name {
   font-size: clamp(18px, min(44cqmin, 78cqi / var(--name-len, 6)), 52px);
   font-weight: 700;
-  color: #eef1f6;
+  color: #f3f6ff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -599,16 +639,16 @@ table.score-table td.leader {
   min-width: 0;
 }
 .tv-mode-score {
-  font-family: "Courier Prime", "Courier New", monospace;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: clamp(20px, min(50cqmin, 60cqi / var(--score-len, 2)), 60px);
   font-weight: 700;
-  color: #eef1f6;
+  color: #f3f6ff;
   flex-shrink: 0;
   margin-left: auto;
 }
-.tv-mode-score.leader { color: #d9c17f; }
-.tv-mode-unit { font-size: 0.4em; margin-left: 6px; color: #90a0b2; }
+.tv-mode-score.leader { color: #ffe27a; }
+.tv-mode-unit { font-size: 0.4em; margin-left: 6px; color: #9fb0e0; }
 
 /* Landscape (phone sideways or a tablet): more width than height to work
    with. Past a handful of players the rows split into two CSS-
