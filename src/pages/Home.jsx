@@ -4,6 +4,7 @@ import OngoingGames from "../components/OngoingGames";
 import { subscribeToCustomGames } from "../data/customGames";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { submitFeedback } from "../data/feedback";
+import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
 
 // `gameTypes` is every session.gameType this tile's plays should count
 // toward — an array because the "Euchre" tile fans out to 5 real variants
@@ -102,6 +103,19 @@ export default function Home() {
         <span className="suit black">♠</span> Pick a game
       </h1>
       <OngoingGames />
+      <Link
+        to="/whats-new"
+        className="card-surface"
+        style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "var(--text-on-surface)", padding: "10px 14px" }}
+      >
+        <span aria-hidden="true">✨</span>
+        <span style={{ flex: 1, fontSize: 14 }}>
+          <strong>What's new:</strong> {CHANGELOG[0].title}
+        </span>
+        {hasUnseenChangelog() && (
+          <span style={{ background: "var(--red-suit)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
+        )}
+      </Link>
       <div className="game-grid">
         {/* Most-played first (ties keep their designed/fetch order — see
             sortedTiles above). Includes both the built-in games and any

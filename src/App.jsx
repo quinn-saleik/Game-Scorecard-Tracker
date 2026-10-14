@@ -9,6 +9,7 @@ import { migrateToGroupsIfNeeded } from "./data/groupsMigration";
 // Layout's <Suspense> around <Outlet/> covers the load gap.
 const Players = lazy(() => import("./pages/Players"));
 const Me = lazy(() => import("./pages/Me"));
+const WhatsNew = lazy(() => import("./pages/WhatsNew"));
 const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const Stats = lazy(() => import("./pages/Stats"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
@@ -68,6 +69,7 @@ function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/me" element={<Me />} />
+        <Route path="/whats-new" element={<WhatsNew />} />
         <Route path="/players" element={<Players />} />
         <Route path="/players/:playerId" element={<PlayerDetail />} />
         <Route path="/stats" element={<Stats />} />

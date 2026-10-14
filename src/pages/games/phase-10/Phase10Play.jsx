@@ -136,6 +136,11 @@ export default function Phase10Play() {
     }
   }
 
+  // Dealer passes one seat each hand, starting with whoever was picked
+  // first at setup. Derived from the hand count (not stored), so undoing
+  // or deleting a hand automatically rewinds the dealer too.
+  const dealer = session.players[rounds.length % session.players.length];
+
   const scoreTable = (
     <div className="card-surface">
       <h2>Standings</h2>
@@ -152,7 +157,7 @@ export default function Phase10Play() {
             const done = doneCounts[p.id];
             return (
               <tr key={p.id}>
-                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
+                <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{!pendingFinish && p.id === dealer.id ? " 🃏" : ""}</td>
                 <td>{done >= TOTAL_PHASES ? "✅ Done" : `${done + 1} of ${TOTAL_PHASES}`}</td>
                 <td className={(totals[p.id] ?? 0) === lowestTotal ? "leader" : ""}>{totals[p.id] ?? 0}</td>
               </tr>
@@ -160,6 +165,9 @@ export default function Phase10Play() {
           })}
         </tbody>
       </table>
+      {!pendingFinish && (
+        <p style={{ color: "var(--muted)", fontSize: 13 }}>🃏 = dealing this hand ({shortName(dealer)})</p>
+      )}
     </div>
   );
 

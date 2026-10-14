@@ -82,6 +82,10 @@ export default function Phase10Setup() {
 
       <div className="card-surface">
         <h2>Select players ({seated.length})</h2>
+        <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
+          Tap in seating order, going around the table — the first player picked deals first,
+          then the deal passes along that order each hand.
+        </p>
         {active.length === 0 ? (
           <p className="empty-state">No active players. Add some on the Players tab first.</p>
         ) : (

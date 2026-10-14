@@ -10,12 +10,14 @@ import { shortName } from "../../../data/playerNames";
 import RoundHistory from "../../../components/RoundHistory";
 import TvMode from "../../../components/TvMode";
 import { recomputeTotals } from "../../../data/rounds";
+import { signedValue, toggleSign, isNegative } from "../../../data/scoreInput";
 
 export default function OtherPlay() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [inputs, setInputs] = useState({});
+  const [negs, setNegs] = useState({}); // playerId -> true when the ± button made it negative
   const [bidInputs, setBidInputs] = useState({});
   const [finishing, setFinishing] = useState(false);
   const [selectedWinners, setSelectedWinners] = useState([]);
@@ -110,7 +112,7 @@ export default function OtherPlay() {
       const roundBids = {};
       const newTotals = { ...totals };
       for (const p of session.players) {
-        const val = Number(inputs[p.id]) || 0;
+        const val = signedValue(inputs[p.id], negs[p.id]);
         roundScores[p.id] = val;
         newTotals[p.id] = (newTotals[p.id] || 0) + val;
         if (bidding) roundBids[p.id] = Number(bidInputs[p.id]) || 0;
@@ -119,6 +121,7 @@ export default function OtherPlay() {
       if (bidding) newRound.bids = roundBids;
       await updateSession(sessionId, { rounds: [...rounds, newRound], totals: newTotals });
       setInputs({});
+      setNegs({});
       setBidInputs({});
 
       // The whole point of setting a winning score is that the game
@@ -309,6 +312,20 @@ export default function OtherPlay() {
                   value={inputs[p.id] ?? ""}
                   onChange={(e) => setInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
                 />
+                <button
+                  type="button"
+                  className={`btn ${isNegative(inputs[p.id], negs[p.id]) ? "primary" : "ghost"} small`}
+                  style={isNegative(inputs[p.id], negs[p.id]) ? undefined : { color: "var(--text-on-surface)", border: "2px solid var(--wood)" }}
+                  aria-label={`Toggle negative score for ${shortName(p)}`}
+                  aria-pressed={isNegative(inputs[p.id], negs[p.id])}
+                  onClick={() => {
+                    const next = toggleSign(inputs[p.id], negs[p.id]);
+                    setInputs((prev) => ({ ...prev, [p.id]: next.raw }));
+                    setNegs((prev) => ({ ...prev, [p.id]: next.neg }));
+                  }}
+                >
+                  ±
+                </button>
                 {bidding && (
                   <input
                     aria-label={`${p.name} bid`}
