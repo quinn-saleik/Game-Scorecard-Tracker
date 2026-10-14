@@ -34,6 +34,12 @@ export default function OtherSetup() {
   const [direction, setDirection] = useState(DEFAULT_GAME_CONFIG.scoreDirection);
   const [startingScore, setStartingScore] = useState(String(DEFAULT_GAME_CONFIG.startingScore));
   const [targetScore, setTargetScore] = useState("");
+  // "Play to" for THIS game only (e.g. Sky-Jo to 75 tonight instead of the
+  // usual 100). Until someone edits it, it just mirrors the saved winning
+  // score; changing it never touches the saved rules.
+  const [playTo, setPlayTo] = useState("");
+  const [playToTouched, setPlayToTouched] = useState(false);
+  const playToValue = playToTouched ? playTo : targetScore;
   const [bidding, setBidding] = useState(DEFAULT_GAME_CONFIG.bidding);
   const [houseRules, setHouseRules] = useState(DEFAULT_GAME_CONFIG.houseRules);
   const [editingRules, setEditingRules] = useState(!gameId);
@@ -112,6 +118,10 @@ export default function OtherSetup() {
         bidding,
         houseRules: houseRules.trim(),
       };
+      const sessionConfig = {
+        ...config,
+        targetScore: playToValue.trim() === "" ? null : Number(playToValue),
+      };
       // Persist/refresh the reusable rules so this game keeps showing up
       // on Home for everyone, whether it's brand-new or just re-tuned.
       await saveCustomGame(effectiveName, config, config.icon);
@@ -123,7 +133,7 @@ export default function OtherSetup() {
         gameType: "other",
         gameLabel: effectiveName.trim(),
         players: sessionPlayers,
-        config,
+        config: sessionConfig,
         initialTotals: Object.fromEntries(sessionPlayers.map((p) => [p.id, config.startingScore])),
       });
       navigate(`/other/play/${id}`);
@@ -418,6 +428,37 @@ export default function OtherSetup() {
                   {savedMsg && <span style={{ color: "var(--muted)", fontSize: 13 }}>{savedMsg}</span>}
                 </div>
               )}
+            </div>
+          )}
+
+          {(gameId || nameMatch) && !editingRules && (
+            <div className="card-surface">
+              <h2>Play to</h2>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label htmlFor="playTo">Ending score for this game</label>
+                <input
+                  id="playTo"
+                  className="input"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="No limit — finish manually"
+                  value={playToValue}
+                  onChange={(e) => {
+                    setPlayTo(e.target.value);
+                    setPlayToTouched(true);
+                  }}
+                />
+                <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+                  {playToValue.trim() !== ""
+                    ? direction === "down"
+                      ? `Flags the game once someone's total drops to ${playToValue} or below.`
+                      : `Flags the game once someone's total reaches ${playToValue}.`
+                    : "Leave blank to play until someone taps \"Finish game\"."}
+                  {playToTouched && playToValue.trim() !== targetScore.trim()
+                    ? ` Just this game — the saved rules still say ${targetScore.trim() || "no limit"}.`
+                    : ""}
+                </p>
+              </div>
             </div>
           )}
 
