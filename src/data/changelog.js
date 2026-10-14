@@ -6,7 +6,7 @@ export const CHANGELOG = [
     id: "2026-10-header-and-dock",
     date: "2026-10-14",
     title: "Tidier top and bottom bars",
-    summary: "Cleaner header, floating bottom bar.",
+    summary: "New look, tidier bars, Phase 10 dealer, negative scores.",
     items: [
       "The app icon now sits right next to the name, and your player shows as a round avatar instead of a wide button. Tap it to switch players.",
       "The bottom bar floats like a card, with a yellow dot on the page you're on.",

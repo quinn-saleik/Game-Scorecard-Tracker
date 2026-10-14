@@ -151,7 +151,7 @@ export default function Home() {
       >
         <span aria-hidden="true">✨</span>
         <span style={{ flex: 1, fontSize: 14 }}>
-          <strong>What's new:</strong> {CHANGELOG[0].title}
+          <strong>What's new:</strong> {CHANGELOG[0].summary}
         </span>
         {hasUnseenChangelog() && (
           <span style={{ background: "var(--red-suit)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
