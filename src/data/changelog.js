@@ -3,6 +3,19 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-fair-win-rate",
+    date: "2026-10-14",
+    title: "Fairer win %",
+    summary: "Fairer win %, favorites, light/dark polish, new icons, new look, tidier bars, Phase 10 dealer, negative scores.",
+    items: [
+      "Stats now shows \"par\" under each win %: the win rate luck alone would give you. A 2-player game is 50% and an 8-player game is 12.5%, so a 16% in big games can beat a 50% in 2-player games.",
+      "A new \"vs par\" column divides your wins by par. 1.0× is exactly average, 2.0× is twice as often as luck. It shows once you have 5 games.",
+      "\"Ahead of 83%\" ranks you among the players shown who have 5+ games. With Favorites on, that's just your circle.",
+      "Me and player pages show par and vs par too.",
+      "Fixed: the \"Who are you?\" pop-up is wider, shows just names, and scrolls instead of running off the screen.",
+    ],
+  },
+  {
     id: "2026-10-favorites",
     date: "2026-10-14",
     title: "Favorites replace Groups",

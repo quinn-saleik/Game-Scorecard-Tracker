@@ -555,6 +555,20 @@ h3 {
   overflow: hidden;
 }
 
+/* "Who are you?" popup: anchored to the top bar (not the little avatar
+   button) so it can use nearly the full phone width, scrolls if the roster is
+   long, and never runs off the bottom of the screen. */
+.who-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: max(12px, calc((100% - var(--page-max)) / 2 + 12px));
+  width: min(320px, calc(100% - 24px));
+  max-height: calc(100dvh - 150px);
+  overflow-y: auto;
+  margin: 0;
+  z-index: 21;
+}
+
 .player-chip {
   display: inline-flex;
   align-items: center;
@@ -843,4 +857,26 @@ table.score-table td.leader {
 .scope-toggle button.on {
   background: var(--gold);
   color: var(--ink);
+}
+
+/* Small second line under a table value (e.g. "par 33%") */
+.cell-sub {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Denser horizontal padding for tables with many columns on a phone */
+table.score-table.tight th,
+table.score-table.tight td {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+table.score-table.tight th {
+  font-size: 12px;
 }

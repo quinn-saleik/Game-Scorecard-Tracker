@@ -16,7 +16,7 @@ import {
 import FavoritesPicker from "../components/FavoritesPicker";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { subscribeToCustomGames } from "../data/customGames";
-import { computePlayerDetail, computeAchievements } from "../data/stats";
+import { computePlayerDetail, computeAchievements, MIN_GAMES_FOR_RATING } from "../data/stats";
 import { useWhoamiId, setWhoamiId } from "../data/whoami";
 import { PLAYER_COLORS } from "../data/playerColors";
 import { PLAYER_AVATARS } from "../data/playerAvatars";
@@ -317,7 +317,14 @@ export default function Me() {
         <table className="score-table">
           <tbody>
             <tr><td>Games played</td><td>{detail.gamesPlayed}</td></tr>
-            <tr><td>Win %</td><td>{detail.gamesPlayed ? `${detail.winPct}%` : "—"}</td></tr>
+            <tr>
+              <td>Win % <span style={{ color: "var(--muted)", fontSize: 12 }}>(par {detail.parPct}%)</span></td>
+              <td>{detail.gamesPlayed ? `${detail.winPct}%` : "—"}</td>
+            </tr>
+            <tr>
+              <td>vs par <span style={{ color: "var(--muted)", fontSize: 12 }}>(1.0× = luck)</span></td>
+              <td>{detail.gamesPlayed >= MIN_GAMES_FOR_RATING && detail.winIndex !== null ? `${detail.winIndex.toFixed(1)}×` : `needs ${MIN_GAMES_FOR_RATING}+ games`}</td>
+            </tr>
             <tr><td>Favorite game</td><td>{detail.favoriteGame}</td></tr>
             <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>
           </tbody>

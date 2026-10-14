@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { subscribeToPlayers } from "../data/players";
 import { useWhoamiId, setWhoamiId } from "../data/whoami";
 import { shortName } from "../data/playerNames";
-import PlayerDot from "./PlayerDot";
 
 // Round face for the top-bar button: photo if there is one, else the emoji
 // avatar, else the first initial — always on the player's color.
@@ -37,7 +36,10 @@ export default function WhoAmI() {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    // position: static on purpose — the popup is positioned against the
+    // whole top bar (see .who-pop), so it can be wider than the room left of
+    // this button and still stay on screen.
+    <div style={{ position: "static" }}>
       <button
         type="button"
         className={me ? "avatar-btn" : "icon-btn invite"}
@@ -51,17 +53,7 @@ export default function WhoAmI() {
       {open && (
         <>
           <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 20 }} />
-          <div
-            className="card-surface"
-            style={{
-              position: "absolute",
-              right: 0,
-              top: "calc(100% + 8px)",
-              width: 240,
-              zIndex: 21,
-              margin: 0,
-            }}
-          >
+          <div className="card-surface who-pop">
             <h2 style={{ fontSize: 15 }}>Who are you?</h2>
             {active.length === 0 ? (
               <p style={{ fontSize: 13, color: "var(--muted)" }}>No players yet.</p>
@@ -73,7 +65,6 @@ export default function WhoAmI() {
                     className={`player-chip ${p.id === whoamiId ? "selected" : ""}`}
                     onClick={() => pick(p.id)}
                   >
-                    <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
                     {shortName(p)}
                   </span>
                 ))}

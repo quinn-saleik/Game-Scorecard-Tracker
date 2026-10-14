@@ -98,6 +98,7 @@ export function computePlayerStats(players, completedSessions) {
         active: p.active,
         gamesPlayed: 0,
         wins: 0,
+        expectedWins: 0, // what luck alone would have won — see parPct below
         gameCounts: {}, // groupKey -> {label, count}
         lastPlayedAt: null,
       },
@@ -117,6 +118,14 @@ export function computePlayerStats(players, completedSessions) {
       if ((session.winnerIds || []).includes(player.id)) {
         entry.wins += 1;
       }
+      // "Par" for this game: the share of the table that wins. A 2-player
+      // game is 1/2, an 8-player game 1/8, a 4-player team game with a
+      // 2-person winning team 2/4. Summed over a player's games it's the
+      // wins pure luck would give them, which is what raw win % can't show
+      // (someone who mostly plays 2-player looks better than someone who
+      // mostly plays 8-player at identical skill).
+      const seats = (session.players || []).length;
+      if (seats > 0) entry.expectedWins += (session.winnerIds || []).length / seats;
       const completedAt = session.completedAt?.toDate?.() || null;
       if (completedAt && (!entry.lastPlayedAt || completedAt > entry.lastPlayedAt)) {
         entry.lastPlayedAt = completedAt;
@@ -139,11 +148,37 @@ export function computePlayerStats(players, completedSessions) {
         gamesPlayed: e.gamesPlayed,
         wins: e.wins,
         winPct: e.gamesPlayed ? Math.round((e.wins / e.gamesPlayed) * 100) : 0,
+        // Win % luck alone would give them, given the table sizes they play.
+        parPct: e.gamesPlayed ? Math.round((e.expectedWins / e.gamesPlayed) * 100) : 0,
+        // Actual wins / expected wins: 1.0 = exactly par, 2.0 = twice as
+        // often as luck. Null with nothing to compare against.
+        winIndex: e.expectedWins > 0 ? Math.round((e.wins / e.expectedWins) * 100) / 100 : null,
         favoriteGame: favoriteEntry ? favoriteEntry.label : "—",
         lastPlayedAt: e.lastPlayedAt,
       };
     })
     .sort((a, b) => b.gamesPlayed - a.gamesPlayed);
+}
+
+// Fewer games than this and a single lucky/unlucky night swings the ratio, so
+// "vs par" and the percentile stay blank rather than overclaim.
+export const MIN_GAMES_FOR_RATING = 5;
+
+// Adds `winPercentile` (0-100) to each row: the share of qualifying players
+// this player's winIndex beats (ties count half), among everyone in `rows`
+// with MIN_GAMES_FOR_RATING+ games. So the top of six players reads 92, never
+// a harsh 0 for the bottom one. Null when the player hasn't played enough,
+// or when fewer than two people qualify (a percentile of one is meaningless).
+// Callers pass whichever rows are in scope (e.g. your favorites), so the
+// ranking is always "among the people you're looking at."
+export function addWinPercentiles(rows) {
+  const eligible = rows.filter((r) => r.gamesPlayed >= MIN_GAMES_FOR_RATING && r.winIndex !== null);
+  return rows.map((r) => {
+    if (eligible.length < 2 || !eligible.includes(r)) return { ...r, winPercentile: null };
+    const below = eligible.filter((o) => o.winIndex < r.winIndex).length;
+    const equal = eligible.filter((o) => o.winIndex === r.winIndex).length;
+    return { ...r, winPercentile: Math.round(((below + equal / 2) / eligible.length) * 100) };
+  });
 }
 
 // Full detail for one player's page: summary numbers (reusing the same

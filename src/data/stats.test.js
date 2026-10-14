@@ -5,6 +5,7 @@ import {
   computeGameStats,
   computeAchievements,
   computeHallOfFame,
+  addWinPercentiles,
 } from "./stats";
 
 // Firestore Timestamps expose .toDate() — every consumer in stats.js reads
@@ -560,5 +561,82 @@ describe("computeHallOfFame", () => {
     const hof = computeHallOfFame(players, sessions);
     expect(hof.biggestAchiever.player.id).toBe("p1");
     expect(hof.biggestAchiever.count).toBeGreaterThan(1);
+  });
+});
+
+describe("win % vs par (table-size adjusted)", () => {
+  const roster = ["a", "b", "c", "d", "e", "f", "g", "h"].map((id) => ({ id, name: id.toUpperCase() }));
+  const seat = (ids) => ids.map((id) => ({ id, name: id }));
+  const game = (id, ids, winner) => ({
+    id,
+    gameType: "flip7",
+    players: seat(ids),
+    winnerIds: [winner],
+    totals: {},
+    completedAt: ts("2026-10-01T12:00:00Z"),
+  });
+
+  it("par is 50% for a 2-player-only player and 12.5% for an 8-player-only player", () => {
+    const sessions = [
+      game("s1", ["a", "b"], "a"),
+      game("s2", ["a", "b"], "b"),
+      game("s3", roster.map((p) => p.id), "c"),
+      game("s4", roster.map((p) => p.id), "d"),
+    ];
+    const stats = Object.fromEntries(computePlayerStats(roster, sessions).map((r) => [r.playerId, r]));
+    expect(stats.a.parPct).toBe(Math.round(((0.5 + 0.5 + 0.125 + 0.125) / 4) * 100)); // 31
+    // c only ever sat at the 8-player table: par 12.5% -> rounds to 13
+    expect(stats.c.parPct).toBe(13);
+  });
+
+  it("winIndex is wins / expected wins: 1.0 is par, 2.0 is twice luck", () => {
+    // c plays two 8-player games and wins one: expected 0.25, actual 1 -> 4.0
+    const sessions = [game("s1", roster.map((p) => p.id), "c"), game("s2", roster.map((p) => p.id), "d")];
+    const stats = Object.fromEntries(computePlayerStats(roster, sessions).map((r) => [r.playerId, r]));
+    expect(stats.c.winIndex).toBe(4);
+    expect(stats.e.winIndex).toBe(0);
+  });
+
+  it("a 50% winner at 2-player and a 12.5% winner at 8-player are both exactly par (1.0)", () => {
+    const all = roster.map((p) => p.id);
+    const twoP = Array.from({ length: 8 }, (_, i) => game(`t${i}`, ["a", "b"], i % 2 ? "a" : "b"));
+    const eightP = Array.from({ length: 8 }, (_, i) => game(`e${i}`, all, all[i]));
+    const two = computePlayerStats(roster, twoP).find((r) => r.playerId === "a");
+    const eight = computePlayerStats(roster, eightP).find((r) => r.playerId === "a");
+    expect(two.winPct).toBe(50);
+    expect(eight.winPct).toBe(13); // 1 win in 8 games
+    expect(two.winIndex).toBe(1);
+    expect(eight.winIndex).toBe(1);
+  });
+
+  it("team games use winners/seats (2 of 4 = par 50%)", () => {
+    const s = { ...game("team", ["a", "b", "c", "d"], "a"), winnerIds: ["a", "b"] };
+    const a = computePlayerStats(roster, [s]).find((r) => r.playerId === "a");
+    expect(a.parPct).toBe(50);
+    expect(a.winIndex).toBe(2);
+  });
+
+  it("leaves winIndex null when there are no games", () => {
+    expect(computePlayerStats(roster, []).every((r) => r.winIndex === null)).toBe(true);
+  });
+});
+
+describe("addWinPercentiles", () => {
+  const row = (playerId, gamesPlayed, winIndex) => ({ playerId, gamesPlayed, winIndex });
+  const pct = (rows) => Object.fromEntries(addWinPercentiles(rows).map((r) => [r.playerId, r.winPercentile]));
+
+  it("ranks among players with 5+ games; ties share the middle", () => {
+    const p = pct([row("a", 10, 2), row("b", 10, 1), row("c", 10, 1), row("d", 10, 0.5)]);
+    expect(p).toEqual({ a: 88, b: 50, c: 50, d: 13 });
+  });
+
+  it("leaves players under 5 games blank and doesn't count them in the ranking", () => {
+    const p = pct([row("a", 10, 2), row("b", 10, 1), row("new", 2, 4)]);
+    expect(p.new).toBeNull();
+    expect(p).toMatchObject({ a: 75, b: 25 });
+  });
+
+  it("is blank for everyone when fewer than two players qualify", () => {
+    expect(pct([row("a", 10, 2), row("b", 3, 1)])).toEqual({ a: null, b: null });
   });
 });
