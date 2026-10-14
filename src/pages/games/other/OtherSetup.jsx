@@ -16,7 +16,7 @@ import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
 import GameInstructions from "../../../components/GameInstructions";
 
-const GAME_ICONS = ["🃏", "🎲", "🎯", "🀄", "♟️", "🎳", "🧩", "🎱", "🎮", "🀫"];
+const GAME_ICONS = ["🃏", "🎲", "🎯", "🀄", "♟️", "🎳", "🧩", "🎱", "🎮", "🀫", "🤴", "👑"];
 
 export default function OtherSetup() {
   const { gameId } = useParams();
@@ -131,6 +131,34 @@ export default function OtherSetup() {
     }
   }
 
+  // Re-saves the rules/icon without starting a game (the tile on Home
+  // updates for everyone as soon as this lands).
+  const [savingRules, setSavingRules] = useState(false);
+  const [savedMsg, setSavedMsg] = useState("");
+  async function handleSaveRules() {
+    if (!loadedGame) return;
+    setSavingRules(true);
+    setSavedMsg("");
+    try {
+      await saveCustomGame(
+        loadedGame.name,
+        {
+          customName: loadedGame.name,
+          icon: icon.trim() || GAME_ICONS[0],
+          scoreDirection: direction,
+          startingScore: Number(startingScore) || 0,
+          targetScore: targetScore.trim() === "" ? null : Number(targetScore),
+          bidding,
+          houseRules: houseRules.trim(),
+        },
+        icon.trim() || GAME_ICONS[0]
+      );
+      setSavedMsg("Saved.");
+    } finally {
+      setSavingRules(false);
+    }
+  }
+
   async function handleRemove() {
     if (!loadedGame) return;
     if (
@@ -147,6 +175,38 @@ export default function OtherSetup() {
       setRemoving(false);
     }
   }
+
+  const iconField = (
+    <div className="field">
+      <label>Icon</label>
+      <div className="chip-row">
+        {GAME_ICONS.map((em) => (
+          <span
+            key={em}
+            className={`player-chip ${icon === em ? "selected" : ""}`}
+            onClick={() => setIcon(em)}
+            style={{ fontSize: 18, padding: "6px 12px" }}
+          >
+            {em}
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+        <input
+          type="text"
+          className="input"
+          style={{ maxWidth: 90 }}
+          placeholder="Any emoji…"
+          maxLength={8}
+          value={GAME_ICONS.includes(icon) ? "" : icon}
+          onChange={(e) => setIcon(e.target.value)}
+        />
+        <span style={{ fontSize: 12, color: "var(--muted)" }}>
+          Or tap in and use your keyboard's emoji button (🌐 / 😀) for any emoji.
+        </span>
+      </div>
+    </div>
+  );
 
   if (notFound) {
     return (
@@ -214,35 +274,7 @@ export default function OtherSetup() {
                   everyone.
                 </p>
               )}
-              <div className="field">
-                <label>Icon</label>
-                <div className="chip-row">
-                  {GAME_ICONS.map((em) => (
-                    <span
-                      key={em}
-                      className={`player-chip ${icon === em ? "selected" : ""}`}
-                      onClick={() => setIcon(em)}
-                      style={{ fontSize: 18, padding: "6px 12px" }}
-                    >
-                      {em}
-                    </span>
-                  ))}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <input
-                    type="text"
-                    className="input"
-                    style={{ maxWidth: 90 }}
-                    placeholder="Any emoji…"
-                    maxLength={8}
-                    value={GAME_ICONS.includes(icon) ? "" : icon}
-                    onChange={(e) => setIcon(e.target.value)}
-                  />
-                  <span style={{ fontSize: 12, color: "var(--muted)" }}>
-                    Or tap in and use your keyboard's emoji button (🌐 / 😀) for any emoji.
-                  </span>
-                </div>
-              </div>
+              {iconField}
             </div>
           )}
 
@@ -281,6 +313,7 @@ export default function OtherSetup() {
           {editingRules && (
             <div className="card-surface">
               <h2>Rules</h2>
+              {gameId && iconField}
               <div className="field">
                 <label>Which way does scoring count?</label>
                 <div className="btn-row">
@@ -376,6 +409,14 @@ export default function OtherSetup() {
                   mid-play.
                 </p>
               </div>
+              {gameId && (
+                <div className="btn-row" style={{ alignItems: "center" }}>
+                  <button type="button" className="btn primary small" onClick={handleSaveRules} disabled={savingRules}>
+                    {savingRules ? "Saving…" : "Save changes"}
+                  </button>
+                  {savedMsg && <span style={{ color: "var(--muted)", fontSize: 13 }}>{savedMsg}</span>}
+                </div>
+              )}
             </div>
           )}
 

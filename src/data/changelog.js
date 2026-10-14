@@ -5,13 +5,15 @@ export const CHANGELOG = [
   {
     id: "2026-10-light-dark-fixes",
     date: "2026-10-14",
-    title: "Light and dark mode fixes",
-    summary: "Light/dark polish, new look, tidier bars, Phase 10 dealer, negative scores.",
+    title: "Light and dark mode fixes, new icons",
+    summary: "Light/dark polish, new icons, new look, tidier bars, Phase 10 dealer, negative scores.",
     items: [
       "Buttons and text that were hard or impossible to see are fixed: the buttons at the bottom of the Me page in light mode, and player names and the ✕ buttons in dark mode.",
       "The settings and \"Who are you?\" pop-ups read clearly in both modes.",
       "Delete and NEW badges keep the same red with white text in both modes.",
       "Locked achievements are easier to read.",
+      "New icons: Euchre is now a Jack and Royal Rum a crown.",
+      "Custom games (like King's Corner) can change their icon: open the game, tap Edit rules, pick an icon, and Save changes.",
     ],
   },
   {

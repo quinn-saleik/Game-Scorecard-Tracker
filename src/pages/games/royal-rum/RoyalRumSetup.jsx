@@ -55,7 +55,7 @@ export default function RoyalRumSetup() {
   return (
     <div>
       <h1 className="page-title">
-        <span className="suit black">♦</span> Royal Rum — Who's playing?
+        <span className="suit black">👑</span> Royal Rum — Who's playing?
       </h1>
       <OngoingGames gameType="royal-rum" />
 

@@ -108,8 +108,8 @@ export default function ThreePlayerPlay() {
     return (
       <div>
         <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-          <span><span className="suit black">♣</span> Euchre (3-player) — Hand complete</span>
-          <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+          <span><span className="suit black">🃛</span> Euchre (3-player) — Hand complete</span>
+          <TvMode gameName="Euchre (3-player)" icon="🃛" statusLine="First to 0 wins" rows={tvRows} />
         </h1>
         <div className="card-surface">
           <h2>🏆 {potentialWinners.map((p) => shortName(p)).join(" & ")} reached 0!</h2>
@@ -198,8 +198,8 @@ export default function ThreePlayerPlay() {
     return (
       <div>
         <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-          <span><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
-          <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+          <span><span className="suit black">🃛</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
+          <TvMode gameName="Euchre (3-player)" icon="🃛" statusLine="First to 0 wins" rows={tvRows} />
         </h1>
         <div className="card-surface">
           <h2>Hand {rounds.length + 1} scored</h2>
@@ -241,8 +241,8 @@ export default function ThreePlayerPlay() {
   return (
     <div>
       <h1 className="page-title" style={{ justifyContent: "space-between" }}>
-        <span><span className="suit black">♣</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
-        <TvMode gameName="Euchre (3-player)" icon="♣" statusLine="First to 0 wins" rows={tvRows} />
+        <span><span className="suit black">🃛</span> Euchre (3-player) — Hand {rounds.length + 1}</span>
+        <TvMode gameName="Euchre (3-player)" icon="🃛" statusLine="First to 0 wins" rows={tvRows} />
       </h1>
       {undoButton}
       <div className="card-surface">

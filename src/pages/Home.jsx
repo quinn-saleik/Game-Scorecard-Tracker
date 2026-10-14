@@ -15,8 +15,8 @@ import { splitTiles } from "../data/tileFolding";
 const GAMES = [
   { icon: "🂡", label: "Oh Heck!", family: "spade", path: "/oh-heck/setup", soon: false, gameTypes: ["oh-heck"] },
   { icon: "🔥", label: "Flip7", family: "heart", path: "/flip7/setup", soon: false, gameTypes: ["flip7"] },
-  { icon: "♣", label: "Euchre", family: "club", path: "/euchre", soon: false, gameTypes: ["euchre-2p", "euchre-3p", "euchre-traditional", "euchre-15card", "euchre-partner"] },
-  { icon: "♦", label: "Royal Rum", family: "diamond", path: "/royal-rum/setup", soon: false, gameTypes: ["royal-rum"] },
+  { icon: "🃛", label: "Euchre", family: "club", path: "/euchre", soon: false, gameTypes: ["euchre-2p", "euchre-3p", "euchre-traditional", "euchre-15card", "euchre-partner"] },
+  { icon: "👑", label: "Royal Rum", family: "diamond", path: "/royal-rum/setup", soon: false, gameTypes: ["royal-rum"] },
   { icon: "🎤", label: "Catchphrase", family: "party", path: "/catchphrase/setup", soon: false, gameTypes: ["catchphrase"] },
   { icon: "🂱", label: "31", family: "heart", path: "/thirty-one/setup", soon: false, gameTypes: ["thirty-one"] },
   { icon: "⛳", label: "Golf", family: "club", path: "/golf/setup", soon: false, gameTypes: ["golf"] },
