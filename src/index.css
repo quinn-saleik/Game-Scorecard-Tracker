@@ -960,6 +960,44 @@ table.score-table td.leader {
   .tv-mode-rows.few .tv-mode-score { font-size: clamp(22px, min(38cqh, 120cqi / var(--score-len, 2)), 220px); }
 }
 
+
+/* Me tab: the three big Identity tiles (color / avatar / photo) */
+.id-tiles { display: flex; justify-content: space-around; gap: 8px; padding: 8px 0 4px; }
+.id-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; }
+.id-circle {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text-on-surface) 6%, var(--card-white));
+  border: 3px dashed var(--ghost-border);
+  color: var(--text-on-surface);
+  cursor: pointer;
+  font: inherit;
+}
+.id-circle.filled { border-style: solid; }
+.id-circle.active { border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 35%, transparent); }
+.id-fill { width: 100%; height: 100%; display: block; }
+.id-emoji { font-size: 38px; line-height: 1; }
+.id-empty { font-size: 30px; line-height: 1; opacity: 0.55; }
+.id-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.id-label { font-weight: 700; font-size: 14px; color: var(--text-on-surface); }
+.id-remove {
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.id-remove.placeholder { text-decoration: none; cursor: default; visibility: hidden; }
+
 /* Favorites / Everyone switch (components/ScopeToggle.jsx) */
 .scope-toggle {
   display: inline-flex;

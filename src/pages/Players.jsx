@@ -394,7 +394,7 @@ export default function Players() {
                                   key={c.hex}
                                   onClick={() => pickColor(p.id, c.hex)}
                                   disabled={busy}
-                                  title={takenBy ? `${c.name} — already ${takenBy.name}'s color` : c.name}
+                                  title={takenBy ? `${c.name} — used by ${takenBy.name}` : c.name}
                                   style={{
                                     display: "flex",
                                     flexDirection: "column",
@@ -417,7 +417,7 @@ export default function Players() {
                                     }}
                                   />
                                   <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                                    {takenBy ? `${c.name} (${takenBy.name})` : c.name}
+                                    {takenBy ? shortName(takenBy) : c.name}
                                   </span>
                                 </button>
                               );

@@ -3,6 +3,17 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-identity-tiles",
+    date: "2026-10-14",
+    title: "Identity tiles",
+    summary: "New identity tiles, bigger TV mode, feedback pop-up, fairer win %, favorites, light/dark polish, new icons, new look.",
+    items: [
+      "Me tab: Color, Avatar and Photo are now three big tiles. Tap one to set or change it, and tap Remove under it to clear it.",
+      "When you pick a color someone else already uses, their name shows under it (just first name, plus a last initial if needed).",
+      "Feedback now shows who sent it, or Anonymous if no one was signed in.",
+    ],
+  },
+  {
     id: "2026-10-tv-mode",
     date: "2026-10-14",
     title: "Bigger TV mode",

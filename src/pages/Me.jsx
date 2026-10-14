@@ -26,6 +26,31 @@ import ParBadge from "../components/ParBadge";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
 
+// One of the three big Identity tiles: tap the circle to set/change it,
+// "Remove" appears underneath once it's set. The photo tile is a <label>
+// for the hidden file input instead of a button.
+function IdTile({ label, active, onClick, htmlFor, onRemove, busy, filled, children }) {
+  const circleProps = {
+    className: `id-circle ${filled ? "filled" : ""} ${active ? "active" : ""}`,
+    "aria-label": `${filled ? "Change" : "Set"} ${label.toLowerCase()}`,
+  };
+  return (
+    <div className="id-tile">
+      {htmlFor ? (
+        <label htmlFor={htmlFor} {...circleProps} style={{ cursor: busy ? "default" : "pointer" }}>{children}</label>
+      ) : (
+        <button type="button" onClick={onClick} disabled={busy} {...circleProps}>{children}</button>
+      )}
+      <span className="id-label">{label}</span>
+      {onRemove ? (
+        <button type="button" className="id-remove" onClick={onRemove} disabled={busy}>Remove</button>
+      ) : (
+        <span className="id-remove placeholder" aria-hidden="true">&nbsp;</span>
+      )}
+    </div>
+  );
+}
+
 export default function Me() {
   const whoamiId = useWhoamiId();
   const [players, setPlayers] = useState([]);
@@ -177,56 +202,8 @@ export default function Me() {
       </h1>
 
       <div className="card-surface">
-        <h2>Identity</h2>
-        <div className="btn-row" style={{ alignItems: "center" }}>
-          <button
-            type="button"
-            onClick={() => setPickerOpen(pickerOpen === "color" ? null : "color")}
-            title="Set color"
-            style={{ background: "none", border: "none", padding: 4, cursor: "pointer" }}
-          >
-            <PlayerDot color={me.color} />
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>Color</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPickerOpen(pickerOpen === "avatar" ? null : "avatar")}
-            title="Set avatar"
-            style={{ background: "none", border: "none", padding: 4, cursor: "pointer", fontSize: 16 }}
-          >
-            {me.avatar || "＋"} <span style={{ fontSize: 12, color: "var(--muted)" }}>Avatar</span>
-          </button>
-          <label htmlFor="me-photo-input" style={{ display: "inline-flex", alignItems: "center", gap: 4, cursor: busy ? "default" : "pointer" }}>
-            {me.photo ? (
-              <img src={me.photo} alt="" style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }} />
-            ) : (
-              <span style={{ fontSize: 16 }}>📷</span>
-            )}
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>Photo</span>
-          </label>
-          <input
-            id="me-photo-input"
-            type="file"
-            accept="image/*"
-            disabled={busy}
-            style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (file) pickPhoto(file);
-            }}
-          />
-          {me.photo && (
-            <button
-              type="button"
-              onClick={() => setPlayerPhoto(me.id, null)}
-              disabled={busy}
-              className="btn ghost small"
-             
-            >
-              Remove photo
-            </button>
-          )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <h2 style={{ margin: 0 }}>Identity</h2>
           <button
             type="button"
             className="btn ghost small"
@@ -240,6 +217,50 @@ export default function Me() {
           </button>
         </div>
 
+        <div className="id-tiles">
+          <IdTile
+            label="Color"
+            active={pickerOpen === "color"}
+            onClick={() => setPickerOpen(pickerOpen === "color" ? null : "color")}
+            onRemove={me.color ? () => pickColor(null) : null}
+            busy={busy}
+            filled={!!me.color}
+          >
+            {me.color ? <span className="id-fill" style={{ background: me.color }} /> : <span className="id-empty">🎨</span>}
+          </IdTile>
+          <IdTile
+            label="Avatar"
+            active={pickerOpen === "avatar"}
+            onClick={() => setPickerOpen(pickerOpen === "avatar" ? null : "avatar")}
+            onRemove={me.avatar ? () => pickAvatar(null) : null}
+            busy={busy}
+            filled={!!me.avatar}
+          >
+            {me.avatar ? <span className="id-emoji">{me.avatar}</span> : <span className="id-empty">🙂</span>}
+          </IdTile>
+          <IdTile
+            label="Photo"
+            htmlFor="me-photo-input"
+            onRemove={me.photo ? () => setPlayerPhoto(me.id, null) : null}
+            busy={busy}
+            filled={!!me.photo}
+          >
+            {me.photo ? <img src={me.photo} alt="" className="id-photo" /> : <span className="id-empty">📷</span>}
+          </IdTile>
+          <input
+            id="me-photo-input"
+            type="file"
+            accept="image/*"
+            disabled={busy}
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) pickPhoto(file);
+            }}
+          />
+        </div>
+
         {pickerOpen === "color" && (
           <div className="chip-row" style={{ padding: "10px 4px" }}>
             {PLAYER_COLORS.map((c) => {
@@ -250,7 +271,7 @@ export default function Me() {
                   key={c.hex}
                   onClick={() => pickColor(c.hex)}
                   disabled={busy}
-                  title={takenBy ? `${c.name} — already ${takenBy.name}'s color` : c.name}
+                  title={takenBy ? `${c.name} — used by ${takenBy.name}` : c.name}
                   style={{
                     display: "flex",
                     flexDirection: "column",
@@ -264,13 +285,10 @@ export default function Me() {
                   }}
                 >
                   <span style={{ width: 22, height: 22, borderRadius: "50%", background: c.hex, border: "1px solid rgba(0,0,0,0.15)" }} />
-                  <span style={{ fontSize: 11, color: "var(--muted)" }}>{takenBy ? `${c.name} (${takenBy.name})` : c.name}</span>
+                  <span style={{ fontSize: 11, color: "var(--muted)" }}>{takenBy ? shortName(takenBy) : c.name}</span>
                 </button>
               );
             })}
-            <button type="button" className="btn ghost small" style={{ alignSelf: "center" }} onClick={() => pickColor(null)} disabled={busy}>
-              No color
-            </button>
           </div>
         )}
 
@@ -287,9 +305,6 @@ export default function Me() {
                 {emoji}
               </button>
             ))}
-            <button type="button" className="btn ghost small" style={{ alignSelf: "center" }} onClick={() => pickAvatar(null)} disabled={busy}>
-              No avatar
-            </button>
           </div>
         )}
 
