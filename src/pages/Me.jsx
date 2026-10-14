@@ -1,6 +1,6 @@
 // "Me" replaces the old Players nav tab: your own stats front and center,
 // plus the identity bits that used to live on a shared roster page (name,
-// color, avatar, photo, and now group membership). A lightweight "manage
+// color, avatar, photo, and favorite players). A lightweight "manage
 // everyone" admin view is still reachable from here for the rare edit of
 // someone else — see the link at the bottom.
 import { useEffect, useState } from "react";
@@ -10,11 +10,10 @@ import {
   setPlayerColor,
   setPlayerAvatar,
   setPlayerPhoto,
-  setPlayerGroups,
   updatePlayerName,
   subscribeToPlayers,
 } from "../data/players";
-import { addGroup, subscribeToGroups } from "../data/groups";
+import FavoritesPicker from "../components/FavoritesPicker";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { subscribeToCustomGames } from "../data/customGames";
 import { computePlayerDetail, computeAchievements } from "../data/stats";
@@ -29,7 +28,6 @@ import { shortName } from "../data/playerNames";
 export default function Me() {
   const whoamiId = useWhoamiId();
   const [players, setPlayers] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [customGames, setCustomGames] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +35,6 @@ export default function Me() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [newGroupName, setNewGroupName] = useState("");
   const [nameEditing, setNameEditing] = useState(false);
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
@@ -50,8 +47,7 @@ export default function Me() {
     const unsub1 = subscribeToPlayers((list) => { setPlayers(list); playersLoaded = true; check(); });
     const unsub2 = subscribeToCompletedSessions((list) => { setSessions(list); sessionsLoaded = true; check(); });
     const unsub3 = subscribeToCustomGames(setCustomGames);
-    const unsub4 = subscribeToGroups(setGroups);
-    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+    return () => { unsub1(); unsub2(); unsub3(); };
   }, []);
 
   if (loading) return <p className="empty-state">Loading…</p>;
@@ -68,35 +64,6 @@ export default function Me() {
       setWhoamiId(id);
       setFirstName("");
       setLastName("");
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function toggleGroup(groupId) {
-    if (!me) return;
-    const current = me.groupIds || [];
-    const next = current.includes(groupId) ? current.filter((g) => g !== groupId) : [...current, groupId];
-    setBusy(true);
-    try {
-      await setPlayerGroups(me.id, next);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleCreateGroup(e) {
-    e.preventDefault();
-    if (!newGroupName.trim()) return;
-    setBusy(true);
-    try {
-      const id = await addGroup(newGroupName);
-      setNewGroupName("");
-      // Joining the group you just made is the obviously-wanted default —
-      // nobody creates a group to leave themselves out of it.
-      if (me) await setPlayerGroups(me.id, [...(me.groupIds || []), id]);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -200,7 +167,6 @@ export default function Me() {
 
   const detail = computePlayerDetail(me.id, players, sessions, customGames);
   const badges = computeAchievements(me.id, players, sessions);
-  const myGroupIds = me.groupIds || [];
 
   return (
     <div>
@@ -337,39 +303,13 @@ export default function Me() {
       </div>
 
       <div className="card-surface">
-        <h2>Groups</h2>
+        <h2>Favorites</h2>
         <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
-          Only players who share a group with you show up by default when picking who's playing
-          or browsing stats — join whichever group(s) fit.
+          Star the people you usually play with. Player pickers, Stats, and the Hall of Fame
+          show just you and your favorites. Pick nobody to see everyone, or tap "Everyone" on
+          any of those screens for a quick look at the full list.
         </p>
-        {groups.length === 0 ? (
-          <p className="empty-state">No groups yet.</p>
-        ) : (
-          <div className="chip-row">
-            {groups.map((g) => (
-              <span
-                key={g.id}
-                className={`player-chip ${myGroupIds.includes(g.id) ? "selected" : ""}`}
-                onClick={() => toggleGroup(g.id)}
-              >
-                {g.name}
-              </span>
-            ))}
-          </div>
-        )}
-        <form onSubmit={handleCreateGroup} className="btn-row" style={{ marginTop: 10 }}>
-          <input
-            className="input"
-            style={{ flex: 1, minWidth: 120 }}
-            placeholder="New group name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            disabled={busy}
-          />
-          <button className="btn primary small" type="submit" disabled={busy}>
-            Create group
-          </button>
-        </form>
+        <FavoritesPicker player={me} players={players} />
       </div>
 
       <div className="card-surface">

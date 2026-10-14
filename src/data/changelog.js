@@ -3,6 +3,26 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-favorites",
+    date: "2026-10-14",
+    title: "Favorites replace Groups",
+    summary: "Favorites, light/dark polish, new icons, new look, tidier bars, Phase 10 dealer, negative scores.",
+    items: [
+      "Pick your favorite players on the Me tab. Player pickers, Stats, and the Hall of Fame now show just you and your favorites.",
+      "Everyone who was in a group with you is already a favorite, so nothing changes until you want it to.",
+      "A ⭐ Favorites / 👥 Everyone switch sits above every player list, Stats, and the Hall of Fame. One tap shows everybody, and it remembers on your phone.",
+      "Pick no favorites and you see everyone, as before.",
+      "When you add a new player, they're added to your favorites (if you have any).",
+      "Presetting someone else? Me, then Manage all players, then tap the ⭐ next to their name.",
+    ],
+    examplesTitle: "Why favorites are useful",
+    examples: [
+      { label: "Quick game setup", text: "Grandma's list is just the six people she plays with, not the whole roster." },
+      { label: "Stats that fit", text: "Stats and the Hall of Fame compare the people you actually play, not everyone who has ever used the app." },
+      { label: "Never stuck", text: "A guest who isn't on your list? Tap Everyone, add them to the game, tap Favorites to go back." },
+    ],
+  },
+  {
     id: "2026-10-light-dark-fixes",
     date: "2026-10-14",
     title: "Light and dark mode fixes, new icons",
@@ -63,7 +83,7 @@ export const CHANGELOG = [
     id: "2026-09-groups",
     date: "2026-09",
     title: "Groups, the Me tab, and Who am I?",
-    summary: "Keep Family and Friends nights separate.",
+    summary: "Later replaced by Favorites.",
     items: [
       "Groups are friend circles inside the one shared app. There are two to start: Worthington Family and Nashville Friends. Create more any time from the Me tab.",
       "You can be in more than one group. Tap a group on the Me tab to join or leave it.",

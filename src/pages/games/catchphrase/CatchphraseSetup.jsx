@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
-import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useVisiblePlayers } from "../../../data/favoriteVisibility";
+import ScopeToggle from "../../../components/ScopeToggle";
 import { createSession } from "../../../data/gameSessions";
 import { shuffleArray } from "../../../data/shuffle";
 import OngoingGames from "../../../components/OngoingGames";
@@ -101,6 +102,7 @@ export default function CatchphraseSetup() {
       <div className="card-surface">
         <div className="btn-row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <h2>Tap players to assign teams</h2>
+          <ScopeToggle players={players} />
           <button type="button" className="btn small" onClick={shuffleTeams} disabled={active.length < 2}>
             🎲 Shuffle teams
           </button>
@@ -109,7 +111,7 @@ export default function CatchphraseSetup() {
           Team sizes don't need to match. Tap a player to cycle Team 1 → Team 2 → unassigned, or let Shuffle split everyone up.
         </p>
         {active.length === 0 ? (
-          <p className="empty-state">No active players. Add some on the Players tab first.</p>
+          <p className="empty-state">No active players. Add some from the Me tab first.</p>
         ) : (
           <div className="chip-row">
             {active.map((p) => {

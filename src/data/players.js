@@ -17,8 +17,10 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { db, authReady } from "../firebase";
+import { getWhoamiId } from "./whoami";
 
 const playersCol = collection(db, "players");
 
@@ -26,7 +28,7 @@ function slugify(name) {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
-export async function addPlayer(firstName, lastName, groupIds = []) {
+export async function addPlayer(firstName, lastName) {
   await authReady;
   const first = (firstName || "").trim();
   const last = (lastName || "").trim();
@@ -67,9 +69,21 @@ export async function addPlayer(firstName, lastName, groupIds = []) {
     name: fullName,
     active: true,
     isDefault: false,
-    groupIds: Array.isArray(groupIds) ? groupIds : [],
     createdAt: serverTimestamp(),
   });
+
+  // Whoever is signed in on this device gets the new player as a favorite —
+  // but only if they already HAVE favorites. An empty list means "show
+  // everyone," so adding the first favorite here would silently narrow their
+  // lists down to just this one new person.
+  const adderId = getWhoamiId();
+  if (adderId && adderId !== id) {
+    const adder = existing.docs.find((d) => d.id === adderId);
+    const adderFavs = adder?.data().favoriteIds;
+    if (Array.isArray(adderFavs) && adderFavs.length > 0) {
+      await updateDoc(doc(playersCol, adderId), { favoriteIds: arrayUnion(id) });
+    }
+  }
   return id;
 }
 
@@ -142,11 +156,15 @@ export async function setPlayerAvatar(playerId, avatar) {
   await updateDoc(doc(playersCol, playerId), { avatar });
 }
 
-// Full replace, not add/remove — callers pass the complete membership list
-// (a group checklist naturally has the full set on hand already).
-export async function setPlayerGroups(playerId, groupIds) {
+// Full replace, not add/remove — callers pass the complete favorites list
+// (a checklist naturally has the full set on hand already). Empty = "show
+// everyone" (see data/favoriteVisibility.js).
+export async function setPlayerFavorites(playerId, favoriteIds) {
   await authReady;
-  await updateDoc(doc(playersCol, playerId), { groupIds: Array.isArray(groupIds) ? groupIds : [] });
+  const clean = Array.isArray(favoriteIds)
+    ? [...new Set(favoriteIds.filter((id) => id && id !== playerId))]
+    : [];
+  await updateDoc(doc(playersCol, playerId), { favoriteIds: clean });
 }
 
 // photo: a small data: URI (already resized/cropped client-side — see

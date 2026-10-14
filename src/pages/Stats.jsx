@@ -10,7 +10,8 @@ import {
 } from "../data/gameSessions";
 import { computePlayerStats, computeGameStats, gameGroupLabel } from "../data/stats";
 import { subscribeToCustomGames } from "../data/customGames";
-import { useVisiblePlayers, useSessionGroupFilter } from "../data/groupVisibility";
+import { useVisiblePlayers, useInScope, useSessionFilter } from "../data/favoriteVisibility";
+import ScopeToggle from "../components/ScopeToggle";
 import { useWhoamiId } from "../data/whoami";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
@@ -51,31 +52,33 @@ export default function Stats() {
   }, []);
 
   const whoamiId = useWhoamiId();
-  const groupVisiblePlayers = useVisiblePlayers(players);
-  const sessionInMyGroups = useSessionGroupFilter(players);
-  // Group filtering is UI convenience, not a lock (see data/groups.js) — it
-  // only narrows what's shown when you've picked who you are AND joined a
-  // group. Applies to games and their derived stats, same scope.
-  const groupSessions = sessions.filter(sessionInMyGroups);
+  const visiblePlayersList = useVisiblePlayers(players);
+  const playerInScope = useInScope(players);
+  const sessionInScope = useSessionFilter(players);
+  // Favorites filtering is UI convenience, not a lock (see
+  // data/favoriteVisibility.js) — it only narrows what's shown when you've
+  // picked who you are AND have favorites, and the Favorites/Everyone switch
+  // turns it off. Applies to games and their derived stats, same scope.
+  const scopedSessions = sessions.filter(sessionInScope);
 
-  const playerStats = computePlayerStats(players, groupSessions);
+  const playerStats = computePlayerStats(players, scopedSessions);
   // Every custom game gets a row too, even at 0 plays — same reasoning as
   // visiblePlayerStats below: a game someone just added to the home screen
   // shouldn't be invisible in Stats until after its first completed game.
-  const playedStats = computeGameStats(groupSessions);
+  const playedStats = computeGameStats(scopedSessions);
   const playedKeys = new Set(playedStats.map((g) => g.groupKey));
   const unplayedCustomGames = customGames
     .filter((g) => !playedKeys.has(`other:${g.id}`))
     .map((g) => ({ groupKey: `other:${g.id}`, gameType: "other", label: g.name, count: 0 }));
   const gameStats = [...playedStats, ...unplayedCustomGames];
-  // Show every group-visible active player, not just ones with a completed
+  // Show every in-scope active player, not just ones with a completed
   // game — a brand-new player with no history yet should show up with "—"
   // placeholders, not disappear from the table entirely. A removed
   // (inactive) player still shows up if they have real history to keep,
   // but drops off once they have none.
-  const groupVisibleIds = new Set(groupVisiblePlayers.map((p) => p.id));
+  const visibleIds = new Set(visiblePlayersList.map((p) => p.id));
   const visiblePlayerStats = playerStats.filter(
-    (p) => p.gamesPlayed > 0 || groupVisibleIds.has(p.playerId)
+    (p) => playerInScope(p.playerId) && (p.gamesPlayed > 0 || visibleIds.has(p.playerId))
   );
   // Your own row floats to the top — everything else keeps its existing order.
   visiblePlayerStats.sort((a, b) => {
@@ -124,6 +127,7 @@ export default function Stats() {
       <h1 className="page-title">
         <span className="suit red">♦</span> Stats
       </h1>
+      <ScopeToggle players={players} />
 
       {loading ? (
         <p className="empty-state">Loading…</p>
@@ -184,7 +188,7 @@ export default function Stats() {
           <div className="card-surface">
             <h2>By player</h2>
             {visiblePlayerStats.length === 0 ? (
-              <p className="empty-state">No active players yet — add some on the Players tab.</p>
+              <p className="empty-state">No active players yet — add some from the Me tab.</p>
             ) : (
               <table className="score-table">
                 <thead>
@@ -217,7 +221,7 @@ export default function Stats() {
 
           <div className="card-surface">
             <h2>Recent games</h2>
-            {groupSessions.length === 0 ? (
+            {scopedSessions.length === 0 ? (
               <p className="empty-state">No completed games yet — finish a game and it'll show up here.</p>
             ) : (
               <>
@@ -236,7 +240,7 @@ export default function Stats() {
                     </tr>
                   </thead>
                   <tbody>
-                    {groupSessions.map((s) => {
+                    {scopedSessions.map((s) => {
                       const winners = (s.players || []).filter((p) => (s.winnerIds || []).includes(p.id));
                       return (
                         <tr key={s.id}>

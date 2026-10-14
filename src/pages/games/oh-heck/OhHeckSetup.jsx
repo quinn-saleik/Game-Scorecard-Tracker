@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
-import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useVisiblePlayers } from "../../../data/favoriteVisibility";
+import ScopeToggle from "../../../components/ScopeToggle";
 import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import { buildRoundSequence } from "./ohHeckLogic";
@@ -98,12 +99,13 @@ export default function OhHeckSetup() {
 
       <div className="card-surface">
         <h2>Select players ({seatedPlayers.length} selected)</h2>
+        <ScopeToggle players={players} />
         <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
           Tap in seating order — this sets the first dealer and bid order.
         </p>
         {active.length === 0 ? (
           <p className="empty-state">
-            No active players. Add some on the Players tab first.
+            No active players. Add some from the Me tab first.
           </p>
         ) : (
           <div className="chip-row">

@@ -8,11 +8,10 @@ import {
   setPlayerColor,
   setPlayerAvatar,
   setPlayerPhoto,
-  setPlayerGroups,
   updatePlayerName,
   subscribeToPlayers,
 } from "../data/players";
-import { subscribeToGroups } from "../data/groups";
+import FavoritesPicker from "../components/FavoritesPicker";
 import { PLAYER_COLORS } from "../data/playerColors";
 import { PLAYER_AVATARS } from "../data/playerAvatars";
 import { fileToPlayerPhoto } from "../data/photo";
@@ -28,22 +27,19 @@ export default function Players() {
   const [busy, setBusy] = useState(false);
   const [colorPickerFor, setColorPickerFor] = useState(null);
   const [avatarPickerFor, setAvatarPickerFor] = useState(null);
-  const [groupPickerFor, setGroupPickerFor] = useState(null);
+  const [favPickerFor, setFavPickerFor] = useState(null);
   const [nameEditFor, setNameEditFor] = useState(null);
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [clearingDefaults, setClearingDefaults] = useState(false);
-  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
     const unsubPlayers = subscribeToPlayers((list) => {
       setPlayers(list);
       setLoading(false);
     });
-    const unsubGroups = subscribeToGroups(setGroups);
     return () => {
       unsubPlayers();
-      unsubGroups();
     };
   }, []);
 
@@ -150,16 +146,8 @@ export default function Players() {
     }
   }
 
-  async function toggleGroupFor(player, groupId) {
-    const current = player.groupIds || [];
-    const next = current.includes(groupId) ? current.filter((g) => g !== groupId) : [...current, groupId];
-    setBusy(true);
-    try {
-      await setPlayerGroups(player.id, next);
-    } finally {
-      setBusy(false);
-    }
-  }
+  const activeIdSet = new Set(players.filter((q) => q.active).map((q) => q.id));
+  const favCount = (p) => (p.favoriteIds || []).filter((id) => id !== p.id && activeIdSet.has(id)).length;
 
   const active = players.filter((p) => p.active);
   const inactive = players.filter((p) => !p.active);
@@ -171,8 +159,8 @@ export default function Players() {
         <span className="suit black">♣</span> Manage players
       </h1>
       <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -10 }}>
-        The admin view — most editing (your own name, color, avatar, photo, and groups) now
-        lives on your <Link to="/me">Me</Link> page. Use this one for everyone else.
+        The admin view — most editing (your own name, color, avatar, photo, and favorites) now
+        lives on your <Link to="/me">Me</Link> page. Use this one for everyone else — including presetting their ⭐ favorites.
       </p>
 
       {hasDefaults && (
@@ -241,7 +229,7 @@ export default function Players() {
               {active.map((p) => {
                 const pickerOpen = colorPickerFor === p.id;
                 const avatarOpen = avatarPickerFor === p.id;
-                const groupsOpen = groupPickerFor === p.id;
+                const favsOpen = favPickerFor === p.id;
                 const nameEditOpen = nameEditFor === p.id;
                 return (
                   <Fragment key={p.id}>
@@ -347,15 +335,15 @@ export default function Players() {
                         <button
                           type="button"
                           onClick={() => {
-                            setGroupPickerFor(groupsOpen ? null : p.id);
+                            setFavPickerFor(favsOpen ? null : p.id);
                             setColorPickerFor(null);
                             setAvatarPickerFor(null);
                             setNameEditFor(null);
                           }}
-                          title="Set groups"
+                          title="Set favorites"
                           style={{ background: "none", border: "none", padding: 4, cursor: "pointer", fontSize: 12, color: "var(--muted)" }}
                         >
-                          👪{(p.groupIds || []).length > 0 ? ` ${p.groupIds.length}` : ""}
+                          ⭐{favCount(p) > 0 ? ` ${favCount(p)}` : ""}
                         </button>
                       </td>
                       <td>
@@ -380,24 +368,15 @@ export default function Players() {
                         </button>
                       </td>
                     </tr>
-                    {groupsOpen && (
+                    {favsOpen && (
                       <tr>
                         <td colSpan={7} style={{ background: "var(--card-white)" }}>
-                          {groups.length === 0 ? (
-                            <p style={{ padding: "10px 4px", fontSize: 13, color: "var(--muted)" }}>No groups yet — create one from the Me page.</p>
-                          ) : (
-                            <div className="chip-row" style={{ padding: "10px 4px" }}>
-                              {groups.map((g) => (
-                                <span
-                                  key={g.id}
-                                  className={`player-chip ${(p.groupIds || []).includes(g.id) ? "selected" : ""}`}
-                                  onClick={() => toggleGroupFor(p, g.id)}
-                                >
-                                  {g.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          <div style={{ padding: "10px 4px" }}>
+                            <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 8px" }}>
+                              Who {shortName(p)} usually plays with. Their pickers and stats show just these people.
+                            </p>
+                            <FavoritesPicker player={p} players={players} />
+                          </div>
                         </td>
                       </tr>
                     )}

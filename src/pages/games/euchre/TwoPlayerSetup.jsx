@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
-import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useVisiblePlayers } from "../../../data/favoriteVisibility";
+import ScopeToggle from "../../../components/ScopeToggle";
 import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
@@ -88,11 +89,12 @@ export default function TwoPlayerSetup() {
 
       <div className="card-surface">
         <h2>Select 2 players ({seated.length}/2)</h2>
+        <ScopeToggle players={players} />
         <p style={{ color: "var(--muted)", fontSize: 14, marginTop: -6 }}>
           Tap in order — the first player picked deals first.
         </p>
         {active.length === 0 ? (
-          <p className="empty-state">No active players. Add some on the Players tab first.</p>
+          <p className="empty-state">No active players. Add some from the Me tab first.</p>
         ) : (
           <div className="chip-row">
             {active.map((p) => {

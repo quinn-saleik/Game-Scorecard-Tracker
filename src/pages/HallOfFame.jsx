@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computeHallOfFame } from "../data/stats";
-import { useSessionGroupFilter } from "../data/groupVisibility";
+import { useInScope, useSessionFilter } from "../data/favoriteVisibility";
+import ScopeToggle from "../components/ScopeToggle";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
@@ -46,26 +47,30 @@ export default function HallOfFame() {
     };
   }, []);
 
-  const sessionInMyGroups = useSessionGroupFilter(players);
+  const sessionInScope = useSessionFilter(players);
+  const playerInScope = useInScope(players);
 
   if (loading) {
     return <p className="empty-state">Loading…</p>;
   }
 
-  const groupSessions = sessions.filter(sessionInMyGroups);
+  const scopedSessions = sessions.filter(sessionInScope);
+  // Records only name people in your circle (or everyone, with the switch).
+  const scopedPlayers = players.filter((p) => playerInScope(p.id));
   const { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry, biggestAchiever } =
-    computeHallOfFame(players, groupSessions);
+    computeHallOfFame(scopedPlayers, scopedSessions);
 
   return (
     <div>
       <h1 className="page-title">🏆 Hall of Fame</h1>
+      <ScopeToggle players={players} />
 
-      {groupSessions.length === 0 ? (
+      {scopedSessions.length === 0 ? (
         <div className="card-surface">
           <p className="empty-state">
             {sessions.length === 0
               ? "No games logged yet — finish a game to start filling this in."
-              : "No games yet among your groups — finish one to start filling this in."}
+              : "No games yet among your favorites — finish one to start filling this in."}
           </p>
         </div>
       ) : (

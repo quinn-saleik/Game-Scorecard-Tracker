@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { subscribeToPlayers } from "../../../data/players";
-import { useVisiblePlayers } from "../../../data/groupVisibility";
+import { useVisiblePlayers } from "../../../data/favoriteVisibility";
+import ScopeToggle from "../../../components/ScopeToggle";
 import { useWhoamiId } from "../../../data/whoami";
 import { createSession } from "../../../data/gameSessions";
 import OngoingGames from "../../../components/OngoingGames";
@@ -85,9 +86,10 @@ export default function Flip7Setup() {
 
       <div className="card-surface">
         <h2>Select players ({selected.length} selected)</h2>
+        <ScopeToggle players={players} />
         {active.length === 0 ? (
           <p className="empty-state">
-            No active players. Add some on the Players tab first.
+            No active players. Add some from the Me tab first.
           </p>
         ) : (
           <div className="chip-row">

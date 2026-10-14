@@ -34,9 +34,9 @@ function buildSteps() {
       body: HOME_SCREEN_BODY[platform],
     },
     {
-      icon: "👪",
-      title: "Add your players first",
-      body: "Head to the Players tab and add everyone who'll play — a first and last name each, so two Rileys don't get mixed up. Tap a player's dot to give them a color, emoji, or photo.",
+      icon: "👤",
+      title: "Pick who you are",
+      body: "Tap the round button at the top to pick yourself — or add yourself on the Me tab (first and last name, so two Rileys don't get mixed up). Then star your favorite players on Me so lists only show the people you play with. A \"Show everyone\" switch is always one tap away.",
     },
     {
       icon: "🎲",

@@ -822,3 +822,25 @@ table.score-table td.leader {
   }
   .tv-mode-rows.two-col .tv-mode-name { max-width: 40vw; flex: 0 1 auto; }
 }
+
+/* Favorites / Everyone switch (components/ScopeToggle.jsx) */
+.scope-toggle {
+  display: inline-flex;
+  border: 2px solid var(--ghost-border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 0 0 12px;
+}
+.scope-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--text-on-surface);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 14px;
+  min-height: 34px;
+}
+.scope-toggle button.on {
+  background: var(--gold);
+  color: var(--ink);
+}

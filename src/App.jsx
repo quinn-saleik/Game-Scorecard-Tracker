@@ -2,7 +2,7 @@ import { lazy, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
-import { migrateToGroupsIfNeeded } from "./data/groupsMigration";
+import { migrateToFavoritesIfNeeded } from "./data/favoritesMigration";
 
 // Code-split everything except Home: a given visit only ever plays one game,
 // so there's no reason to ship every game's Setup/Play bundle up front.
@@ -57,11 +57,11 @@ const Phase10Setup = lazy(() => import("./pages/games/phase-10/Phase10Setup"));
 const Phase10Play = lazy(() => import("./pages/games/phase-10/Phase10Play"));
 
 function App() {
-  // Runs once per app load; the migration itself guards against re-running
-  // (idempotent by "does a `groups` doc already exist" — see
-  // data/groupsMigration.js), so this is safe even across route changes.
+  // Runs once per app load; the migration is per-player idempotent (only
+  // players with old group memberships and no `favoriteIds` yet are touched
+  // — see data/favoritesMigration.js), so this is safe on every load.
   useEffect(() => {
-    migrateToGroupsIfNeeded();
+    migrateToFavoritesIfNeeded();
   }, []);
 
   return (
