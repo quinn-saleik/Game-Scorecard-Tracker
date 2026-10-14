@@ -6,7 +6,7 @@ export const CHANGELOG = [
     id: "2026-10-arcade-pop",
     date: "2026-10-15",
     title: "A fresh look",
-    summary: "New colors, fonts, and home-screen icon — same games, same scoring.",
+    summary: "New look, same games.",
     items: [
       "A brighter \"Arcade Pop\" style: midnight blue, electric yellow, and chunky outlined buttons and cards.",
       "Game tiles are color-coded. Card games use the four suit colors (♠ ♥ ♦ ♣); party games, deduction games, and your own custom games each get their own color.",
@@ -18,7 +18,7 @@ export const CHANGELOG = [
     id: "2026-10-dealer-and-negatives",
     date: "2026-10-14",
     title: "Phase 10 dealer + negative scores",
-    summary: "Phase 10 now tracks who's dealing, and custom games can take negative scores.",
+    summary: "Phase 10 dealer and negative scores.",
     items: [
       "Phase 10: tap players in seating order. The first player picked deals first and the deal passes around the table each hand (look for the 🃏).",
       "Custom games (like Sky-Jo) have a ± button next to every score box, so a negative score is a single tap.",
@@ -28,7 +28,7 @@ export const CHANGELOG = [
     id: "2026-09-today-yesterday",
     date: "2026-09-24",
     title: "Fixed \"Today\" and \"Yesterday\"",
-    summary: "Dates now follow the calendar on your own phone.",
+    summary: "Date labels now read correctly.",
     items: [
       "A game played just before midnight no longer says \"Today\" a few minutes after midnight.",
     ],
@@ -37,7 +37,7 @@ export const CHANGELOG = [
     id: "2026-09-groups",
     date: "2026-09",
     title: "Groups, the Me tab, and Who am I?",
-    summary: "Keep each crew's players and stats together, so Family nights and Friends nights stay tidy.",
+    summary: "Keep Family and Friends nights separate.",
     items: [
       "Groups are friend circles inside the one shared app. There are two to start: Worthington Family and Nashville Friends. Create more any time from the Me tab.",
       "You can be in more than one group. Tap a group on the Me tab to join or leave it.",
@@ -61,7 +61,7 @@ export const EARLIER = [
   {
     id: "earlier-edit-winner",
     title: "Fix a wrong winner",
-    summary: "Tapped the wrong winner? You can change it afterward.",
+    summary: "Change a winner afterward.",
     items: [
       "Open the game from Stats and tap ✎ Edit winner.",
       "Custom games jump straight to the \"who won?\" screen when someone hits the target score.",
@@ -70,7 +70,7 @@ export const EARLIER = [
   {
     id: "earlier-tv-mode",
     title: "TV mode",
-    summary: "Put the scoreboard on the big screen.",
+    summary: "Scoreboard on the big screen.",
     items: [
       "TV mode is on the scoring screen of every game, including Euchre 3-player, Phase 10, Royal Rum, 31, and Secret Hitler.",
       "Long names and double-digit scores shrink to fit instead of getting cut off.",
@@ -79,7 +79,7 @@ export const EARLIER = [
   {
     id: "earlier-recap-and-fame",
     title: "Recap cards, achievements, and the Hall of Fame",
-    summary: "Celebrate the wins.",
+    summary: "Share and celebrate wins.",
     items: [
       "After a game, make a shareable recap card with the final scores to drop into the group chat.",
       "Achievement badges and Hall of Fame records track streaks, comebacks, and bragging rights.",
@@ -88,7 +88,7 @@ export const EARLIER = [
   {
     id: "earlier-new-games",
     title: "More games",
-    summary: "Secret Hitler, Dutch Blitz, Nertz, Codenames, Egyptian Ratscrew, Skip-Bo, and Phase 10.",
+    summary: "Seven new games, plus your own.",
     items: [
       "Plus Catchphrase, 31, Royal Rum, Golf, and several Euchre variations.",
       "Can't find your game? Make your own from the New game tile — it's saved for everyone.",
