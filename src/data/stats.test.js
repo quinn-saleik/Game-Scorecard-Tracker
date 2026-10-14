@@ -466,8 +466,9 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s3", gameType: "flip7", playerIds: ["p1"], winnerIds: ["p1"], completedAt: "2026-01-03" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.mostGamesPlayed.playerId).toBe("p1"); // 3 games vs p2's 2
-    expect(hof.mostWins.playerId).toBe("p2"); // 2 wins vs p1's 1
+    expect(hof.mostGamesPlayed.players.map((p) => p.id)).toEqual(["p1"]); // 3 games vs p2's 2
+    expect(hof.mostGamesPlayed.value).toBe(3);
+    expect(hof.mostWins.players.map((p) => p.id)).toEqual(["p2"]); // 2 wins vs p1's 1
   });
 
   it("returns nulls for every record when there are no completed sessions", () => {
@@ -490,8 +491,8 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s4", gameType: "flip7", playerIds: ["p2"], winnerIds: ["p2"], completedAt: "2026-01-01" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.longestStreakEver.player.id).toBe("p1");
-    expect(hof.longestStreakEver.streak).toBe(3);
+    expect(hof.longestStreakEver.players.map((p) => p.id)).toEqual(["p1"]);
+    expect(hof.longestStreakEver.value).toBe(3);
   });
 
   it("tallies Euchre Royalty across every euchre-* variant combined, not just one", () => {
@@ -501,8 +502,8 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s3", gameType: "euchre-partner", playerIds: ["p1", "p2", "p3"], winnerIds: ["p2"], completedAt: "2026-01-03" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.euchreRoyalty.player.id).toBe("p1"); // 2 combined wins vs p2's 1
-    expect(hof.euchreRoyalty.wins).toBe(2);
+    expect(hof.euchreRoyalty.players.map((p) => p.id)).toEqual(["p1"]); // 2 combined wins vs p2's 1
+    expect(hof.euchreRoyalty.value).toBe(2);
   });
 
   it("finds the single highest Flip7 ROUND, not the highest final game total", () => {
@@ -517,8 +518,8 @@ describe("computeHallOfFame", () => {
       }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.flip7HighScore.score).toBe(150);
-    expect(hof.flip7HighScore.player.id).toBe("p1");
+    expect(hof.flip7HighScore.value).toBe(150);
+    expect(hof.flip7HighScore.entries.map((e) => e.player.id)).toEqual(["p1"]);
   });
 
   it("finds Table Regular as the player with the most distinct opponents across all history", () => {
@@ -528,8 +529,9 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s3", gameType: "flip7", playerIds: ["p2", "p3"], completedAt: "2026-01-03" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    // p1 has played with p2 and p3 (2 opponents); p2 and p3 have each only played with 2 others too — pick p1 since it's first computed with the max, ties are fine to land on any of the 2-opponent players.
-    expect(hof.tableRegular.opponentCount).toBe(2);
+    // Everyone has played with the other two, so all three tie at 2 opponents.
+    expect(hof.tableRegular.value).toBe(2);
+    expect(hof.tableRegular.players.map((p) => p.id).sort()).toEqual(["p1", "p2", "p3"]);
   });
 
   it("finds Rivalry as the pair who've shared the most sessions, with each one's win tally", () => {
@@ -540,10 +542,13 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s4", gameType: "flip7", playerIds: ["p1", "p3"], winnerIds: ["p3"], completedAt: "2026-01-04" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.rivalry.gamesTogether).toBe(3); // p1/p2 shared 3 games vs p1/p3's 1
-    const ids = [hof.rivalry.playerA.id, hof.rivalry.playerB.id].sort();
+    expect(hof.rivalry.value).toBe(3); // p1/p2 shared 3 games vs p1/p3's 1
+    expect(hof.rivalry.pairs).toHaveLength(1);
+    const [pair] = hof.rivalry.pairs;
+    expect(pair.gamesTogether).toBe(3);
+    const ids = [pair.playerA.id, pair.playerB.id].sort();
     expect(ids).toEqual(["p1", "p2"]);
-    const winsById = { [hof.rivalry.playerA.id]: hof.rivalry.winsA, [hof.rivalry.playerB.id]: hof.rivalry.winsB };
+    const winsById = { [pair.playerA.id]: pair.winsA, [pair.playerB.id]: pair.winsB };
     expect(winsById.p1).toBe(2);
     expect(winsById.p2).toBe(1);
   });
@@ -558,8 +563,60 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s4", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], completedAt: "2026-01-04" }),
     ];
     const hof = computeHallOfFame(players, sessions);
-    expect(hof.biggestAchiever.player.id).toBe("p1");
-    expect(hof.biggestAchiever.count).toBeGreaterThan(1);
+    expect(hof.biggestAchiever.players.map((p) => p.id)).toEqual(["p1"]);
+    expect(hof.biggestAchiever.value).toBeGreaterThan(1);
+  });
+});
+
+describe("computeHallOfFame — ties", () => {
+  it("lists every player tied for most games and most wins, not just one", () => {
+    const sessions = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-01" }),
+      makeSession({ id: "s2", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], completedAt: "2026-01-02" }),
+    ];
+    const hof = computeHallOfFame(players, sessions);
+    expect(hof.mostGamesPlayed.players.map((p) => p.id).sort()).toEqual(["p1", "p2"]);
+    expect(hof.mostGamesPlayed.value).toBe(2);
+    expect(hof.mostWins.players.map((p) => p.id).sort()).toEqual(["p1", "p2"]);
+    expect(hof.longestStreakEver.players.map((p) => p.id).sort()).toEqual(["p1", "p2"]);
+  });
+
+  it("lists everyone who hit the top Flip7 round, each once, with their own date", () => {
+    const sessions = [
+      makeSession({
+        id: "s1", gameType: "flip7", playerIds: ["p1", "p2"],
+        rounds: [{ scores: { p1: 80, p2: 20 } }, { scores: { p1: 80, p2: 30 } }],
+        completedAt: "2026-01-01",
+      }),
+      makeSession({
+        id: "s2", gameType: "flip7", playerIds: ["p2", "p3"],
+        rounds: [{ scores: { p2: 80, p3: 10 } }],
+        completedAt: "2026-02-01",
+      }),
+    ];
+    const hof = computeHallOfFame(players, sessions);
+    expect(hof.flip7HighScore.value).toBe(80);
+    const byId = Object.fromEntries(hof.flip7HighScore.entries.map((e) => [e.player.id, e.completedAt]));
+    expect(Object.keys(byId).sort()).toEqual(["p1", "p2"]); // p1 hit it twice but is listed once
+    expect(byId.p2.toISOString().slice(0, 10)).toBe("2026-02-01");
+  });
+
+  it("returns every pair tied for the most shared games as the rivalry", () => {
+    const sessions = [
+      makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-01" }),
+      makeSession({ id: "s2", gameType: "flip7", playerIds: ["p1", "p3"], winnerIds: ["p3"], completedAt: "2026-01-02" }),
+    ];
+    const hof = computeHallOfFame(players, sessions);
+    expect(hof.rivalry.value).toBe(1);
+    expect(hof.rivalry.pairs).toHaveLength(2);
+  });
+
+  it("does not crown anyone for a zero (nobody has a streak or an Euchre win yet)", () => {
+    const sessions = [makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: [], completedAt: "2026-01-01" })];
+    const hof = computeHallOfFame(players, sessions);
+    expect(hof.mostWins).toBeNull();
+    expect(hof.longestStreakEver).toBeNull();
+    expect(hof.euchreRoyalty).toBeNull();
   });
 });
 

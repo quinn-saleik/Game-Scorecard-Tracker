@@ -11,6 +11,7 @@ export const CHANGELOG = [
       "Stats now shows \"par\" under each win %: the win rate luck alone would give you. A 2-player game is 50% and an 8-player game is 12.5%, so a 16% in big games can beat a 50% in 2-player games.",
       "A new \"vs par\" column divides your wins by par: 1.0× is exactly average, 2.0× is twice as often as luck. Green ▲ means at or above par, red ▼ means below. It shows once you have 5 games.",
       "Me and player pages show par and vs par too.",
+      "Hall of Fame: when players tie for a record, everyone tied is shown, not just one of them.",
       "Fixed: the \"Who are you?\" pop-up is wider, shows just names, and scrolls instead of running off the screen.",
     ],
   },

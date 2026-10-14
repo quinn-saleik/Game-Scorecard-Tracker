@@ -548,41 +548,50 @@ export function computeAchievements(playerId, players, completedSessions) {
 // removed Stats "Avg score"); the per-game equivalents below (Flip7 High
 // Score) and computePlayerDetail's gamesByType are the honest versions of
 // that idea.
-export function computeHallOfFame(players, completedSessions) {
-  const nameById = new Map(players.map((p) => [p.id, p]));
-  let longestStreakEver = null; // {player, streak}
-  let euchreRoyalty = null; // {player, wins}
-  let flip7HighScore = null; // {player, score, completedAt}
-  let tableRegular = null; // {player, opponentCount}
-  let biggestAchiever = null; // {player, count}
-
-  const allStats = computePlayerStats(players, completedSessions);
-  const mostGamesPlayed = allStats.reduce(
-    (best, p) => (p.gamesPlayed > 0 && (!best || p.gamesPlayed > best.gamesPlayed) ? p : best),
-    null
-  );
-  const mostWins = allStats.reduce(
-    (best, p) => (p.wins > 0 && (!best || p.wins > best.wins) ? p : best),
-    null
-  );
-
-  for (const p of players) {
-    const detail = computePlayerDetail(p.id, players, completedSessions);
-    if (detail && detail.longestStreak > 0 && (!longestStreakEver || detail.longestStreak > longestStreakEver.streak)) {
-      longestStreakEver = { player: p, streak: detail.longestStreak };
+// Everything in `items` that ties for the highest positive `valueOf`, plus
+// that value. Returns null when nothing scores above zero. Ties are kept in
+// the incoming order (the roster arrives name-sorted), so a tie never
+// silently crowns whoever happened to be listed or played last.
+function topTies(items, valueOf) {
+  let max = 0;
+  let leaders = [];
+  for (const item of items) {
+    const v = valueOf(item);
+    if (!(v > 0)) continue;
+    if (v > max) {
+      max = v;
+      leaders = [item];
+    } else if (v === max) {
+      leaders.push(item);
     }
   }
+  return leaders.length ? { value: max, items: leaders } : null;
+}
+
+// Each record is { players: [...], value } with EVERY player tied for the
+// lead (not just one), or null when nobody qualifies. Flip7 high score keeps
+// per-player dates, and rivalry returns every pair tied for most games.
+export function computeHallOfFame(players, completedSessions) {
+  const nameById = new Map(players.map((p) => [p.id, p]));
+  const asRecord = (top) => (top ? { value: top.value, players: top.items } : null);
+
+  const allStats = computePlayerStats(players, completedSessions);
+  const mostGamesPlayed = asRecord(topTies(allStats, (r) => r.gamesPlayed));
+  if (mostGamesPlayed) mostGamesPlayed.players = mostGamesPlayed.players.map((r) => nameById.get(r.playerId));
+  const mostWins = asRecord(topTies(allStats, (r) => r.wins));
+  if (mostWins) mostWins.players = mostWins.players.map((r) => nameById.get(r.playerId));
+
+  const longestStreakEver = asRecord(
+    topTies(players, (p) => computePlayerDetail(p.id, players, completedSessions)?.longestStreak || 0)
+  );
 
   // Biggest Achiever: whoever has unlocked the most badges. Runs the exact
   // same achievement engine PlayerDetail uses per player and counts the
   // earned ones, so this can never drift out of sync with what's actually
   // shown as unlocked on someone's own page.
-  for (const p of players) {
-    const count = computeAchievements(p.id, players, completedSessions).filter((b) => b.earned).length;
-    if (count > 0 && (!biggestAchiever || count > biggestAchiever.count)) {
-      biggestAchiever = { player: p, count };
-    }
-  }
+  const biggestAchiever = asRecord(
+    topTies(players, (p) => computeAchievements(p.id, players, completedSessions).filter((b) => b.earned).length)
+  );
 
   // Euchre Royalty: most combined wins across every euchre-* variant
   // (2-player, 3-player, traditional, 15-card, Pick Your Partner).
@@ -593,26 +602,32 @@ export function computeHallOfFame(players, completedSessions) {
       euchreWins.set(id, (euchreWins.get(id) || 0) + 1);
     }
   }
-  for (const [id, wins] of euchreWins) {
-    const player = nameById.get(id);
-    if (player && (!euchreRoyalty || wins > euchreRoyalty.wins)) {
-      euchreRoyalty = { player, wins };
-    }
-  }
+  const euchreRoyalty = asRecord(
+    topTies(players, (p) => euchreWins.get(p.id) || 0)
+  );
 
   // Flip7 High Score: the single best ROUND, not the final game total —
   // Flip7's round-to-round scoring is swingy enough that one big round is
   // its own kind of bragging right, distinct from who won the most games.
+  // Everyone who hit the top score shows up (each player once, with the most
+  // recent time they did it).
+  let flip7HighScore = null; // {value, entries: [{player, completedAt}]}
   for (const session of completedSessions) {
     if (session.gameType !== "flip7") continue;
     const completedAt = session.completedAt?.toDate?.() || null;
     for (const round of session.rounds || []) {
       for (const [id, score] of Object.entries(round.scores || {})) {
-        if (typeof score !== "number") continue;
+        if (typeof score !== "number" || score <= 0) continue;
         const player = nameById.get(id);
         if (!player) continue;
-        if (!flip7HighScore || score > flip7HighScore.score) {
-          flip7HighScore = { player, score, completedAt };
+        if (!flip7HighScore || score > flip7HighScore.value) {
+          flip7HighScore = { value: score, entries: [{ player, completedAt }] };
+        } else if (score === flip7HighScore.value) {
+          const existing = flip7HighScore.entries.find((e) => e.player.id === id);
+          if (!existing) flip7HighScore.entries.push({ player, completedAt });
+          else if (completedAt && (!existing.completedAt || completedAt > existing.completedAt)) {
+            existing.completedAt = completedAt;
+          }
         }
       }
     }
@@ -631,19 +646,14 @@ export function computeHallOfFame(players, completedSessions) {
       opponentSets.set(id, set);
     }
   }
-  for (const [id, set] of opponentSets) {
-    const player = nameById.get(id);
-    if (player && (!tableRegular || set.size > tableRegular.opponentCount)) {
-      tableRegular = { player, opponentCount: set.size };
-    }
-  }
+  const tableRegular = asRecord(topTies(players, (p) => opponentSets.get(p.id)?.size || 0));
 
-  // Rivalry: the pair of players who've faced off (shared a session) the
+  // Rivalry: the pair(s) of players who've faced off (shared a session) the
   // most, with each one's win tally across those shared games. Not a
   // strict 1v1 record — most of these games seat more than two people —
   // just how often each half of the most-frequent pair won when they
-  // were both at the table.
-  let rivalry = null; // {playerA, playerB, gamesTogether, winsA, winsB}
+  // were both at the table. Every pair tied for the most shared games is
+  // returned.
   const pairSessions = new Map(); // "id1|id2" (sorted) -> sessions[]
   for (const session of completedSessions) {
     const ids = (session.players || []).map((p) => p.id);
@@ -656,16 +666,22 @@ export function computeHallOfFame(players, completedSessions) {
       }
     }
   }
+  const pairs = [];
   for (const [key, list] of pairSessions) {
-    if (rivalry && list.length <= rivalry.gamesTogether) continue;
     const [idA, idB] = key.split("|");
     const playerA = nameById.get(idA);
     const playerB = nameById.get(idB);
     if (!playerA || !playerB) continue;
-    const winsA = list.filter((s) => (s.winnerIds || []).includes(idA)).length;
-    const winsB = list.filter((s) => (s.winnerIds || []).includes(idB)).length;
-    rivalry = { playerA, playerB, gamesTogether: list.length, winsA, winsB };
+    pairs.push({
+      playerA,
+      playerB,
+      gamesTogether: list.length,
+      winsA: list.filter((x) => (x.winnerIds || []).includes(idA)).length,
+      winsB: list.filter((x) => (x.winnerIds || []).includes(idB)).length,
+    });
   }
+  const topPairs = topTies(pairs, (r) => r.gamesTogether);
+  const rivalry = topPairs ? { value: topPairs.value, pairs: topPairs.items } : null;
 
   return { mostGamesPlayed, mostWins, longestStreakEver, euchreRoyalty, flip7HighScore, tableRegular, rivalry, biggestAchiever };
 }
