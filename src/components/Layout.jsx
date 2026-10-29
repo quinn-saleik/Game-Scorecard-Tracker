@@ -4,6 +4,7 @@ import SettingsMenu from "./SettingsMenu";
 import WhoAmI from "./WhoAmI";
 import AppIcon from "./AppIcon";
 import FirstRunTour from "./FirstRunTour";
+import TvFinishWatcher from "./TvFinishWatcher";
 import { hasSeenTour } from "../data/tourState";
 
 export default function Layout() {
@@ -35,6 +36,7 @@ export default function Layout() {
         </div>
       </div>
       {tourOpen && <FirstRunTour onClose={() => setTourOpen(false)} />}
+      <TvFinishWatcher />
       <main className="app-main">
         {/* Every route except Home is code-split (see App.jsx) — this
             fallback covers the brief gap while a game's chunk downloads.

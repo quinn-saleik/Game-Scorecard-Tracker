@@ -3,6 +3,17 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-achievement-popup",
+    date: "2026-10-29",
+    title: "Achievement pop-ups",
+    summary: "Achievement pop-ups, par explainer on Stats, play-to score, identity tiles, bigger TV mode, feedback pop-up, fairer win %, favorites.",
+    items: [
+      "When a game finishes and someone earns a new achievement, a pop-up announces it (\"Doug earned 🔥 Hot Streak\"). Tap to dismiss.",
+      "The Game over screen also keeps a \"New achievements\" card.",
+      "TV mode now switches to a big \"Game over\" screen with the winner and any new achievements when the game ends.",
+    ],
+  },
+  {
     id: "2026-10-par-explainer",
     date: "2026-10-29",
     title: "What is par?",

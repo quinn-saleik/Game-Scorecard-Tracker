@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useParams } from "react-router-dom";
+import { setTvWatch } from "../data/tvWatch";
 import PlayerDot from "./PlayerDot";
 
 // A fullscreen, always-dark, oversized scoreboard meant to be read from
@@ -79,12 +81,25 @@ function TvMarker({ rank, leader, dealer, color, avatar, photo }) {
 
 export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) {
   const [open, setOpen] = useState(false);
+  // Every play route is /…/play/:sessionId. Remembered while TV mode is open
+  // so the app can announce the finish after this screen unmounts (see
+  // TvFinishWatcher). Only an explicit close clears it — unmounting because
+  // the game ended must not.
+  const { sessionId } = useParams();
+  function openTv() {
+    if (sessionId) setTvWatch(sessionId);
+    setOpen(true);
+  }
+  function closeTv() {
+    setTvWatch(null);
+    setOpen(false);
+  }
 
   useEffect(() => {
     if (!open) return;
     document.body.style.overflow = "hidden";
     function onKey(e) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") closeTv();
     }
     window.addEventListener("keydown", onKey);
     return () => {
@@ -99,7 +114,7 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
         type="button"
         className="btn ghost small"
         style={{ color: "var(--cream)" }}
-        onClick={() => setOpen(true)}
+        onClick={openTv}
         title="Show a big live scoreboard — hand a second phone or tablet to the table"
       >
         📺 TV mode
@@ -107,7 +122,7 @@ export default function TvMode({ gameName, icon, statusLine, rows, unitLabel }) 
       {open &&
         createPortal(
           <div className="tv-mode-overlay">
-            <button type="button" className="tv-mode-close" onClick={() => setOpen(false)} aria-label="Exit TV mode">
+            <button type="button" className="tv-mode-close" onClick={closeTv} aria-label="Exit TV mode">
               ✕
             </button>
 

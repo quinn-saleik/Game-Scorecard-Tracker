@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { subscribeToSession, rematchSession } from "../data/gameSessions";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { computePlayerDetail } from "../data/stats";
+import { computeNewBadges, groupBadgesByPlayer } from "../data/newBadges";
+import BadgePopup from "../components/BadgePopup";
 import { PLAY_ROUTE } from "../data/gameRoutes";
 import PlayerDot from "../components/PlayerDot";
 import { shortName } from "../data/playerNames";
@@ -67,6 +69,7 @@ export default function Recap() {
   const [cardBlob, setCardBlob] = useState(null);
   const [cardBusy, setCardBusy] = useState(false);
   const [shareResult, setShareResult] = useState(null);
+  const [badgesOpen, setBadgesOpen] = useState(false);
 
   useEffect(() => subscribeToSession(sessionId, setSession), [sessionId]);
   useEffect(() => subscribeToPlayers(setPlayers), []);
@@ -89,6 +92,37 @@ export default function Recap() {
     );
     return () => clearTimeout(t);
   }, [session, fired]);
+
+  // Achievements this game unlocked. Pops up once per device, and only for a
+  // game that just finished (reopening an old recap shouldn't re-announce);
+  // the card further down stays either way.
+  const newBadges = useMemo(
+    () => (session && session.status === "completed" ? computeNewBadges(session, players, completedSessions) : null),
+    [session, players, completedSessions]
+  );
+  const badgeCount = newBadges ? newBadges.length : 0;
+  useEffect(() => {
+    if (!badgeCount) return undefined;
+    const seenKey = `scorecard:badges-seen:${sessionId}`;
+    try {
+      if (localStorage.getItem(seenKey)) return undefined;
+    } catch {
+      // storage blocked — fine, may show again on reload
+    }
+    const doneAt = session?.completedAt?.toDate?.();
+    if (doneAt && Date.now() - doneAt.getTime() > 30 * 60 * 1000) return undefined;
+    const t = setTimeout(() => setBadgesOpen(true), 1200); // after the confetti
+    return () => clearTimeout(t);
+  }, [badgeCount, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function closeBadges() {
+    setBadgesOpen(false);
+    try {
+      localStorage.setItem(`scorecard:badges-seen:${sessionId}`, "1");
+    } catch {
+      // ignore
+    }
+  }
 
   if (!session) return <p className="empty-state">Loading…</p>;
 
@@ -188,6 +222,26 @@ export default function Recap() {
         })}
       </div>
 
+      {newBadges && newBadges.length > 0 && (
+        <div className="card-surface">
+          <h2>🏅 New achievements</h2>
+          {groupBadgesByPlayer(newBadges).map(({ player, badges }) => (
+            <div key={player.id} style={{ marginBottom: 10 }}>
+              <p style={{ fontWeight: 700, margin: "0 0 4px" }}>
+                <PlayerDot color={player.color} avatar={player.avatar} photo={player.photo} />
+                {shortName(player)}
+              </p>
+              {badges.map((b) => (
+                <p key={b.id} style={{ margin: "2px 0 2px 20px" }}>
+                  {b.emoji} <strong>{b.label}</strong>
+                  <span style={{ color: "var(--muted)" }}> — {b.description}</span>
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="card-surface">
         <h2>Final scores</h2>
         <table className="score-table">
@@ -236,6 +290,8 @@ export default function Recap() {
           </>
         )}
       </div>
+
+      {badgesOpen && newBadges && <BadgePopup items={newBadges} onClose={closeBadges} />}
 
       <div className="btn-row">
         <button className="btn primary" onClick={playAgain} disabled={rematching}>

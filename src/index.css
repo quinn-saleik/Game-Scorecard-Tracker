@@ -1021,6 +1021,35 @@ table.score-table td.leader {
 .par-explainer-body li { margin-bottom: 3px; }
 .par-explainer-body h3 { margin: 14px 0 6px; font-size: 15px; color: var(--heading-on-surface, var(--text-on-surface)); }
 
+
+/* TV mode: "Game over" takeover (components/TvFinishWatcher.jsx) */
+.tv-finish {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 3vh;
+  overflow-y: auto;
+}
+.tv-finish-kicker { font-size: clamp(14px, 2.6vh, 26px); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #9fb0e0; }
+.tv-finish-winner { font-size: clamp(30px, 9vh, 96px); font-weight: 800; line-height: 1.05; color: #ffe27a; max-width: 92vw; }
+.tv-finish-badges { width: min(92vw, 720px); display: flex; flex-direction: column; gap: 1.6vh; padding: 2vh 3vw; border-radius: 16px; background: rgba(238, 241, 246, 0.07); }
+.tv-finish-badges-title { font-size: clamp(16px, 3vh, 30px); font-weight: 700; color: #f3f6ff; }
+.tv-finish-badge-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1vh 14px; }
+.tv-finish-badge-name { font-size: clamp(18px, 3.8vh, 38px); font-weight: 700; color: #f3f6ff; }
+.tv-finish-badge-list { display: inline-flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tv-finish-badge { font-size: clamp(16px, 3.2vh, 32px); padding: 0.25em 0.7em; border-radius: 99px; background: rgba(255, 210, 63, 0.2); border: 2px solid #ffd23f; color: #fff3c4; white-space: nowrap; }
+.tv-finish-btn {
+  background: #ffd23f;
+  color: #1a1a1a;
+  border: 0;
+  border-radius: 14px;
+  padding: 0.6em 1.8em;
+  font: inherit;
+  font-size: clamp(16px, 3vh, 28px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* Favorites / Everyone switch (components/ScopeToggle.jsx) */
 .scope-toggle {
   display: inline-flex;
