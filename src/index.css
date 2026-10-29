@@ -998,6 +998,29 @@ table.score-table td.leader {
 }
 .id-remove.placeholder { text-decoration: none; cursor: default; visibility: hidden; }
 
+
+/* Stats: collapsible "What are par and vs par?" explainer */
+.par-explainer { padding: 0; }
+.par-explainer > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-on-surface);
+  cursor: pointer;
+  list-style: none;
+}
+.par-explainer > summary::-webkit-details-marker { display: none; }
+.par-explainer > summary::after { content: "▾"; margin-left: auto; color: var(--muted); transition: transform 0.15s ease; }
+.par-explainer[open] > summary::after { transform: rotate(180deg); }
+.par-explainer-body { padding: 0 14px 14px; font-size: 14px; line-height: 1.5; color: var(--text-on-surface); }
+.par-explainer-body p, .par-explainer-body ul { margin: 0 0 10px; }
+.par-explainer-body ul { padding-left: 20px; }
+.par-explainer-body li { margin-bottom: 3px; }
+.par-explainer-body h3 { margin: 14px 0 6px; font-size: 15px; color: var(--heading-on-surface, var(--text-on-surface)); }
+
 /* Favorites / Everyone switch (components/ScopeToggle.jsx) */
 .scope-toggle {
   display: inline-flex;

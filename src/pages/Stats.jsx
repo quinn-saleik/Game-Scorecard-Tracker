@@ -8,7 +8,7 @@ import {
   restoreSession,
   deleteSession,
 } from "../data/gameSessions";
-import { computePlayerStats, computeGameStats, gameGroupLabel, MIN_GAMES_FOR_RATING } from "../data/stats";
+import { computePlayerStats, computeGameStats, gameGroupLabel } from "../data/stats";
 import { subscribeToCustomGames } from "../data/customGames";
 import { useVisiblePlayers, useInScope, useSessionFilter } from "../data/favoriteVisibility";
 import ScopeToggle from "../components/ScopeToggle";
@@ -129,6 +129,40 @@ export default function Stats() {
         <span className="suit red">♦</span> Stats
       </h1>
       <ScopeToggle players={players} />
+      <details className="card-surface par-explainer">
+        <summary>
+          <span aria-hidden="true">📏</span>
+          <span>What are “par” and “vs par”?</span>
+        </summary>
+        <div className="par-explainer-body">
+          <p>
+            <strong>Par</strong> is the win rate you’d get from luck alone. In a 2-player game that’s 50%. With 4,
+            it’s 25%, and with 8, it’s 12.5%.
+          </p>
+          <p>
+            <strong>Vs par</strong> compares your wins to par:
+          </p>
+          <ul>
+            <li><strong>1.0×</strong> means you win exactly as often as luck predicts.</li>
+            <li><strong>2.0×</strong> means you win twice as often as luck.</li>
+            <li><strong>0.5×</strong> means you win half as often.</li>
+          </ul>
+          <p>
+            A green <span className="par-good">▲</span> means at or above par, and a red{" "}
+            <span className="par-bad">▼</span> means below.
+          </p>
+          <h3>Why not just use win percentage?</h3>
+          <p>
+            Win % depends on how many people are playing. If you play Euchre all day, you’ll hover around 50%. In a
+            10-player game of Oh Heck, your win % will be lower, even if you’re playing just as well.
+          </p>
+          <p>
+            Winning 2 of 5 games is 40% either way. But luck alone gives you about 10% in a 10-player game of Oh
+            Heck, and 50% in Euchre. So 40% in Oh Heck is about 4× par, while 40% in Euchre is below par (0.8×). Vs
+            par shows what win % hides.
+          </p>
+        </div>
+      </details>
 
       {loading ? (
         <p className="empty-state">Loading…</p>
@@ -225,13 +259,6 @@ export default function Stats() {
                   ))}
                 </tbody>
               </table>
-            )}
-            {visiblePlayerStats.length > 0 && (
-              <p style={{ color: "var(--muted)", fontSize: 12, margin: "10px 0 0", lineHeight: 1.45 }}>
-                <strong>par</strong> is the win % luck alone would give you (a 2-player game is 50%, an 8-player
-                game is 12.5%). <strong>vs par</strong> is your wins divided by that: 1.0× is exactly par, higher is
-                better. It shows once you've played {MIN_GAMES_FOR_RATING} games.
-              </p>
             )}
           </div>
 

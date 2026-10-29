@@ -3,6 +3,15 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-par-explainer",
+    date: "2026-10-29",
+    title: "What is par?",
+    summary: "Par explainer on Stats, play-to score, new identity tiles, bigger TV mode, feedback pop-up, fairer win %, favorites, new icons.",
+    items: [
+      "Stats now has a \"What are par and vs par?\" banner at the top. Tap it for a plain-English explanation of why a win % in a big game isn't the same as one in a 2-player game.",
+    ],
+  },
+  {
     id: "2026-10-identity-tiles",
     date: "2026-10-14",
     title: "Identity tiles",
