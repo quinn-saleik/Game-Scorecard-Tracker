@@ -12,8 +12,9 @@ import {
   setPlayerPhoto,
   updatePlayerName,
   subscribeToPlayers,
+  setPlayerFavorites,
 } from "../data/players";
-import FavoritesPicker from "../components/FavoritesPicker";
+import FavoritesPopup from "../components/FavoritesPopup";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { subscribeToCustomGames } from "../data/customGames";
 import { computePlayerDetail, computeAchievements, MIN_GAMES_FOR_RATING } from "../data/stats";
@@ -29,10 +30,10 @@ import { shortName } from "../data/playerNames";
 // One of the three big Identity tiles: tap the circle to set/change it,
 // "Remove" appears underneath once it's set. The photo tile is a <label>
 // for the hidden file input instead of a button.
-function IdTile({ label, active, onClick, htmlFor, onRemove, busy, filled, children }) {
+function IdTile({ label, active, onClick, htmlFor, onRemove, removeLabel = "Remove", busy, filled, children }) {
   const circleProps = {
     className: `id-circle ${filled ? "filled" : ""} ${active ? "active" : ""}`,
-    "aria-label": `${filled ? "Change" : "Set"} ${label.toLowerCase()}`,
+    "aria-label": label === "Favorites" ? "Edit favorites" : `${filled ? "Change" : "Set"} ${label.toLowerCase()}`,
   };
   return (
     <div className="id-tile">
@@ -43,7 +44,7 @@ function IdTile({ label, active, onClick, htmlFor, onRemove, busy, filled, child
       )}
       <span className="id-label">{label}</span>
       {onRemove ? (
-        <button type="button" className="id-remove" onClick={onRemove} disabled={busy}>Remove</button>
+        <button type="button" className="id-remove" onClick={onRemove} disabled={busy}>{removeLabel}</button>
       ) : (
         <span className="id-remove placeholder" aria-hidden="true">&nbsp;</span>
       )}
@@ -65,6 +66,7 @@ export default function Me() {
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [pickerOpen, setPickerOpen] = useState(null); // "color" | "avatar" | null
+  const [favOpen, setFavOpen] = useState(false);
 
   useEffect(() => {
     let playersLoaded = false;
@@ -193,6 +195,10 @@ export default function Me() {
 
   const detail = computePlayerDetail(me.id, players, sessions, customGames);
   const badges = computeAchievements(me.id, players, sessions);
+  const earnedCount = badges.filter((b) => b.earned).length;
+  const sortedBadges = [...badges.filter((b) => b.earned), ...badges.filter((b) => !b.earned)]; // earned first, list order kept
+  const activeIds = new Set(players.filter((p) => p.active && p.id !== me.id).map((p) => p.id));
+  const favCount = (me.favoriteIds || []).filter((id) => activeIds.has(id)).length;
 
   return (
     <div>
@@ -200,6 +206,8 @@ export default function Me() {
         <PlayerDot color={me.color} avatar={me.avatar} photo={me.photo} />
         {me.name}
       </h1>
+
+      {favOpen && <FavoritesPopup player={me} players={players} onClose={() => setFavOpen(false)} />}
 
       <div className="card-surface">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -246,6 +254,18 @@ export default function Me() {
             filled={!!me.photo}
           >
             {me.photo ? <img src={me.photo} alt="" className="id-photo" /> : <span className="id-empty">📷</span>}
+          </IdTile>
+          <IdTile
+            label="Favorites"
+            active={favOpen}
+            onClick={() => setFavOpen(true)}
+            onRemove={favCount > 0 ? () => setPlayerFavorites(me.id, []) : null}
+            removeLabel="Clear"
+            busy={busy}
+            filled={favCount > 0}
+          >
+            <span className="id-emoji">⭐</span>
+            {favCount > 0 && <span className="id-count">{favCount}</span>}
           </IdTile>
           <input
             id="me-photo-input"
@@ -319,16 +339,6 @@ export default function Me() {
       </div>
 
       <div className="card-surface">
-        <h2>Favorites</h2>
-        <p style={{ color: "var(--muted)", fontSize: 13, marginTop: -6 }}>
-          Star the people you usually play with. Player pickers, Stats, and the Hall of Fame
-          show just you and your favorites. Pick nobody to see everyone, or tap "Everyone" on
-          any of those screens for a quick look at the full list.
-        </p>
-        <FavoritesPicker player={me} players={players} />
-      </div>
-
-      <div className="card-surface">
         <h2>Overview</h2>
         <table className="score-table">
           <tbody>
@@ -341,16 +351,6 @@ export default function Me() {
               <td>vs par <span style={{ color: "var(--muted)", fontSize: 12 }}>(1.0× = luck)</span></td>
               <td>{detail.gamesPlayed >= MIN_GAMES_FOR_RATING ? <ParBadge player={detail} /> : `needs ${MIN_GAMES_FOR_RATING}+ games`}</td>
             </tr>
-            <tr><td>Most played</td><td>{detail.favoriteGame}</td></tr>
-            <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card-surface">
-        <h2>Streaks</h2>
-        <table className="score-table">
-          <tbody>
             <tr>
               <td>Current win streak</td>
               <td>{detail.currentStreak > 0 ? `🔥 ${detail.currentStreak} game${detail.currentStreak > 1 ? "s" : ""}` : "—"}</td>
@@ -359,8 +359,38 @@ export default function Me() {
               <td>Longest win streak</td>
               <td>{detail.longestStreak > 0 ? `${detail.longestStreak} game${detail.longestStreak > 1 ? "s" : ""}` : "—"}</td>
             </tr>
+            <tr><td>Most played</td><td>{detail.favoriteGame}</td></tr>
+            <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="card-surface">
+        <h2>Achievements <span style={{ color: "var(--muted)", fontSize: 14, fontWeight: 600 }}>{earnedCount} of {badges.length}</span></h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {sortedBadges.map((b) => (
+            <div
+              key={b.id}
+              title={b.description}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: 84,
+                padding: "10px 6px",
+                borderRadius: 10,
+                textAlign: "center",
+                background: b.earned ? "var(--card-white)" : "transparent",
+                border: `2px solid ${b.earned ? "var(--gold, var(--gold))" : "var(--border-soft)"}`,
+                opacity: b.earned ? 1 : 0.6,
+              }}
+            >
+              <span style={{ fontSize: 26 }}>{b.emoji}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{b.label}</span>
+              <span style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>{b.description}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="card-surface">
@@ -385,34 +415,6 @@ export default function Me() {
             </tbody>
           </table>
         )}
-      </div>
-
-      <div className="card-surface">
-        <h2>Achievements</h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-          {badges.map((b) => (
-            <div
-              key={b.id}
-              title={b.description}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                width: 84,
-                padding: "10px 6px",
-                borderRadius: 10,
-                textAlign: "center",
-                background: b.earned ? "var(--card-white)" : "transparent",
-                border: `2px solid ${b.earned ? "var(--gold, var(--gold))" : "var(--border-soft)"}`,
-                opacity: b.earned ? 1 : 0.6,
-              }}
-            >
-              <span style={{ fontSize: 26 }}>{b.emoji}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>{b.label}</span>
-              <span style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>{b.description}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="btn-row" style={{ marginTop: 4 }}>

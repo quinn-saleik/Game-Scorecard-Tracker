@@ -8,6 +8,7 @@ export const CHANGELOG = [
     title: "Just log who won",
     summary: "13 new achievements, custom games can skip scoring, Most played, Rivalry compare, achievement pop-ups, play-to score, identity tiles, bigger TV mode.",
     items: [
+      "Me tab cleanup: the Me icon is now a star, Favorites is a tile in Identity (tap for the list), win streaks moved into Overview, and Achievements sits right below it, earned ones first.",
       "Lone Wolf, Nil Streak and Solo Streak achievements are retired.",
       "13 new achievements: Dominant, Champion, Underdog, Specialist, Master, Globetrotter, Night Owl, Loyal, Nemesis, Streak Breaker, Phase Master, Dealer's Luck and Sequence Sweep. They count your past games too.",
       "Custom games have a new \"Just who won\" option: pick who's playing, then who won. No scores to enter. Great for games like Sequence.",

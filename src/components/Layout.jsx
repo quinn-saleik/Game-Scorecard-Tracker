@@ -54,7 +54,7 @@ export default function Layout() {
           to="/me"
           className={({ isActive }) => (isActive ? "active" : "")}
         >
-          <span className="nav-icon">👤</span>
+          <span className="nav-icon nav-star">⭐</span>
           Me
         </NavLink>
         <NavLink to="/stats" className={({ isActive }) => (isActive ? "active" : "")}>

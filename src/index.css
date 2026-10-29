@@ -499,6 +499,10 @@ h3 {
   background: var(--gold);
   border-color: var(--outline);
 }
+/* A gold star on the gold active circle disappears; flip that circle dark. */
+.nav-bar a.active .nav-star {
+  background: var(--outline);
+}
 
 /* Top bar — solid midnight (also under the iPhone status bar, so there's no
    fade), stuck to the top. Padding mirrors the page column so the contents
@@ -965,8 +969,10 @@ table.score-table td.leader {
 .id-tiles { display: flex; justify-content: space-around; gap: 8px; padding: 8px 0 4px; }
 .id-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1 1 0; min-width: 0; }
 .id-circle {
-  width: 76px;
-  height: 76px;
+  position: relative;
+  width: 100%;
+  max-width: 76px;
+  aspect-ratio: 1;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -985,6 +991,20 @@ table.score-table td.leader {
 .id-emoji { font-size: 38px; line-height: 1; }
 .id-empty { font-size: 30px; line-height: 1; opacity: 0.55; }
 .id-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
+.id-count {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--gold);
+  color: #1b1f2a;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
 .id-label { font-weight: 700; font-size: 14px; color: var(--text-on-surface); }
 .id-remove {
   background: none;
