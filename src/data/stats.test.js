@@ -158,30 +158,6 @@ describe("computeAchievements", () => {
     expect(byId["well-rounded"]).toBe(false); // only 2 distinct games, needs 5
   });
 
-  it("awards Went Alone only when the bidder went alone AND made the bid", () => {
-    const madeIt = [
-      makeSession({
-        id: "s1",
-        gameType: "euchre-partner",
-        playerIds: ["p1", "p2", "p3"],
-        rounds: [{ bidderId: "p1", partnerId: "none", bid: 3, tricks: 3 }],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, madeIt).find((b) => b.id === "went-alone").earned).toBe(true);
-
-    const wentAloneButMissed = [
-      makeSession({
-        id: "s1",
-        gameType: "euchre-partner",
-        playerIds: ["p1", "p2", "p3"],
-        rounds: [{ bidderId: "p1", partnerId: "none", bid: 3, tricks: 2 }],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, wentAloneButMissed).find((b) => b.id === "went-alone").earned).toBe(false);
-  });
-
   it("awards Perfect Game only when every round hit the bid, and Zero Hero only when every round took zero tricks", () => {
     const perfect = [
       makeSession({

@@ -117,12 +117,18 @@ describe("game-specific badges", () => {
     expect(earned("dealers-luck", "p1", [game({ gameType: "flip7", ids: ["p1", "p2"], win: ["p1"], at: t(1) })])).toBe(false);
   });
 
-  it("Sequence Sweep: 3 winner-only wins in a row", () => {
-    const wo = (win, d) => game({ gameType: "other", ids: ["p1", "p2"], win, config: { customName: "Sequence", winnerOnly: true }, at: t(d) });
-    expect(earned("sequence-sweep", "p1", [wo(["p1"], 1), wo(["p1"], 2), wo(["p1"], 3)])).toBe(true);
-    expect(earned("sequence-sweep", "p1", [wo(["p1"], 1), wo(["p2"], 2), wo(["p1"], 3), wo(["p1"], 4)])).toBe(false);
-    // scored games in between don't break it
-    const scored = game({ gameType: "flip7", ids: ["p1", "p2"], win: ["p2"], at: t(2, 30) });
-    expect(earned("sequence-sweep", "p1", [wo(["p1"], 1), scored, wo(["p1"], 3), wo(["p1"], 4)])).toBe(true);
+  it("Sequence Sweep: 3 wins in a row in the custom game named Sequence", () => {
+    const seq = (win, d, name = "Sequence", extra = {}) =>
+      game({ gameType: "other", ids: ["p1", "p2"], win, config: { customName: name, ...extra }, at: t(d) });
+    expect(earned("sequence-sweep", "p1", [seq(["p1"], 1), seq(["p1"], 2), seq(["p1"], 3)])).toBe(true);
+    expect(earned("sequence-sweep", "p1", [seq(["p1"], 1), seq(["p2"], 2), seq(["p1"], 3), seq(["p1"], 4)])).toBe(false);
+    // other games (scored or not, any name) neither count nor break the run
+    const flip = game({ gameType: "flip7", ids: ["p1", "p2"], win: ["p2"], at: t(2, 30) });
+    const otherCustom = seq(["p2"], 2, "Poker", { winnerOnly: true });
+    expect(earned("sequence-sweep", "p1", [seq(["p1"], 1), flip, otherCustom, seq(["p1"], 3), seq(["p1"], 4)])).toBe(true);
+    // wins in some other custom game don't earn it
+    expect(earned("sequence-sweep", "p1", [seq(["p1"], 1, "Poker"), seq(["p1"], 2, "Poker"), seq(["p1"], 3, "Poker")])).toBe(false);
+    // works for a scored Sequence game too, any capitalization
+    expect(earned("sequence-sweep", "p1", [seq(["p1"], 1, "sequence"), seq(["p1"], 2, "SEQUENCE"), seq(["p1"], 3, "Sequence", { winnerOnly: true })])).toBe(true);
   });
 });

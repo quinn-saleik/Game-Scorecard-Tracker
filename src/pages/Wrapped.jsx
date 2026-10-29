@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { subscribeToPlayers } from "../data/players";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import { useWhoamiId } from "../data/whoami";
 import { computeWrapped } from "../data/wrapped";
-import { wrappedYear } from "../data/wrappedGate";
+import { wrappedYears } from "../data/wrappedGate";
 import { shortName } from "../data/playerNames";
 
 // Scorecard Wrapped — full-screen, tap-through story slides: your year, then
@@ -48,6 +48,7 @@ function buildSlides(w) {
         small: `You played it ${plural(me.favoriteGame.count, "time", "times")}.`,
       });
     }
+    if (me.wins > 0)
     add({
       kicker: "Your wins",
       big: me.wins,
@@ -56,7 +57,8 @@ function buildSlides(w) {
         `${me.winPct}% win rate` +
         (me.bestGame && me.bestGame.wins >= 2 ? ` · best at ${me.bestGame.label} (${me.bestGame.wins} wins)` : ""),
     });
-    if (me.rankOf > 1) {
+    // Only brag-worthy standings: top half of the family, never "#11 of 11".
+    if (me.rankOf > 1 && me.winRank <= Math.ceil(me.rankOf / 2)) {
       add({
         kicker: "Family standings",
         big: `#${me.winRank}`,
@@ -64,15 +66,13 @@ function buildSlides(w) {
         small: me.winRank === 1 ? "👑 Family champion" : undefined,
       });
     }
-    if (me.winIndex != null) {
-      const beat = me.winIndex >= 1;
+    // Only when you beat luck — a below-par year isn't one to celebrate.
+    if (me.winIndex != null && me.winIndex >= 1) {
       add({
         kicker: "Versus par",
         big: `${me.winIndex.toFixed(1)}×`,
-        label: beat ? "better than luck" : "of what luck predicts",
-        small: beat
-          ? `Luck alone says ${me.parPct}%. You won ${me.winPct}%.`
-          : `Luck alone says ${me.parPct}%. You won ${me.winPct}%. Revenge in ${w.year + 1}.`,
+        label: "better than luck",
+        small: `Luck alone says ${me.parPct}%. You won ${me.winPct}%.`,
       });
     }
     if (me.streak >= 2) {
@@ -108,6 +108,15 @@ function buildSlides(w) {
     }
   }
 
+  if (!me) {
+    add({
+      kicker: `Scorecard Wrapped · ${w.year}`,
+      big: "You're not signed in",
+      bigText: true,
+      small: "Pick who you are to unlock your own year. For now, here's the whole family's.",
+      action: { label: "Pick who you are", to: "/me" },
+    });
+  }
   add({
     kicker: me ? "Now, the whole family" : `Scorecard Wrapped · ${w.year}`,
     big: f.games,
@@ -174,6 +183,7 @@ function shareText(w) {
 
 export default function Wrapped({ preview = false }) {
   const navigate = useNavigate();
+  const { year: yearParam } = useParams();
   const whoamiId = useWhoamiId();
   const [players, setPlayers] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -197,7 +207,12 @@ export default function Wrapped({ preview = false }) {
     };
   }, []);
 
-  const year = preview ? new Date().getFullYear() : wrappedYear(new Date());
+  const available = wrappedYears(new Date());
+  const year = preview
+    ? new Date().getFullYear()
+    : available.includes(Number(yearParam))
+      ? Number(yearParam)
+      : available[0] ?? null;
   const wrapped = useMemo(
     () => (year && ready.p && ready.s ? computeWrapped(year, players, sessions, whoamiId) : null),
     [year, ready, players, sessions, whoamiId]
@@ -294,6 +309,9 @@ export default function Wrapped({ preview = false }) {
           </ul>
         )}
         {s.small && <div className="wr-small">{s.small}</div>}
+        {s.action && (
+          <button type="button" className="wr-btn" onClick={() => navigate(s.action.to)}>{s.action.label}</button>
+        )}
         {s.finale && (
           <div className="wr-finale">
             <button type="button" className="wr-btn" onClick={share}>📤 Share my year</button>

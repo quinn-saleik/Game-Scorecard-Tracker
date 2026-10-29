@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeWrapped, sessionsInYear } from "./wrapped";
-import { wrappedYear } from "./wrappedGate";
+import { wrappedYear, wrappedYears } from "./wrappedGate";
 
 const ts = (iso) => ({ toDate: () => new Date(iso) });
 const players = [
@@ -73,5 +73,14 @@ describe("wrappedYear (Dec 25 gate)", () => {
     expect(wrappedYear(new Date(2026, 11, 31))).toBe(2026);
     expect(wrappedYear(new Date(2027, 0, 10))).toBe(2026);
     expect(wrappedYear(new Date(2027, 1, 1))).toBeNull();
+  });
+});
+
+describe("wrappedYears (archive)", () => {
+  it("is empty before the first Dec 25 and lists past years newest first afterward", () => {
+    expect(wrappedYears(new Date(2026, 11, 24))).toEqual([]);
+    expect(wrappedYears(new Date(2026, 11, 25))).toEqual([2026]);
+    expect(wrappedYears(new Date(2027, 5, 1))).toEqual([2026]); // still reachable long after January
+    expect(wrappedYears(new Date(2027, 11, 26))).toEqual([2027, 2026]);
   });
 });

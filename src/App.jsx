@@ -78,6 +78,7 @@ function App() {
         {/* Unlinked — which badges has anyone earned? */}
         <Route path="/badges-audit" element={<BadgeAudit />} />
         <Route path="/wrapped" element={<Wrapped />} />
+        <Route path="/wrapped/:year" element={<Wrapped />} />
         {/* Unlinked — lets the owner test Wrapped before Dec 25 (data/wrappedGate.js). */}
         <Route path="/wrapped/preview" element={<Wrapped preview />} />
         <Route path="/hall-of-fame" element={<HallOfFame />} />

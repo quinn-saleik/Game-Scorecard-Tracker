@@ -26,6 +26,7 @@ import PlayerDot from "../components/PlayerDot";
 import ParBadge from "../components/ParBadge";
 import { formatLastPlayed } from "../data/format";
 import { shortName } from "../data/playerNames";
+import { wrappedYears } from "../data/wrappedGate";
 
 // One of the three big Identity tiles: tap the circle to set/change it,
 // "Remove" appears underneath once it's set. The photo tile is a <label>
@@ -416,6 +417,17 @@ export default function Me() {
           </table>
         )}
       </div>
+
+      {wrappedYears().length > 0 && (
+        <div className="card-surface">
+          <h2>🎁 Scorecard Wrapped</h2>
+          <div className="btn-row">
+            {wrappedYears().map((y) => (
+              <Link key={y} className="btn ghost" to={`/wrapped/${y}`}>{y} →</Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="btn-row" style={{ marginTop: 4 }}>
         <button

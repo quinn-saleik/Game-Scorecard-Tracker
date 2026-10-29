@@ -417,6 +417,9 @@ function phaseMaster(playerId, mySessions) {
   });
 }
 
+// The custom game named "Sequence" (any capitalization), scored or just-who-won.
+const isSequence = (s) => s.gameType === "other" && slug(s.config?.customName) === "sequence";
+
 const DEALER_GAMES = new Set(["oh-heck", "phase-10", "royal-rum"]);
 function longestStreakOf(sessions, playerId) {
   let best = 0;
@@ -443,24 +446,10 @@ const BADGE_DEFS = [
     earned: (d) => new Set(d.history.map((h) => h.gameLabel)).size >= 5,
   },
   {
-    id: "went-alone",
-    emoji: "🐺",
-    label: "Went Alone",
-    description: "Went alone in Pick Your Partner and made the bid",
-    earned: (d, sessions) =>
-      sessions.some(
-        (s) =>
-          s.gameType === "euchre-partner" &&
-          (s.rounds || []).some(
-            (r) => r.bidderId === d.playerId && r.partnerId === "none" && (r.tricks || 0) >= (r.bid || 0)
-          )
-      ),
-  },
-  {
     id: "perfect-game",
     emoji: "💯",
     label: "Perfect Game",
-    description: "Hit your bid (+10 bonus) every round of an Oh Heck! game",
+    description: "Hit your bid every round of an Oh Heck! game",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "oh-heck") return false;
@@ -472,7 +461,7 @@ const BADGE_DEFS = [
     id: "zero-hero",
     emoji: "🥚",
     label: "Zero Hero",
-    description: "Took zero tricks every round of an entire Oh Heck! game",
+    description: "Took zero tricks every round of an Oh Heck! game",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "oh-heck") return false;
@@ -484,7 +473,7 @@ const BADGE_DEFS = [
     id: "untouchable",
     emoji: "🛡️",
     label: "Untouchable",
-    description: "Finished a 3-player Euchre game without ever being set",
+    description: "Went a 3-player Euchre game without being set",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "euchre-3p") return false;
@@ -496,14 +485,14 @@ const BADGE_DEFS = [
     id: "survivor",
     emoji: "🩹",
     label: "Survivor",
-    description: "Finished a 3-player Euchre game with 25+ points",
+    description: "Finished 3-player Euchre with 25+ points",
     earned: (d, sessions) => sessions.some((s) => s.gameType === "euchre-3p" && (s.totals?.[d.playerId] || 0) >= 25),
   },
   {
     id: "double-trouble",
     emoji: "⚔️",
     label: "Double Trouble",
-    description: "Both other players got set on the exact same round of a 3-player Euchre game",
+    description: "Both others got set on the same hand of 3-player Euchre",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "euchre-3p") return false;
@@ -517,7 +506,7 @@ const BADGE_DEFS = [
     id: "comeback-kid",
     emoji: "📈",
     label: "Comeback Kid",
-    description: "Climbed to 20+ points in 3-player Euchre and still won",
+    description: "Reached 20+ in 3-player Euchre and still won",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "euchre-3p" || !(s.winnerIds || []).includes(d.playerId)) return false;
@@ -535,7 +524,7 @@ const BADGE_DEFS = [
     id: "shutout",
     emoji: "🥊",
     label: "Shutout",
-    description: "Won a Traditional (2v2) Euchre game without the other team ever scoring a point",
+    description: "Won 2v2 Euchre without the other team scoring",
     earned: (d, sessions) =>
       sessions.some((s) => {
         if (s.gameType !== "euchre-traditional" || !(s.winnerIds || []).includes(d.playerId)) return false;
@@ -549,7 +538,7 @@ const BADGE_DEFS = [
     id: "skunked",
     emoji: "💀",
     label: "Skunked",
-    description: "Took all 12 points in a single 2-player Euchre hand — your opponent got zero",
+    description: "Took all 12 points in one 2-player Euchre hand",
     earned: (d, sessions) =>
       sessions.some(
         (s) =>
@@ -561,7 +550,7 @@ const BADGE_DEFS = [
     id: "big-flip",
     emoji: "💥",
     label: "Big Flip",
-    description: "Scored 75+ points in a single Flip7 round",
+    description: "Scored 75+ in one Flip7 round",
     earned: (d, sessions) =>
       sessions.some(
         (s) => s.gameType === "flip7" && (s.rounds || []).some((r) => (r.scores?.[d.playerId] || 0) >= 75)
@@ -589,7 +578,7 @@ const BADGE_DEFS = [
     id: "clean-sweep",
     emoji: "🧹",
     label: "Clean Sweep",
-    description: "Won every game played on a single calendar day (2+ games)",
+    description: "Won every game in a day (2+ games)",
     earned: (d, sessions) => {
       const byDay = new Map(); // "YYYY-MM-DD" -> { games, wins }
       for (const s of sessions) {
@@ -610,7 +599,7 @@ const BADGE_DEFS = [
     id: "underdog",
     emoji: "🐕",
     label: "Underdog",
-    description: "Won a game after being dead last at the halfway point",
+    description: "Won after being last at the halfway point",
     earned: (d, sessions) => sessions.some((s) => didWin(s, d.playerId) && wasLastAtHalf(s, d.playerId)),
   },
   {
@@ -645,7 +634,7 @@ const BADGE_DEFS = [
     id: "loyal",
     emoji: "📅",
     label: "Loyal",
-    description: "Played on 5 different days in one month",
+    description: "Played on 5 days in one month",
     earned: (d, sessions) => maxDaysInOneMonth(sessions) >= 5,
   },
   {
@@ -659,21 +648,21 @@ const BADGE_DEFS = [
     id: "streak-breaker",
     emoji: "✂️",
     label: "Streak Breaker",
-    description: "Ended someone's 3+ game win streak",
+    description: "Ended a 3+ game win streak",
     earned: (d, sessions, all) => brokeStreak(d.playerId, all),
   },
   {
     id: "phase-master",
     emoji: "🧗",
     label: "Phase Master",
-    description: "Cleared all 10 phases in Phase 10 without missing one",
+    description: "Cleared all 10 phases without missing one",
     earned: (d, sessions) => phaseMaster(d.playerId, sessions),
   },
   {
     id: "dealers-luck",
     emoji: "🃏",
     label: "Dealer's Luck",
-    description: "Won a game where you dealt the first hand (Oh Heck!, Phase 10, Royal Rum)",
+    description: "Won a game you dealt first in",
     earned: (d, sessions) =>
       sessions.some((s) => DEALER_GAMES.has(s.gameType) && s.players?.[0]?.id === d.playerId && didWin(s, d.playerId)),
   },
@@ -681,15 +670,15 @@ const BADGE_DEFS = [
     id: "sequence-sweep",
     emoji: "🏁",
     label: "Sequence Sweep",
-    description: "Won 3 \"just who won\" games in a row",
+    description: "Won 3 Sequence games in a row",
     earned: (d, sessions) =>
-      longestStreakOf(sessions.filter((s) => s.config?.winnerOnly), d.playerId) >= 3,
+      longestStreakOf(sessions.filter(isSequence), d.playerId) >= 3,
   },
   {
     id: "camera-ready",
     emoji: "📸",
     label: "Camera Ready",
-    description: "Set a color, an emoji avatar, and a photo — the full profile",
+    description: "Set a color, avatar and photo",
     earned: (d) => Boolean(d.color && d.avatar && d.photo),
   },
 ];

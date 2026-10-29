@@ -13,3 +13,15 @@ export function wrappedYear(now = new Date()) {
   if (m === 0) return now.getFullYear() - 1;
   return null;
 }
+
+// First year Wrapped ever runs. From each year's Dec 25 onward that year's
+// Wrapped stays reachable (newest first) so it can be revisited after the
+// January window closes — the Me tab lists them.
+export const FIRST_WRAPPED_YEAR = 2026;
+export function wrappedYears(now = new Date()) {
+  const out = [];
+  for (let y = now.getFullYear(); y >= FIRST_WRAPPED_YEAR; y--) {
+    if (now >= new Date(y, WRAPPED_START_MONTH, WRAPPED_START_DAY)) out.push(y);
+  }
+  return out;
+}
