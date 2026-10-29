@@ -3,6 +3,16 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-winner-only",
+    date: "2026-10-29",
+    title: "Just log who won",
+    summary: "Custom games can skip scoring, Most played, Rivalry compare, achievement pop-ups, play-to score, identity tiles, bigger TV mode.",
+    items: [
+      "Custom games have a new \"Just who won\" option: pick who's playing, then who won. No scores to enter. Great for games like Sequence.",
+      "\"Favorite game\" is now called \"Most played\" everywhere.",
+    ],
+  },
+  {
     id: "2026-10-rivalry",
     date: "2026-10-29",
     title: "Rivalry compare",

@@ -46,7 +46,7 @@ function buildSteps() {
     {
       icon: "📊",
       title: "Stats keep themselves",
-      body: "Every finished game is logged automatically — win streaks, favorite games, head-to-head records, all on the Stats and Hall of Fame tabs. Nothing to type in twice.",
+      body: "Every finished game is logged automatically — win streaks, most-played games, head-to-head records, all on the Stats and Hall of Fame tabs. Nothing to type in twice.",
     },
     {
       icon: "📺",

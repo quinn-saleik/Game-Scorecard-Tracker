@@ -88,13 +88,13 @@ export default function OngoingGames({ gameType, customName }) {
         return (
           <div key={session.id} style={{ borderTop: "1px solid var(--divider)", paddingTop: 12, marginTop: 12 }}>
             <p style={{ margin: "0 0 6px", fontWeight: 700 }}>
-              {label} — {unit} {(session.rounds?.length || 0) + 1}
+              {session.config?.winnerOnly ? `${label} — in progress` : `${label} — ${unit} ${(session.rounds?.length || 0) + 1}`}
             </p>
             <p style={{ margin: "0 0 10px", color: "var(--muted)" }}>
               {ranked.map((p, i) => (
                 <span key={p.id}>
                   {i > 0 && "  •  "}
-                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}: {totals[p.id] ?? 0}
+                  <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}{session.config?.winnerOnly ? "" : `: ${totals[p.id] ?? 0}`}
                 </span>
               ))}
             </p>

@@ -341,7 +341,7 @@ export default function Me() {
               <td>vs par <span style={{ color: "var(--muted)", fontSize: 12 }}>(1.0× = luck)</span></td>
               <td>{detail.gamesPlayed >= MIN_GAMES_FOR_RATING ? <ParBadge player={detail} /> : `needs ${MIN_GAMES_FOR_RATING}+ games`}</td>
             </tr>
-            <tr><td>Favorite game</td><td>{detail.favoriteGame}</td></tr>
+            <tr><td>Most played</td><td>{detail.favoriteGame}</td></tr>
             <tr><td>Last played</td><td>{formatLastPlayed(detail.lastPlayedAt)}</td></tr>
           </tbody>
         </table>

@@ -100,6 +100,7 @@ export default function GameHistoryDetail() {
 
   const rounds = session.rounds || [];
   const totals = session.totals || {};
+  const winnerOnly = Boolean(session.config?.winnerOnly);
   const players = session.players || [];
   const winners = players.filter((p) => (session.winnerIds || []).includes(p.id));
   const completedAt = session.completedAt?.toDate?.() || null;
@@ -157,7 +158,7 @@ export default function GameHistoryDetail() {
                   onClick={() => toggleWinner(p.id)}
                 >
                   <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
-                  {shortName(p)} ({totals[p.id] || 0})
+                  {shortName(p)}{winnerOnly ? "" : ` (${totals[p.id] || 0})`}
                 </span>
               ))}
             </div>
@@ -185,7 +186,7 @@ export default function GameHistoryDetail() {
         )}
 
         <table className="score-table">
-          <thead><tr><th>Player</th><th>Total</th></tr></thead>
+          <thead><tr><th>Player</th>{!winnerOnly && <th>Total</th>}</tr></thead>
           <tbody>
             {players
               .slice()
@@ -193,13 +194,18 @@ export default function GameHistoryDetail() {
               .map((p) => (
                 <tr key={p.id}>
                   <td><PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />{shortName(p)}</td>
-                  <td className={(session.winnerIds || []).includes(p.id) ? "leader" : ""}>{totals[p.id] || 0}</td>
+                  {winnerOnly ? (
+                    <td className={(session.winnerIds || []).includes(p.id) ? "leader" : ""}>{(session.winnerIds || []).includes(p.id) ? "🏆" : ""}</td>
+                  ) : (
+                    <td className={(session.winnerIds || []).includes(p.id) ? "leader" : ""}>{totals[p.id] || 0}</td>
+                  )}
                 </tr>
               ))}
           </tbody>
         </table>
       </div>
 
+      {!winnerOnly && (
       <div className="card-surface">
         <h2>Full scorepad</h2>
         {rows.length === 0 ? (
@@ -240,6 +246,7 @@ export default function GameHistoryDetail() {
         )}
         <p style={{ color: "var(--muted)", fontSize: 13 }}>Each cell is that round's score, with the running total in parentheses.</p>
       </div>
+      )}
 
       <div className="card-surface">
         <h2>Notes</h2>

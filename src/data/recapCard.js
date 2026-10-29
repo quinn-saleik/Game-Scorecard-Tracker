@@ -206,7 +206,7 @@ export async function generateRecapCardBlob({
 
     ctx.textAlign = "right";
     ctx.font = `700 36px "Fredoka", monospace`;
-    ctx.fillText(String(p.score), panelX + panelW - 30, rowY + 12);
+    if (p.score != null) ctx.fillText(String(p.score), panelX + panelW - 30, rowY + 12);
     ctx.textAlign = "left";
   });
   if (standings.length > visibleRows) {

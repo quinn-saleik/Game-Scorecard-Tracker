@@ -233,7 +233,7 @@ export default function Stats() {
                     <th>Played</th>
                     <th>Win %</th>
                     <th>vs par</th>
-                    <th>Favorite</th>
+                    <th>Most played</th>
                   </tr>
                 </thead>
                 <tbody>

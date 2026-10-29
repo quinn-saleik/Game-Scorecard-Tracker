@@ -42,7 +42,7 @@ function buildSlides(w) {
     });
     if (me.favoriteGame) {
       add({
-        kicker: "Your favorite game",
+        kicker: "Your most played game",
         big: me.favoriteGame.label,
         bigText: true,
         small: `You played it ${plural(me.favoriteGame.count, "time", "times")}.`,
@@ -167,7 +167,7 @@ function buildSlides(w) {
 function shareText(w) {
   const { me, family: f } = w;
   if (me) {
-    return `My ${w.year} Scorecard Wrapped: ${me.games} games, ${me.wins} wins${me.favoriteGame ? `, favorite game ${me.favoriteGame.label}` : ""}. 🎲`;
+    return `My ${w.year} Scorecard Wrapped: ${me.games} games, ${me.wins} wins${me.favoriteGame ? `, most played ${me.favoriteGame.label}` : ""}. 🎲`;
   }
   return `Our ${w.year} Scorecard Wrapped: ${f.games} games together${f.topGames[0] ? `, most played ${f.topGames[0].label}` : ""}. 🎲`;
 }

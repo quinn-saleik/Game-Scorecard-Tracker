@@ -139,6 +139,7 @@ export default function Recap() {
   const gameLabel = session.config?.customName || session.gameLabel;
   const winners = session.players.filter((p) => session.winnerIds.includes(p.id));
   const totals = session.totals || {};
+  const winnerOnly = Boolean(session.config?.winnerOnly);
   // computePlayerDetail needs the just-finished session included — fall
   // back gracefully if the completedSessions listener hasn't caught up yet.
   const ready = completedSessions.some((s) => s.id === sessionId);
@@ -153,7 +154,7 @@ export default function Recap() {
         .map((p) => ({
           id: p.id,
           name: shortName(p),
-          score: totals[p.id] ?? 0,
+          score: winnerOnly ? null : totals[p.id] ?? 0,
           isWinner: session.winnerIds.includes(p.id),
           color: p.color,
           avatar: p.avatar,
@@ -242,6 +243,21 @@ export default function Recap() {
         </div>
       )}
 
+      {winnerOnly ? (
+        <div className="card-surface">
+          <h2>Who played</h2>
+          <p style={{ margin: 0 }}>
+            {session.players.map((p, k) => (
+              <span key={p.id}>
+                {k > 0 && "  •  "}
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                {shortName(p)}
+                {session.winnerIds.includes(p.id) ? " 🏆" : ""}
+              </span>
+            ))}
+          </p>
+        </div>
+      ) : (
       <div className="card-surface">
         <h2>Final scores</h2>
         <table className="score-table">
@@ -259,6 +275,7 @@ export default function Recap() {
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="card-surface">
         <h2>Share the recap</h2>

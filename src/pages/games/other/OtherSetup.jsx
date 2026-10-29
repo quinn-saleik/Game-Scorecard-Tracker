@@ -41,6 +41,7 @@ export default function OtherSetup() {
   const [playToTouched, setPlayToTouched] = useState(false);
   const playToValue = playToTouched ? playTo : targetScore;
   const [bidding, setBidding] = useState(DEFAULT_GAME_CONFIG.bidding);
+  const [winnerOnly, setWinnerOnly] = useState(DEFAULT_GAME_CONFIG.winnerOnly);
   const [houseRules, setHouseRules] = useState(DEFAULT_GAME_CONFIG.houseRules);
   const [editingRules, setEditingRules] = useState(!gameId);
 
@@ -81,6 +82,7 @@ export default function OtherSetup() {
     setStartingScore(String(loadedGame.config?.startingScore ?? DEFAULT_GAME_CONFIG.startingScore));
     setTargetScore(loadedGame.config?.targetScore != null ? String(loadedGame.config.targetScore) : "");
     setBidding(Boolean(loadedGame.config?.bidding));
+    setWinnerOnly(Boolean(loadedGame.config?.winnerOnly));
     setHouseRules(loadedGame.config?.houseRules || "");
   }, [loadedGame?.id]);
 
@@ -95,6 +97,7 @@ export default function OtherSetup() {
     setStartingScore(String(nameMatch.config?.startingScore ?? DEFAULT_GAME_CONFIG.startingScore));
     setTargetScore(nameMatch.config?.targetScore != null ? String(nameMatch.config.targetScore) : "");
     setBidding(Boolean(nameMatch.config?.bidding));
+    setWinnerOnly(Boolean(nameMatch.config?.winnerOnly));
     setHouseRules(nameMatch.config?.houseRules || "");
   }, [nameMatch?.id]);
 
@@ -115,7 +118,8 @@ export default function OtherSetup() {
         scoreDirection: direction,
         startingScore: Number(startingScore) || 0,
         targetScore: targetScore.trim() === "" ? null : Number(targetScore),
-        bidding,
+        bidding: winnerOnly ? false : bidding,
+        winnerOnly,
         houseRules: houseRules.trim(),
       };
       const sessionConfig = {
@@ -134,7 +138,7 @@ export default function OtherSetup() {
         gameLabel: effectiveName.trim(),
         players: sessionPlayers,
         config: sessionConfig,
-        initialTotals: Object.fromEntries(sessionPlayers.map((p) => [p.id, config.startingScore])),
+        initialTotals: winnerOnly ? {} : Object.fromEntries(sessionPlayers.map((p) => [p.id, config.startingScore])),
       });
       navigate(`/other/play/${id}`);
     } finally {
@@ -159,7 +163,8 @@ export default function OtherSetup() {
           scoreDirection: direction,
           startingScore: Number(startingScore) || 0,
           targetScore: targetScore.trim() === "" ? null : Number(targetScore),
-          bidding,
+          bidding: winnerOnly ? false : bidding,
+          winnerOnly,
           houseRules: houseRules.trim(),
         },
         icon.trim() || GAME_ICONS[0]
@@ -326,6 +331,33 @@ export default function OtherSetup() {
               <h2>Rules</h2>
               {gameId && iconField}
               <div className="field">
+                <label>How do you keep track?</label>
+                <div className="btn-row">
+                  <button
+                    type="button"
+                    className={`btn small ${!winnerOnly ? "primary" : "ghost"}`}
+                    onClick={() => setWinnerOnly(false)}
+                  >
+                    🔢 Scores each round
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn small ${winnerOnly ? "primary" : "ghost"}`}
+                    onClick={() => setWinnerOnly(true)}
+                  >
+                    🏆 Just who won
+                  </button>
+                </div>
+                <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+                  {winnerOnly
+                    ? "No scoring — pick who's playing, then pick the winner(s) when it's over. Good for games like Sequence."
+                    : "Enter points each round and the game adds them up."}
+                </p>
+              </div>
+
+              {!winnerOnly && (
+                <>
+              <div className="field">
                 <label>Which way does scoring count?</label>
                 <div className="btn-row">
                   <button
@@ -404,6 +436,9 @@ export default function OtherSetup() {
                 </p>
               </div>
 
+                </>
+              )}
+
               <div className="field">
                 <label htmlFor="houseRules">House rules (optional)</label>
                 <textarea
@@ -431,7 +466,7 @@ export default function OtherSetup() {
             </div>
           )}
 
-          {(gameId || nameMatch) && !editingRules && (
+          {(gameId || nameMatch) && !editingRules && !winnerOnly && (
             <div className="card-surface">
               <h2>Play to</h2>
               <div className="field" style={{ marginBottom: 0 }}>

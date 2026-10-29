@@ -36,6 +36,7 @@ export default function OtherPlay() {
   const startingScore = typeof session.config?.startingScore === "number" ? session.config.startingScore : 0;
   const targetScore = typeof session.config?.targetScore === "number" ? session.config.targetScore : null;
   const bidding = Boolean(session.config?.bidding);
+  const winnerOnly = Boolean(session.config?.winnerOnly);
   const houseRules = (session.config?.houseRules || "").trim();
 
   if (session.status === "completed") {
@@ -187,11 +188,50 @@ export default function OtherPlay() {
   async function confirmFinish() {
     setSaving(true);
     try {
-      await completeSession(sessionId, { winnerIds: selectedWinners, totals });
+      await completeSession(sessionId, { winnerIds: selectedWinners, totals: winnerOnly ? {} : totals });
       navigate(`/recap/${sessionId}`);
     } finally {
       setSaving(false);
     }
+  }
+
+  // "Just who won" games (Sequence and the like): no rounds, no scores — the
+  // whole game is picking the winner(s) when it's over.
+  if (winnerOnly) {
+    return (
+      <div>
+        <h1 className="page-title"><span className="suit black">{icon}</span> {gameName}</h1>
+        {houseRules && (
+          <div className="card-surface">
+            <p style={{ margin: 0, color: "var(--muted)", fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{houseRules}</p>
+          </div>
+        )}
+        <div className="card-surface">
+          <h2>Who won?</h2>
+          <p style={{ color: "var(--muted)", fontSize: 14 }}>
+            Play the game, then tap the winner(s) — pick as many as apply (ties, teams, etc.).
+          </p>
+          <div className="chip-row">
+            {session.players.map((p) => (
+              <span
+                key={p.id}
+                className={`player-chip ${selectedWinners.includes(p.id) ? "selected" : ""}`}
+                onClick={() => toggleWinner(p.id)}
+              >
+                <PlayerDot color={p.color} avatar={p.avatar} photo={p.photo} />
+                {shortName(p)}
+              </span>
+            ))}
+          </div>
+          <div className="btn-row" style={{ marginTop: 14 }}>
+            <button className="btn primary" onClick={confirmFinish} disabled={saving || selectedWinners.length === 0}>
+              🏁 Confirm winner & finish
+            </button>
+          </div>
+          {selectedWinners.length === 0 && <p className="empty-state">Pick at least one winner to finish.</p>}
+        </div>
+      </div>
+    );
   }
 
   if (finishing) {
