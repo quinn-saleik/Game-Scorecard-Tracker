@@ -4,6 +4,7 @@ import OngoingGames from "../components/OngoingGames";
 import { subscribeToCustomGames } from "../data/customGames";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import FeedbackPopup from "../components/FeedbackPopup";
+import { wrappedYear } from "../data/wrappedGate";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
 import { splitTiles } from "../data/tileFolding";
 
@@ -140,6 +141,19 @@ export default function Home() {
           <span style={{ background: "var(--danger)", color: "#fff", borderRadius: 99, fontSize: 11, fontWeight: 700, padding: "2px 8px", letterSpacing: "0.05em" }}>NEW</span>
         )}
       </Link>
+      {wrappedYear() && (
+        <Link
+          to="/wrapped"
+          className="card-surface wrapped-banner"
+          style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", color: "var(--text-on-surface)", padding: "10px 14px" }}
+        >
+          <span aria-hidden="true">🎁</span>
+          <span style={{ flex: 1, fontSize: 14 }}>
+            <strong>Your {wrappedYear()} Scorecard Wrapped is here!</strong>
+          </span>
+          <span aria-hidden="true" style={{ color: "var(--muted)" }}>›</span>
+        </Link>
+      )}
       <button
         type="button"
         className="card-surface"

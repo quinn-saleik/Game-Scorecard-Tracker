@@ -3,6 +3,15 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-10-rivalry",
+    date: "2026-10-29",
+    title: "Rivalry compare",
+    summary: "Rivalry compare, achievement pop-ups, par explainer, play-to score, identity tiles, bigger TV mode, feedback pop-up.",
+    items: [
+      "Stats has a new Rivalry card: pick any two players to see their record against each other, game by game, plus who won together and recent results.",
+    ],
+  },
+  {
     id: "2026-10-achievement-popup",
     date: "2026-10-29",
     title: "Achievement pop-ups",

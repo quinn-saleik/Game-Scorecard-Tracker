@@ -13,6 +13,7 @@ import { subscribeToCustomGames } from "../data/customGames";
 import { useVisiblePlayers, useInScope, useSessionFilter } from "../data/favoriteVisibility";
 import ScopeToggle from "../components/ScopeToggle";
 import ParBadge from "../components/ParBadge";
+import RivalryCard from "../components/RivalryCard";
 import { useWhoamiId } from "../data/whoami";
 import PlayerDot from "../components/PlayerDot";
 import { formatLastPlayed } from "../data/format";
@@ -261,6 +262,8 @@ export default function Stats() {
               </table>
             )}
           </div>
+
+          <RivalryCard players={players} sessions={sessions} defaultA={whoamiId} />
 
           <div className="card-surface">
             <h2>Recent games</h2>

@@ -12,6 +12,7 @@ const Me = lazy(() => import("./pages/Me"));
 const WhatsNew = lazy(() => import("./pages/WhatsNew"));
 const PlayerDetail = lazy(() => import("./pages/PlayerDetail"));
 const Stats = lazy(() => import("./pages/Stats"));
+const Wrapped = lazy(() => import("./pages/Wrapped"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const Recap = lazy(() => import("./pages/Recap"));
 const GameHistoryDetail = lazy(() => import("./pages/GameHistoryDetail"));
@@ -73,6 +74,9 @@ function App() {
         <Route path="/players" element={<Players />} />
         <Route path="/players/:playerId" element={<PlayerDetail />} />
         <Route path="/stats" element={<Stats />} />
+        <Route path="/wrapped" element={<Wrapped />} />
+        {/* Unlinked — lets the owner test Wrapped before Dec 25 (data/wrappedGate.js). */}
+        <Route path="/wrapped/preview" element={<Wrapped preview />} />
         <Route path="/hall-of-fame" element={<HallOfFame />} />
         <Route path="/recap/:sessionId" element={<Recap />} />
         <Route path="/history/:sessionId" element={<GameHistoryDetail />} />
