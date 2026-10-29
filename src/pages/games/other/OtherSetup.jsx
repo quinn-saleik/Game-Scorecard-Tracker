@@ -308,14 +308,16 @@ export default function OtherSetup() {
                   >
                     {editingRules ? "Hide rules" : "✎ Edit rules"}
                   </button>
-                  <button
-                    type="button"
-                    className="btn danger small"
-                    onClick={handleRemove}
-                    disabled={removing}
-                  >
-                    {removing ? "Removing…" : "🗑 Remove"}
-                  </button>
+                  {!loadedGame.builtin && (
+                    <button
+                      type="button"
+                      className="btn danger small"
+                      onClick={handleRemove}
+                      disabled={removing}
+                    >
+                      {removing ? "Removing…" : "🗑 Remove"}
+                    </button>
+                  )}
                 </span>
               </div>
               {!editingRules && houseRules.trim() && (
@@ -330,6 +332,11 @@ export default function OtherSetup() {
             <div className="card-surface">
               <h2>Rules</h2>
               {gameId && iconField}
+              {loadedGame?.builtin ? (
+                <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 0 }}>
+                  {loadedGame.name} just logs who played and who won — no scores.
+                </p>
+              ) : (
               <div className="field">
                 <label>How do you keep track?</label>
                 <div className="btn-row">
@@ -354,6 +361,7 @@ export default function OtherSetup() {
                     : "Enter points each round and the game adds them up."}
                 </p>
               </div>
+              )}
 
               {!winnerOnly && (
                 <>

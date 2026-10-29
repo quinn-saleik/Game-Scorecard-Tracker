@@ -74,14 +74,40 @@ export async function deleteCustomGame(id) {
   await deleteDoc(doc(customGamesCol, id));
 }
 
+// Games that ship with the app: always on the Home screen for everyone, no
+// matter what's in Firestore, and can't be removed. Sequence is just-who-won
+// (no scoring). If someone already saved a "Sequence" tile of their own, its
+// icon and house rules are kept, but it's always a just-who-won game.
+export const BUILTIN_CUSTOM_GAMES = [
+  {
+    id: "sequence",
+    name: "Sequence",
+    icon: "🔗",
+    builtin: true,
+    config: { ...DEFAULT_GAME_CONFIG, winnerOnly: true },
+  },
+];
+
+export function withBuiltinGames(saved) {
+  const byId = new Map((saved || []).map((g) => [g.id, g]));
+  const merged = BUILTIN_CUSTOM_GAMES.map((b) => {
+    const mine = byId.get(b.id);
+    return mine
+      ? { ...b, ...mine, builtin: true, config: { ...DEFAULT_GAME_CONFIG, ...mine.config, winnerOnly: true } }
+      : b;
+  });
+  const builtinIds = new Set(BUILTIN_CUSTOM_GAMES.map((b) => b.id));
+  return [...merged, ...(saved || []).filter((g) => !builtinIds.has(g.id))].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export function subscribeToCustomGames(callback) {
   const q = query(customGamesCol, orderBy("name"));
   return onSnapshot(
     q,
-    (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+    (snap) => callback(withBuiltinGames(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
     (err) => {
       console.error("subscribeToCustomGames failed:", err);
-      callback([]);
+      callback(withBuiltinGames([]));
     }
   );
 }

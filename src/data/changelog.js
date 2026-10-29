@@ -11,6 +11,7 @@ export const CHANGELOG = [
       "Me tab cleanup: the Me icon is now a star, Favorites is a tile in Identity (tap for the list), win streaks moved into Overview, and Achievements sits right below it, earned ones first.",
       "Went Alone, Lone Wolf, Nil Streak and Solo Streak achievements are retired, and achievement descriptions are shorter. Sequence Sweep is now 3 wins in a row in Sequence.",
       "13 new achievements: Dominant, Champion, Underdog, Specialist, Master, Globetrotter, Night Owl, Loyal, Nemesis, Streak Breaker, Phase Master, Dealer's Luck and Sequence Sweep. They count your past games too.",
+      "Sequence is now a built-in game on the home screen: pick who played, then who won.",
       "Custom games have a new \"Just who won\" option: pick who's playing, then who won. No scores to enter. Great for games like Sequence.",
       "\"Favorite game\" is now called \"Most played\" everywhere.",
     ],
