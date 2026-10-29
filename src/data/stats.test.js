@@ -559,8 +559,9 @@ describe("computeHallOfFame", () => {
       makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-01" }),
       makeSession({ id: "s2", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-02" }),
       makeSession({ id: "s3", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p1"], completedAt: "2026-01-03" }),
-      // p2's only win -> just First Win.
-      makeSession({ id: "s4", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], completedAt: "2026-01-04" }),
+      // p2's only win -> just First Win. (Played BEFORE p1's streak, so it
+      // doesn't also earn Streak Breaker.)
+      makeSession({ id: "s4", gameType: "flip7", playerIds: ["p1", "p2"], winnerIds: ["p2"], completedAt: "2025-12-31" }),
     ];
     const hof = computeHallOfFame(players, sessions);
     expect(hof.biggestAchiever.players.map((p) => p.id)).toEqual(["p1"]);

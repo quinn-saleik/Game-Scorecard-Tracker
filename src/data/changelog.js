@@ -6,8 +6,9 @@ export const CHANGELOG = [
     id: "2026-10-winner-only",
     date: "2026-10-29",
     title: "Just log who won",
-    summary: "Custom games can skip scoring, Most played, Rivalry compare, achievement pop-ups, play-to score, identity tiles, bigger TV mode.",
+    summary: "16 new achievements, custom games can skip scoring, Most played, Rivalry compare, achievement pop-ups, play-to score, identity tiles, bigger TV mode.",
     items: [
+      "16 new achievements: Dominant, Champion, Underdog, Giant Slayer, Specialist, Master, Globetrotter, Night Owl, Loyal, Nemesis, Streak Breaker, Phase Master, Royal Flush, Sky-Jo Low Roller, Dealer's Luck and Sequence Sweep. They count your past games too.",
       "Custom games have a new \"Just who won\" option: pick who's playing, then who won. No scores to enter. Great for games like Sequence.",
       "\"Favorite game\" is now called \"Most played\" everywhere.",
     ],

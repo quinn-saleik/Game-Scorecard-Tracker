@@ -1,3 +1,5 @@
+import { getRoundDelta } from "./rounds";
+
 // Client-side stats aggregation. At ~10 players and a family's worth of
 // game nights, recomputing on every load is simpler (and cheaper) than
 // maintaining rollup documents — revisit if the sessions collection ever
@@ -297,6 +299,167 @@ export function computeGameStats(completedSessions) {
 // requiring the SAME round, this reads as "both other players got set on
 // the same hand of a game you were part of", not a claim that this
 // player personally set them both.
+
+// ---- helpers for the newer badges -------------------------------------
+const sessionMs = (s) => s.completedAt?.toDate?.()?.getTime?.() ?? 0;
+const chronological = (sessions) => [...sessions].sort((a, b) => sessionMs(a) - sessionMs(b));
+const didWin = (s, id) => (s.winnerIds || []).includes(id);
+const sessionDayKey = (s) => {
+  const date = s.completedAt?.toDate?.();
+  return date ? centralDayKey(date) : null;
+};
+
+function sessionLowerIsBetter(s) {
+  if (s.gameType === "other") return s.config?.scoreDirection === "down";
+  return LOWER_IS_BETTER.has(s.gameType);
+}
+
+// Running totals after the first `n` hands, using the same per-game reader
+// the round-history screens use.
+function totalsAfter(s, n) {
+  const out = Object.fromEntries((s.players || []).map((p) => [p.id, 0]));
+  (s.rounds || []).slice(0, n).forEach((r) => {
+    for (const p of s.players || []) out[p.id] += getRoundDelta(s.gameType, r, p.id, s);
+  });
+  return out;
+}
+
+// Games where the board decides the winner and everyone is on their own, so
+// "last place at the halfway point" means something. (Team games, Phase 10 /
+// Royal Rum — finish-the-list games — and lives-based 31 are left out.)
+const BOARD_GAMES = new Set(["flip7", "oh-heck", "euchre-3p", "euchre-partner", "golf", "hearts", "dutch-blitz", "nertz", "other"]);
+
+function wasLastAtHalf(s, id) {
+  if (!BOARD_GAMES.has(s.gameType) || s.config?.winnerOnly) return false;
+  const players = s.players || [];
+  const n = (s.rounds || []).length;
+  if (players.length < 3 || n < 4) return false;
+  const t = totalsAfter(s, Math.floor(n / 2));
+  const low = sessionLowerIsBetter(s);
+  return players.every((p) => p.id === id || (low ? t[id] > t[p.id] : t[id] < t[p.id]));
+}
+
+// Won a game that included the career-wins leader (6+ wins at the time, and
+// at least twice your own), and that leader didn't win it.
+function slewGiant(playerId, allSessions) {
+  const wins = new Map();
+  for (const s of chronological(allSessions)) {
+    const ids = (s.players || []).map((p) => p.id);
+    if (ids.includes(playerId) && didWin(s, playerId)) {
+      const mine = wins.get(playerId) || 0;
+      let top = 0;
+      for (const w of wins.values()) top = Math.max(top, w);
+      if (top >= 6 && mine * 2 < top && ids.some((q) => q !== playerId && (wins.get(q) || 0) === top && !didWin(s, q))) {
+        return true;
+      }
+    }
+    for (const w of s.winnerIds || []) wins.set(w, (wins.get(w) || 0) + 1);
+  }
+  return false;
+}
+
+// Won the game that ended someone else's streak of 3+ wins.
+function brokeStreak(playerId, allSessions) {
+  const streak = new Map();
+  for (const s of chronological(allSessions)) {
+    const ids = (s.players || []).map((p) => p.id);
+    const iWon = ids.includes(playerId) && didWin(s, playerId);
+    for (const q of ids) {
+      if (didWin(s, q)) {
+        streak.set(q, (streak.get(q) || 0) + 1);
+      } else {
+        if (iWon && q !== playerId && (streak.get(q) || 0) >= 3) return true;
+        streak.set(q, 0);
+      }
+    }
+  }
+  return false;
+}
+
+// Beat the same player in 5 straight games you both played. Games where you
+// both won (teams) or neither did don't count for or against.
+function hasNemesis(playerId, mySessions) {
+  const run = new Map();
+  for (const s of chronological(mySessions)) {
+    const iWon = didWin(s, playerId);
+    for (const o of s.players || []) {
+      if (o.id === playerId) continue;
+      const theyWon = didWin(s, o.id);
+      if (iWon && !theyWon) {
+        run.set(o.id, (run.get(o.id) || 0) + 1);
+        if (run.get(o.id) >= 5) return true;
+      } else if (theyWon && !iWon) {
+        run.set(o.id, 0);
+      }
+    }
+  }
+  return false;
+}
+
+function maxWinsInOneGame(playerId, mySessions) {
+  const counts = new Map();
+  for (const s of mySessions) {
+    if (!didWin(s, playerId)) continue;
+    const k = gameGroupKey(s);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  return Math.max(0, ...counts.values());
+}
+
+function maxGamesInOneDay(mySessions) {
+  const byDay = new Map();
+  for (const s of mySessions) {
+    const k = sessionDayKey(s);
+    if (k) byDay.set(k, (byDay.get(k) || 0) + 1);
+  }
+  return Math.max(0, ...byDay.values());
+}
+
+function maxDaysInOneMonth(mySessions) {
+  const byMonth = new Map();
+  for (const s of mySessions) {
+    const k = sessionDayKey(s);
+    if (!k) continue;
+    const set = byMonth.get(k.slice(0, 7)) || new Set();
+    set.add(k);
+    byMonth.set(k.slice(0, 7), set);
+  }
+  return Math.max(0, ...Array.from(byMonth.values(), (set) => set.size));
+}
+
+// Phase 10: cleared every phase in exactly ten hands — never missed one.
+function phaseMaster(playerId, mySessions) {
+  return mySessions.some((s) => {
+    if (s.gameType !== "phase-10") return false;
+    const rounds = s.rounds || [];
+    return rounds.length >= 10 && rounds.every((r) => r.completed?.[playerId]);
+  });
+}
+
+// Royal Rum: won it after sitting behind someone going into the last hand.
+function royalFlush(playerId, mySessions) {
+  return mySessions.some((s) => {
+    if (s.gameType !== "royal-rum" || !didWin(s, playerId)) return false;
+    const n = (s.rounds || []).length;
+    if (n < 3) return false;
+    const t = totalsAfter(s, n - 1);
+    return (s.players || []).some((p) => p.id !== playerId && t[p.id] < t[playerId]);
+  });
+}
+
+const DEALER_GAMES = new Set(["oh-heck", "phase-10", "royal-rum"]);
+function longestStreakOf(sessions, playerId) {
+  let best = 0;
+  let run = 0;
+  for (const s of chronological(sessions)) {
+    run = didWin(s, playerId) ? run + 1 : 0;
+    best = Math.max(best, run);
+  }
+  return best;
+}
+
+const isSkyJo = (s) => s.gameType === "other" && slug(s.config?.customName).replace(/-/g, "") === "skyjo";
+
 const BADGE_DEFS = [
   { id: "first-win", emoji: "🎉", label: "First Win", description: "Won a game", earned: (d) => d.wins >= 1 },
   { id: "hot-streak", emoji: "🔥", label: "Hot Streak", description: "Won 3 games in a row", earned: (d) => d.longestStreak >= 3 },
@@ -515,6 +678,114 @@ const BADGE_DEFS = [
       return Array.from(byDay.values()).some((e) => e.games >= 2 && e.wins === e.games);
     },
   },
+  { id: "dominant", emoji: "💪", label: "Dominant", description: "Won 10 games", earned: (d) => d.wins >= 10 },
+  { id: "champion", emoji: "🏆", label: "Champion", description: "Won 25 games", earned: (d) => d.wins >= 25 },
+  {
+    id: "underdog",
+    emoji: "🐕",
+    label: "Underdog",
+    description: "Won a game after being dead last at the halfway point",
+    earned: (d, sessions) => sessions.some((s) => didWin(s, d.playerId) && wasLastAtHalf(s, d.playerId)),
+  },
+  {
+    id: "giant-slayer",
+    emoji: "🗡️",
+    label: "Giant Slayer",
+    description: "Beat the player with the most wins when you had under half as many",
+    earned: (d, sessions, all) => slewGiant(d.playerId, all),
+  },
+  {
+    id: "specialist",
+    emoji: "🎯",
+    label: "Specialist",
+    description: "Won the same game 5 times",
+    earned: (d, sessions) => maxWinsInOneGame(d.playerId, sessions) >= 5,
+  },
+  {
+    id: "master",
+    emoji: "🧠",
+    label: "Master",
+    description: "Won the same game 15 times",
+    earned: (d, sessions) => maxWinsInOneGame(d.playerId, sessions) >= 15,
+  },
+  {
+    id: "globetrotter",
+    emoji: "🌍",
+    label: "Globetrotter",
+    description: "Played 10 different games",
+    earned: (d, sessions) => new Set(sessions.map(gameGroupKey)).size >= 10,
+  },
+  {
+    id: "night-owl",
+    emoji: "🦉",
+    label: "Night Owl",
+    description: "Played 5+ games in one day",
+    earned: (d, sessions) => maxGamesInOneDay(sessions) >= 5,
+  },
+  {
+    id: "loyal",
+    emoji: "📅",
+    label: "Loyal",
+    description: "Played on 5 different days in one month",
+    earned: (d, sessions) => maxDaysInOneMonth(sessions) >= 5,
+  },
+  {
+    id: "nemesis",
+    emoji: "😈",
+    label: "Nemesis",
+    description: "Beat the same player 5 games in a row",
+    earned: (d, sessions) => hasNemesis(d.playerId, sessions),
+  },
+  {
+    id: "streak-breaker",
+    emoji: "✂️",
+    label: "Streak Breaker",
+    description: "Ended someone's 3+ game win streak",
+    earned: (d, sessions, all) => brokeStreak(d.playerId, all),
+  },
+  {
+    id: "phase-master",
+    emoji: "🧗",
+    label: "Phase Master",
+    description: "Cleared all 10 phases in Phase 10 without missing one",
+    earned: (d, sessions) => phaseMaster(d.playerId, sessions),
+  },
+  {
+    id: "royal-flush",
+    emoji: "♠️",
+    label: "Royal Flush",
+    description: "Won Royal Rum after trailing going into the last hand",
+    earned: (d, sessions) => royalFlush(d.playerId, sessions),
+  },
+  {
+    id: "sky-jo-low-roller",
+    emoji: "🪂",
+    label: "Sky-Jo Low Roller",
+    description: "Won Sky-Jo with a score under half the play-to score",
+    earned: (d, sessions) =>
+      sessions.some((s) => {
+        if (!isSkyJo(s) || !didWin(s, d.playerId)) return false;
+        const total = s.totals?.[d.playerId];
+        const target = Number(s.config?.targetScore) || 100;
+        return typeof total === "number" && total < target / 2;
+      }),
+  },
+  {
+    id: "dealers-luck",
+    emoji: "🃏",
+    label: "Dealer's Luck",
+    description: "Won a game where you dealt the first hand (Oh Heck!, Phase 10, Royal Rum)",
+    earned: (d, sessions) =>
+      sessions.some((s) => DEALER_GAMES.has(s.gameType) && s.players?.[0]?.id === d.playerId && didWin(s, d.playerId)),
+  },
+  {
+    id: "sequence-sweep",
+    emoji: "🏁",
+    label: "Sequence Sweep",
+    description: "Won 3 \"just who won\" games in a row",
+    earned: (d, sessions) =>
+      longestStreakOf(sessions.filter((s) => s.config?.winnerOnly), d.playerId) >= 3,
+  },
   {
     id: "camera-ready",
     emoji: "📸",
@@ -538,7 +809,7 @@ export function computeAchievements(playerId, players, completedSessions) {
     emoji: b.emoji,
     label: b.label,
     description: b.description,
-    earned: b.earned(detail, mySessions),
+    earned: b.earned(detail, mySessions, completedSessions),
   }));
 }
 

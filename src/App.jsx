@@ -32,6 +32,7 @@ const Euchre15Setup = lazy(() => import("./pages/games/euchre/Euchre15Setup"));
 const Euchre15Play = lazy(() => import("./pages/games/euchre/Euchre15Play"));
 const PartnerSetup = lazy(() => import("./pages/games/euchre/PartnerSetup"));
 const PartnerPlay = lazy(() => import("./pages/games/euchre/PartnerPlay"));
+const BadgeAudit = lazy(() => import("./pages/BadgeAudit"));
 const OtherSetup = lazy(() => import("./pages/games/other/OtherSetup"));
 const OtherPlay = lazy(() => import("./pages/games/other/OtherPlay"));
 const CatchphraseSetup = lazy(() => import("./pages/games/catchphrase/CatchphraseSetup"));
@@ -74,6 +75,8 @@ function App() {
         <Route path="/players" element={<Players />} />
         <Route path="/players/:playerId" element={<PlayerDetail />} />
         <Route path="/stats" element={<Stats />} />
+        {/* Unlinked — which badges has anyone earned? */}
+        <Route path="/badges-audit" element={<BadgeAudit />} />
         <Route path="/wrapped" element={<Wrapped />} />
         {/* Unlinked — lets the owner test Wrapped before Dec 25 (data/wrappedGate.js). */}
         <Route path="/wrapped/preview" element={<Wrapped preview />} />
