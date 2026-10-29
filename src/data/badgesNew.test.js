@@ -84,19 +84,6 @@ describe("rivalry-flavored badges", () => {
     expect(earned("streak-breaker", "p1", [...streak, other])).toBe(false);
   });
 
-  it("Giant Slayer: beat the wins leader (6+ wins) with under half their wins", () => {
-    const build = (leaderWins) => Array.from({ length: leaderWins }, (_, i) => game({ ids: ["p2", "p3"], win: ["p2"], at: t(1 + i) }));
-    const upset = game({ ids: ["p1", "p2"], win: ["p1"], at: t(20) });
-    expect(earned("giant-slayer", "p1", [...build(6), upset])).toBe(true);
-    expect(earned("giant-slayer", "p1", [...build(5), upset])).toBe(false); // leader needs 6+
-    // p1 already has 3 wins (not under half of 6) -> no
-    const p1Wins = [1, 2, 3].map((d) => game({ ids: ["p1", "p4"], win: ["p1"], at: t(10 + d) }));
-    expect(earned("giant-slayer", "p1", [...build(6), ...p1Wins, upset])).toBe(false);
-    // leader not in the game -> no
-    const noLeader = game({ ids: ["p1", "p4"], win: ["p1"], at: t(20) });
-    expect(earned("giant-slayer", "p1", [...build(6), noLeader])).toBe(false);
-  });
-
   it("Underdog: won after being strictly last at the halfway point", () => {
     const r = (a, b, c) => ({ scores: { p1: a, p2: b, p3: c } });
     // p1 trails 0/50/50 after 2 of 4 hands, then wins big
@@ -122,19 +109,6 @@ describe("game-specific badges", () => {
     // a missed hand means 11+ hands, which also fails
     const eleven = [...hands(-1), { roundNumber: 11, completed: { p1: false }, points: { p1: 5, p2: 5 } }];
     expect(earned("phase-master", "p1", [game({ gameType: "phase-10", ids: ["p1", "p2"], win: ["p1"], rounds: eleven, at: t(1) })])).toBe(false);
-  });
-
-  it("Sky-Jo Low Roller: won with under half the play-to score", () => {
-    const sj = (total, target, win = ["p1"], name = "Sky-Jo") =>
-      game({ gameType: "other", ids: ["p1", "p2"], win, totals: { p1: total, p2: 120 }, config: { customName: name, targetScore: target }, at: t(1) });
-    expect(earned("sky-jo-low-roller", "p1", [sj(49, 100)])).toBe(true);
-    expect(earned("sky-jo-low-roller", "p1", [sj(50, 100)])).toBe(false);
-    expect(earned("sky-jo-low-roller", "p1", [sj(37, 75)])).toBe(true);
-    expect(earned("sky-jo-low-roller", "p1", [sj(38, 75)])).toBe(false);
-    expect(earned("sky-jo-low-roller", "p1", [sj(30, 100, ["p2"])])).toBe(false); // must win
-    expect(earned("sky-jo-low-roller", "p1", [sj(30, 100, ["p1"], "Skyjo")])).toBe(true);
-    expect(earned("sky-jo-low-roller", "p1", [sj(30, 100, ["p1"], "Poker")])).toBe(false);
-    expect(earned("sky-jo-low-roller", "p1", [sj(40, undefined)])).toBe(true); // defaults to 100
   });
 
   it("Dealer's Luck: won a dealer game that you dealt first (seat 1)", () => {

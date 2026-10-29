@@ -339,25 +339,6 @@ function wasLastAtHalf(s, id) {
   return players.every((p) => p.id === id || (low ? t[id] > t[p.id] : t[id] < t[p.id]));
 }
 
-// Won a game that included the career-wins leader (6+ wins at the time, and
-// at least twice your own), and that leader didn't win it.
-function slewGiant(playerId, allSessions) {
-  const wins = new Map();
-  for (const s of chronological(allSessions)) {
-    const ids = (s.players || []).map((p) => p.id);
-    if (ids.includes(playerId) && didWin(s, playerId)) {
-      const mine = wins.get(playerId) || 0;
-      let top = 0;
-      for (const w of wins.values()) top = Math.max(top, w);
-      if (top >= 6 && mine * 2 < top && ids.some((q) => q !== playerId && (wins.get(q) || 0) === top && !didWin(s, q))) {
-        return true;
-      }
-    }
-    for (const w of s.winnerIds || []) wins.set(w, (wins.get(w) || 0) + 1);
-  }
-  return false;
-}
-
 // Won the game that ended someone else's streak of 3+ wins.
 function brokeStreak(playerId, allSessions) {
   const streak = new Map();
@@ -446,8 +427,6 @@ function longestStreakOf(sessions, playerId) {
   }
   return best;
 }
-
-const isSkyJo = (s) => s.gameType === "other" && slug(s.config?.customName).replace(/-/g, "") === "skyjo";
 
 const BADGE_DEFS = [
   { id: "first-win", emoji: "🎉", label: "First Win", description: "Won a game", earned: (d) => d.wins >= 1 },
@@ -635,13 +614,6 @@ const BADGE_DEFS = [
     earned: (d, sessions) => sessions.some((s) => didWin(s, d.playerId) && wasLastAtHalf(s, d.playerId)),
   },
   {
-    id: "giant-slayer",
-    emoji: "🗡️",
-    label: "Giant Slayer",
-    description: "Beat the player with the most wins when you had under half as many",
-    earned: (d, sessions, all) => slewGiant(d.playerId, all),
-  },
-  {
     id: "specialist",
     emoji: "🎯",
     label: "Specialist",
@@ -696,19 +668,6 @@ const BADGE_DEFS = [
     label: "Phase Master",
     description: "Cleared all 10 phases in Phase 10 without missing one",
     earned: (d, sessions) => phaseMaster(d.playerId, sessions),
-  },
-  {
-    id: "sky-jo-low-roller",
-    emoji: "🪂",
-    label: "Sky-Jo Low Roller",
-    description: "Won Sky-Jo with a score under half the play-to score",
-    earned: (d, sessions) =>
-      sessions.some((s) => {
-        if (!isSkyJo(s) || !didWin(s, d.playerId)) return false;
-        const total = s.totals?.[d.playerId];
-        const target = Number(s.config?.targetScore) || 100;
-        return typeof total === "number" && total < target / 2;
-      }),
   },
   {
     id: "dealers-luck",
