@@ -323,33 +323,6 @@ describe("computeAchievements", () => {
     expect(computeAchievements("p2", players, sessions).find((b) => b.id === "big-flip").earned).toBe(false);
   });
 
-  it("awards Nil Streak for hitting a called zero bid 10+ times in a single Oh Heck! game", () => {
-    const nilRound = { bids: { p1: 0 }, results: { p1: { hitBid: true, tricksWon: 0, score: 10 } } };
-    const nonNilRound = { bids: { p1: 1 }, results: { p1: { hitBid: true, tricksWon: 1, score: 11 } } };
-
-    const tenNils = [
-      makeSession({
-        id: "s1",
-        gameType: "oh-heck",
-        playerIds: ["p1", "p2"],
-        rounds: [...Array(10).fill(nilRound), nonNilRound],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, tenNils).find((b) => b.id === "nil-streak").earned).toBe(true);
-
-    const onlyNineNils = [
-      makeSession({
-        id: "s1",
-        gameType: "oh-heck",
-        playerIds: ["p1", "p2"],
-        rounds: [...Array(9).fill(nilRound), nonNilRound],
-        completedAt: "2026-01-01",
-      }),
-    ];
-    expect(computeAchievements("p1", players, onlyNineNils).find((b) => b.id === "nil-streak").earned).toBe(false);
-  });
-
   it("awards Iron Man for 3+ different games completed on the same calendar day", () => {
     const sameDay = [
       makeSession({ id: "s1", gameType: "flip7", playerIds: ["p1"], completedAt: "2026-01-01T10:00:00Z" }),

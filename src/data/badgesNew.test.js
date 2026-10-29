@@ -124,14 +124,6 @@ describe("game-specific badges", () => {
     expect(earned("phase-master", "p1", [game({ gameType: "phase-10", ids: ["p1", "p2"], win: ["p1"], rounds: eleven, at: t(1) })])).toBe(false);
   });
 
-  it("Royal Flush: won Royal Rum after trailing going into the last hand", () => {
-    const rr = (rounds, win) => game({ gameType: "royal-rum", ids: ["p1", "p2"], win, rounds, at: t(1) });
-    const pts = (a, b) => ({ points: { p1: a, p2: b } });
-    expect(earned("royal-flush", "p1", [rr([pts(30, 10), pts(30, 10), pts(0, 40)], ["p1"])])).toBe(true); // behind 60-20 going into the last hand
-    expect(earned("royal-flush", "p1", [rr([pts(10, 30), pts(10, 30), pts(10, 30)], ["p1"])])).toBe(false); // led all game
-    expect(earned("royal-flush", "p1", [rr([pts(30, 10), pts(30, 10), pts(0, 40)], ["p2"])])).toBe(false); // lost
-  });
-
   it("Sky-Jo Low Roller: won with under half the play-to score", () => {
     const sj = (total, target, win = ["p1"], name = "Sky-Jo") =>
       game({ gameType: "other", ids: ["p1", "p2"], win, totals: { p1: total, p2: 120 }, config: { customName: name, targetScore: target }, at: t(1) });

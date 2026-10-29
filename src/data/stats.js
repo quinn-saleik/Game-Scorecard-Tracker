@@ -436,17 +436,6 @@ function phaseMaster(playerId, mySessions) {
   });
 }
 
-// Royal Rum: won it after sitting behind someone going into the last hand.
-function royalFlush(playerId, mySessions) {
-  return mySessions.some((s) => {
-    if (s.gameType !== "royal-rum" || !didWin(s, playerId)) return false;
-    const n = (s.rounds || []).length;
-    if (n < 3) return false;
-    const t = totalsAfter(s, n - 1);
-    return (s.players || []).some((p) => p.id !== playerId && t[p.id] < t[playerId]);
-  });
-}
-
 const DEALER_GAMES = new Set(["oh-heck", "phase-10", "royal-rum"]);
 function longestStreakOf(sessions, playerId) {
   let best = 0;
@@ -489,34 +478,6 @@ const BADGE_DEFS = [
       ),
   },
   {
-    id: "lone-wolf",
-    emoji: "🐺🐺",
-    label: "Lone Wolf",
-    description: "Went alone 3+ times in a single Pick Your Partner game",
-    earned: (d, sessions) =>
-      sessions.some((s) => {
-        if (s.gameType !== "euchre-partner") return false;
-        const count = (s.rounds || []).filter((r) => r.bidderId === d.playerId && r.partnerId === "none").length;
-        return count >= 3;
-      }),
-  },
-  {
-    id: "solo-streak",
-    emoji: "🥷",
-    label: "Solo Streak",
-    description: "Went alone and made it 3 times, career",
-    earned: (d, sessions) => {
-      let count = 0;
-      for (const s of sessions) {
-        if (s.gameType !== "euchre-partner") continue;
-        for (const r of s.rounds || []) {
-          if (r.bidderId === d.playerId && r.partnerId === "none" && (r.tricks || 0) >= (r.bid || 0)) count += 1;
-        }
-      }
-      return count >= 3;
-    },
-  },
-  {
     id: "perfect-game",
     emoji: "💯",
     label: "Perfect Game",
@@ -538,20 +499,6 @@ const BADGE_DEFS = [
         if (s.gameType !== "oh-heck") return false;
         const rounds = s.rounds || [];
         return rounds.length > 0 && rounds.every((r) => (r.results?.[d.playerId]?.tricksWon || 0) === 0);
-      }),
-  },
-  {
-    id: "nil-streak",
-    emoji: "🎣",
-    label: "Nil Streak",
-    description: "Called and hit a zero bid 10+ times in a single Oh Heck! game",
-    earned: (d, sessions) =>
-      sessions.some((s) => {
-        if (s.gameType !== "oh-heck") return false;
-        const count = (s.rounds || []).filter(
-          (r) => r.bids?.[d.playerId] === 0 && r.results?.[d.playerId]?.hitBid === true
-        ).length;
-        return count >= 10;
       }),
   },
   {
@@ -749,13 +696,6 @@ const BADGE_DEFS = [
     label: "Phase Master",
     description: "Cleared all 10 phases in Phase 10 without missing one",
     earned: (d, sessions) => phaseMaster(d.playerId, sessions),
-  },
-  {
-    id: "royal-flush",
-    emoji: "♠️",
-    label: "Royal Flush",
-    description: "Won Royal Rum after trailing going into the last hand",
-    earned: (d, sessions) => royalFlush(d.playerId, sessions),
   },
   {
     id: "sky-jo-low-roller",
