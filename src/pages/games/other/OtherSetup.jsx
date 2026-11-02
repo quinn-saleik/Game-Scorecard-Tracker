@@ -12,6 +12,7 @@ import {
   slugifyGameName,
   DEFAULT_GAME_CONFIG,
 } from "../../../data/customGames";
+import { endingScoreText } from "../../../data/endingScore";
 import OngoingGames from "../../../components/OngoingGames";
 import PlayerDot from "../../../components/PlayerDot";
 import { shortName } from "../../../data/playerNames";
@@ -253,11 +254,11 @@ export default function OtherSetup() {
         </p>
         <p style={{ margin: "0 0 10px" }}>
           <strong>Rules:</strong> choose whether higher or lower wins, optionally give it a
-          winning score to end the game automatically, and optionally track a bid alongside each
+          an ending score to wrap the game up automatically, and optionally track a bid alongside each
           round's score.
         </p>
         <p style={{ margin: 0 }}>
-          <strong>Scoring:</strong> with no winning score set, hit "Finish game" whenever you're
+          <strong>Scoring:</strong> with no ending score set, hit "Finish game" whenever you're
           done and choose the winner(s) yourself. Games with the same name (any capitalization)
           share one tile and are grouped together in Stats.
         </p>
@@ -402,7 +403,7 @@ export default function OtherSetup() {
               </div>
 
               <div className="field">
-                <label htmlFor="targetScore">Winning score (optional)</label>
+                <label htmlFor="targetScore">Ending score (optional)</label>
                 <input
                   id="targetScore"
                   className="input"
@@ -412,11 +413,8 @@ export default function OtherSetup() {
                   onChange={(e) => setTargetScore(e.target.value)}
                 />
                 <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-                  {targetScore.trim() !== ""
-                    ? direction === "down"
-                      ? `Game flags itself once someone's total drops to ${targetScore} or below.`
-                      : `Game flags itself once someone's total reaches ${targetScore}.`
-                    : "Leave blank to just play until someone taps \"Finish game\"."}
+                  {endingScoreText(direction, startingScore, targetScore) ||
+                    "Leave blank to just play until someone taps \"Finish game\"."}
                 </p>
               </div>
 
@@ -492,11 +490,8 @@ export default function OtherSetup() {
                   }}
                 />
                 <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-                  {playToValue.trim() !== ""
-                    ? direction === "down"
-                      ? `Flags the game once someone's total drops to ${playToValue} or below.`
-                      : `Flags the game once someone's total reaches ${playToValue}.`
-                    : "Leave blank to play until someone taps \"Finish game\"."}
+                  {endingScoreText(direction, startingScore, playToValue) ||
+                    "Leave blank to play until someone taps \"Finish game\"."}
                   {playToTouched && playToValue.trim() !== targetScore.trim()
                     ? ` Just this game — the saved rules still say ${targetScore.trim() || "no limit"}.`
                     : ""}
