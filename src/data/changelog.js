@@ -3,6 +3,18 @@
 // ships; `id` must be unique and is what the "NEW" dot compares against.
 export const CHANGELOG = [
   {
+    id: "2026-11-starred-games",
+    date: "2026-11-02",
+    title: "Star your games",
+    summary: "Star your games, plus Bananagrams and Taco Cat Goat Cheese Pizza.",
+    items: [
+      "Home now shows just the games you've starred. Tap the ☆ on any game to pin it, and ★ to unpin. Everything else is under \"More games\".",
+      "To start, your most played games are already starred for you.",
+      "\"New game\" is always on the main screen.",
+      "New games: Bananagrams and Taco Cat Goat Cheese Pizza. Just pick who played and who won.",
+    ],
+  },
+  {
     id: "2026-10-winner-only",
     date: "2026-10-29",
     title: "Just log who won",

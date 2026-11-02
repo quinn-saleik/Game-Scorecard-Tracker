@@ -167,6 +167,14 @@ export async function setPlayerFavorites(playerId, favoriteIds) {
   await updateDoc(doc(playersCol, playerId), { favoriteIds: clean });
 }
 
+// Which Home tiles this person has starred (tile keys — see data/gameFavorites.js).
+// Not saved until their first star/unstar; until then Home shows a preset.
+export async function setPlayerFavoriteGames(playerId, keys) {
+  await authReady;
+  const clean = Array.isArray(keys) ? [...new Set(keys.filter((k) => typeof k === "string" && k))].slice(0, 80) : [];
+  await updateDoc(doc(playersCol, playerId), { favoriteGameIds: clean });
+}
+
 // photo: a small data: URI (already resized/cropped client-side — see
 // src/data/photo.js) or null to remove it and fall back to color/avatar.
 export async function setPlayerPhoto(playerId, photo) {

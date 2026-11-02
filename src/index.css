@@ -399,10 +399,31 @@ h3 {
   letter-spacing: 0.05em;
 }
 
-/* "More games" fold on Home (rarely-played tiles, see data/tileFolding.js) */
+/* "More games" dropdown on Home (games that aren't starred, see data/gameFavorites.js) */
 .more-games {
   margin-top: 16px;
 }
+/* A tile plus its star button in the corner. */
+.tile-wrap { position: relative; display: flex; }
+.tile-wrap > .game-tile { flex: 1; }
+.tile-star {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tile-star.on { color: var(--gold); text-shadow: 0 0 1px var(--outline), 0 0 1px var(--outline); }
+.star-hint { margin: 10px 2px 0; font-size: 13px; color: color-mix(in srgb, var(--cream) 70%, transparent); }
 .more-games > summary {
   cursor: pointer;
   list-style: none;

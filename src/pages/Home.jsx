@@ -1,12 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import OngoingGames from "../components/OngoingGames";
-import { subscribeToCustomGames } from "../data/customGames";
+import { subscribeToCustomGames, slugifyGameName } from "../data/customGames";
+import { subscribeToPlayers, setPlayerFavoriteGames } from "../data/players";
+import { useWhoamiId } from "../data/whoami";
 import { subscribeToCompletedSessions } from "../data/gameSessions";
 import FeedbackPopup from "../components/FeedbackPopup";
 import { wrappedYear } from "../data/wrappedGate";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
-import { splitTiles } from "../data/tileFolding";
+import { resolveFavoriteKeys, splitByFavorites, toggleFavoriteKey } from "../data/gameFavorites";
+
+// Starred games for a device nobody has signed in on.
+const DEVICE_FAVS_KEY = "scorecard:favorite-games";
+function readDeviceFavs() {
+  try {
+    const v = JSON.parse(localStorage.getItem(DEVICE_FAVS_KEY));
+    return Array.isArray(v) ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 // `family` picks the tile's color (see .fam-* in index.css): the four suits
 // for card games, plus party / deduction / custom.
@@ -34,8 +47,12 @@ export default function Home() {
   const [customGames, setCustomGames] = useState([]);
   const [completedSessions, setCompletedSessions] = useState([]);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [players, setPlayers] = useState([]);
+  const [deviceFavs, setDeviceFavs] = useState(readDeviceFavs);
+  const whoamiId = useWhoamiId();
 
   useEffect(() => subscribeToCustomGames(setCustomGames), []);
+  useEffect(() => subscribeToPlayers(setPlayers), []);
   useEffect(() => subscribeToCompletedSessions(setCompletedSessions), []);
 
   // Most-played first. Ties (including everyone at 0 plays, e.g. right
@@ -104,23 +121,80 @@ export default function Home() {
     return [...builtin, ...custom].sort((a, b) => b.playCount - a.playCount);
   }, [customGames, playCountByType, playCountByCustomName, lastPlayedByKey]);
 
-  // Rarely-played games fold into a "More" section at the end; the rule
-  // adapts to how much the family has actually played.
-  const { main: mainTiles, more: moreTiles } = useMemo(() => splitTiles(sortedTiles), [sortedTiles]);
+  // Which tile each finished game belongs to, so a person's own plays can
+  // pre-star their most-played games (see data/gameFavorites.js).
+  const tileKeyByType = useMemo(() => {
+    const m = {};
+    for (const g of GAMES) for (const gt of g.gameTypes) m[gt] = g.label;
+    return m;
+  }, []);
+  const personalCounts = useMemo(() => {
+    const counts = {};
+    if (!whoamiId) return counts;
+    for (const s of completedSessions) {
+      if (!(s.players || []).some((p) => p.id === whoamiId)) continue;
+      const key = s.gameType === "other" ? `custom-${slugifyGameName(s.config?.customName)}` : tileKeyByType[s.gameType];
+      if (key) counts[key] = (counts[key] || 0) + 1;
+    }
+    return counts;
+  }, [completedSessions, whoamiId, tileKeyByType]);
 
-  const renderTile = (g) =>
-    g.soon ? (
-      <div className={`game-tile fam-${g.family} disabled`} key={g.key}>
-        <span className="icon">{g.icon}</span>
-        <span>{g.label}</span>
-        <span className="soon">Coming soon</span>
+  const me = whoamiId ? players.find((p) => p.id === whoamiId) : null;
+  // Signed in: saved on your player. Not signed in: saved on this device.
+  const storedFavs = whoamiId ? me?.favoriteGameIds : deviceFavs;
+  const favoriteKeys = useMemo(
+    () => resolveFavoriteKeys(sortedTiles, storedFavs, personalCounts),
+    [sortedTiles, storedFavs, personalCounts]
+  );
+  // Starred games on the main grid, everything else in "More games". Within
+  // each, your own most-played first, then the family's.
+  const { main: mainTiles, more: moreTiles } = useMemo(() => {
+    const ordered = [...sortedTiles].sort((a, b) => (personalCounts[b.key] || 0) - (personalCounts[a.key] || 0));
+    return splitByFavorites(ordered, favoriteKeys);
+  }, [sortedTiles, personalCounts, favoriteKeys]);
+
+  function toggleStar(key) {
+    const next = toggleFavoriteKey(favoriteKeys, key);
+    if (whoamiId) {
+      if (me) setPlayerFavoriteGames(me.id, next).catch((e) => console.error("saving starred games failed:", e));
+    } else {
+      setDeviceFavs(next);
+      try {
+        localStorage.setItem(DEVICE_FAVS_KEY, JSON.stringify(next));
+      } catch {
+        /* storage blocked — the stars still work until reload */
+      }
+    }
+  }
+
+  const renderTile = (g) => {
+    const starred = favoriteKeys.includes(g.key);
+    return (
+      <div className="tile-wrap" key={g.key}>
+        {g.soon ? (
+          <div className={`game-tile fam-${g.family} disabled`}>
+            <span className="icon">{g.icon}</span>
+            <span>{g.label}</span>
+            <span className="soon">Coming soon</span>
+          </div>
+        ) : (
+          <Link className={`game-tile fam-${g.family}`} to={g.path}>
+            <span className="icon">{g.icon}</span>
+            <span>{g.label}</span>
+          </Link>
+        )}
+        <button
+          type="button"
+          className={`tile-star ${starred ? "on" : ""}`}
+          aria-pressed={starred}
+          aria-label={starred ? `Unstar ${g.label}` : `Star ${g.label}`}
+          onClick={() => toggleStar(g.key)}
+        >
+          {starred ? "★" : "☆"}
+        </button>
       </div>
-    ) : (
-      <Link className={`game-tile fam-${g.family}`} to={g.path} key={g.key}>
-        <span className="icon">{g.icon}</span>
-        <span>{g.label}</span>
-      </Link>
     );
+  };
 
   return (
     <div>
@@ -168,17 +242,20 @@ export default function Home() {
       </button>
       {feedbackOpen && <FeedbackPopup onClose={() => setFeedbackOpen(false)} />}
       <div className="game-grid">
-        {/* Most-played first (ties keep their designed/fetch order — see
-            sortedTiles above). Includes both the built-in games and any
-            "Other" games someone's made up, saved so everyone sees the same
-            tile with the same rules instead of re-describing the game from
-            scratch every time it comes up. */}
+        {/* Starred games, your most-played first. Includes the built-in games
+            and any custom ones someone's made, saved so everyone sees the
+            same tile with the same rules. "New game" is always here. */}
         {mainTiles.map(renderTile)}
-        <Link className="game-tile" to="/other/setup" key="other-new">
-          <span className="icon">➕</span>
-          <span>New game</span>
-        </Link>
+        <div className="tile-wrap" key="other-new">
+          <Link className="game-tile" to="/other/setup">
+            <span className="icon">➕</span>
+            <span>New game</span>
+          </Link>
+        </div>
       </div>
+      {!Array.isArray(storedFavs) && (
+        <p className="star-hint">☆ Tap a star to pin a game up here. These are your most played to start.</p>
+      )}
 
       {moreTiles.length > 0 && (
         <details className="more-games">
