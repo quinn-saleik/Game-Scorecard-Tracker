@@ -6,7 +6,7 @@
 export const NEW_GAMES = {
   "custom-sequence": "2026-11-02",
   "custom-bananagrams": "2026-11-02",
-  "custom-taco-cat-goat-cheese-pizza": "2026-11-02",
+  "custom-taco-cat": "2026-11-02",
 };
 export const NEW_DAYS = 30;
 

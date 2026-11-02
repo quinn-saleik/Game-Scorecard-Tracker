@@ -76,7 +76,7 @@ export async function deleteCustomGame(id) {
 
 // Games that ship with the app: always on the Home screen for everyone, no
 // matter what's in Firestore, and can't be removed. All of them are
-// just-who-won (no scoring): Sequence, Bananagrams, Taco Cat Goat Cheese Pizza.
+// just-who-won (no scoring): Sequence, Bananagrams, Taco Cat.
 // If someone already saved a tile under one of these names, its icon and house
 // rules are kept, but it's always a just-who-won game.
 export const BUILTIN_CUSTOM_GAMES = [
@@ -95,8 +95,8 @@ export const BUILTIN_CUSTOM_GAMES = [
     config: { ...DEFAULT_GAME_CONFIG, winnerOnly: true },
   },
   {
-    id: "taco-cat-goat-cheese-pizza",
-    name: "Taco Cat Goat Cheese Pizza",
+    id: "taco-cat",
+    name: "Taco Cat",
     icon: "🌮",
     builtin: true,
     config: { ...DEFAULT_GAME_CONFIG, winnerOnly: true },

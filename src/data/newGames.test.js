@@ -18,9 +18,9 @@ describe("isNewGame", () => {
 
 describe("newFirst", () => {
   it("splits new tiles out, in listed order, leaving the rest in place", () => {
-    const tiles = ["Flip7", "custom-taco-cat-goat-cheese-pizza", "Euchre", "custom-sequence"].map((key) => ({ key }));
+    const tiles = ["Flip7", "custom-taco-cat", "Euchre", "custom-sequence"].map((key) => ({ key }));
     const { fresh, rest } = newFirst(tiles, day("2026-11-10"));
-    expect(fresh.map((t) => t.key)).toEqual(["custom-sequence", "custom-taco-cat-goat-cheese-pizza"]);
+    expect(fresh.map((t) => t.key)).toEqual(["custom-sequence", "custom-taco-cat"]);
     expect(rest.map((t) => t.key)).toEqual(["Flip7", "Euchre"]);
   });
 });
