@@ -8,6 +8,7 @@ import { subscribeToCompletedSessions } from "../data/gameSessions";
 import FeedbackPopup from "../components/FeedbackPopup";
 import { wrappedYear } from "../data/wrappedGate";
 import { CHANGELOG, hasUnseenChangelog } from "../data/changelog";
+import { newFirst, isNewGame } from "../data/newGames";
 import { resolveFavoriteKeys, splitByFavorites, toggleFavoriteKey } from "../data/gameFavorites";
 
 // Starred games for a device nobody has signed in on.
@@ -150,7 +151,10 @@ export default function Home() {
   // each, your own most-played first, then the family's.
   const { main: mainTiles, more: moreTiles } = useMemo(() => {
     const ordered = [...sortedTiles].sort((a, b) => (personalCounts[b.key] || 0) - (personalCounts[a.key] || 0));
-    return splitByFavorites(ordered, favoriteKeys);
+    // Newly added games lead the main grid for a while, starred or not.
+    const { fresh, rest } = newFirst(ordered);
+    const split = splitByFavorites(rest, favoriteKeys);
+    return { main: [...fresh, ...split.main], more: split.more };
   }, [sortedTiles, personalCounts, favoriteKeys]);
 
   function toggleStar(key) {
@@ -171,6 +175,11 @@ export default function Home() {
     const starred = favoriteKeys.includes(g.key);
     return (
       <div className="tile-wrap" key={g.key}>
+        {isNewGame(g.key) && (
+          <span className="tile-ribbon" aria-label="New game">
+            <span aria-hidden="true">NEW</span>
+          </span>
+        )}
         {g.soon ? (
           <div className={`game-tile fam-${g.family} disabled`}>
             <span className="icon">{g.icon}</span>

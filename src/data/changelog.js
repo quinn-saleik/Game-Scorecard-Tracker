@@ -11,6 +11,7 @@ export const CHANGELOG = [
       "Home now shows just the games you've starred. Tap the ☆ on any game to pin it, and ★ to unpin. Everything else is under \"More games\".",
       "To start, your most played games are already starred for you.",
       "\"New game\" is always on the main screen.",
+      "Newly added games (Yahtzee, Bananagrams, Taco Cat) wear a NEW ribbon and lead the home screen for a month.",
       "New games: Bananagrams and Taco Cat Goat Cheese Pizza. Just pick who played and who won.",
     ],
   },
