@@ -4,7 +4,7 @@
 // custom games use `custom-<slug of the name>`). Value = the day it was added.
 // Add a line when a game ships; the ribbon retires itself after NEW_DAYS.
 export const NEW_GAMES = {
-  "custom-yahtzee": "2026-11-02",
+  "custom-sequence": "2026-11-02",
   "custom-bananagrams": "2026-11-02",
   "custom-taco-cat-goat-cheese-pizza": "2026-11-02",
 };

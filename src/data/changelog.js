@@ -12,7 +12,7 @@ export const CHANGELOG = [
       "To start, your most played games are already starred for you.",
       "\"New game\" is always on the main screen.",
       "Fixed the wording under \"Play to\": Sky-Jo now says the game ends when someone reaches the score, and the lowest score wins.",
-      "Newly added games (Yahtzee, Bananagrams, Taco Cat) wear a NEW ribbon and lead the home screen for a month.",
+      "Newly added games (Sequence, Bananagrams, Taco Cat) wear a NEW ribbon and lead the home screen for a month.",
       "New games: Bananagrams and Taco Cat Goat Cheese Pizza. Just pick who played and who won.",
     ],
   },
