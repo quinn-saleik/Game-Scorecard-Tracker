@@ -1,9 +1,9 @@
-// When "Scorecard Wrapped" is visible. It opens on Dec 25 and covers that
+// When "Scorecard Wrapped" is visible. It opens on Dec 1 and covers that
 // calendar year; it stays open through January for people who missed it
 // (still showing the year just ended). Any other time it's hidden — except
 // via the unlinked /wrapped/preview route used to test it early.
 export const WRAPPED_START_MONTH = 11; // December (0-indexed)
-export const WRAPPED_START_DAY = 25;
+export const WRAPPED_START_DAY = 1;
 
 // The year to wrap right now, or null when it isn't time yet.
 export function wrappedYear(now = new Date()) {
@@ -14,7 +14,7 @@ export function wrappedYear(now = new Date()) {
   return null;
 }
 
-// First year Wrapped ever runs. From each year's Dec 25 onward that year's
+// First year Wrapped ever runs. From each year's Dec 1 onward that year's
 // Wrapped stays reachable (newest first) so it can be revisited after the
 // January window closes — the Me tab lists them.
 export const FIRST_WRAPPED_YEAR = 2026;

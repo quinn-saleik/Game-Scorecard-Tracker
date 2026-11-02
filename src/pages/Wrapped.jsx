@@ -8,7 +8,7 @@ import { wrappedYears } from "../data/wrappedGate";
 import { shortName } from "../data/playerNames";
 
 // Scorecard Wrapped — full-screen, tap-through story slides: your year, then
-// the family's. Reachable only from Dec 25 (see data/wrappedGate.js), except
+// the family's. Reachable only from Dec 1 (see data/wrappedGate.js), except
 // the unlinked /wrapped/preview route for testing early. Colors are
 // hardcoded on purpose, like TV mode: it's always-dark, whatever the theme.
 
@@ -22,18 +22,24 @@ function Avatar({ p }) {
 const names = (list) => list.map((p) => shortName(p)).join(" & ");
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-function buildSlides(w) {
+function buildSlides(w, december) {
   const { family: f, me } = w;
   const slides = [];
   const add = (s) => slides.push({ bg: slides.length % 6, ...s });
 
+  // Opening slide. It also carries the "not signed in" nudge, so that's the
+  // first thing an unidentified viewer sees.
+  add({
+    kicker: `Scorecard Wrapped · ${w.year}`,
+    big: december ? "It's December!" : `Your ${w.year}`,
+    bigText: true,
+    avatar: me ? me.player : null,
+    label: me ? "Let's take a look at your year in games." : "Let's take a look at the family's year in games.",
+    small: me ? "Tap to continue →" : "Pick who you are to unlock your own year.",
+    action: me ? undefined : { label: "Pick who you are", to: "/me" },
+  });
+
   if (me) {
-    add({
-      kicker: `Scorecard Wrapped · ${w.year}`,
-      big: `${shortName(me.player)}, here's your year.`,
-      avatar: me.player,
-      small: "Tap to continue →",
-    });
     add({
       kicker: "You showed up",
       big: me.games,
@@ -108,15 +114,6 @@ function buildSlides(w) {
     }
   }
 
-  if (!me) {
-    add({
-      kicker: `Scorecard Wrapped · ${w.year}`,
-      big: "You're not signed in",
-      bigText: true,
-      small: "Pick who you are to unlock your own year. For now, here's the whole family's.",
-      action: { label: "Pick who you are", to: "/me" },
-    });
-  }
   add({
     kicker: me ? "Now, the whole family" : `Scorecard Wrapped · ${w.year}`,
     big: f.games,
@@ -217,7 +214,7 @@ export default function Wrapped({ preview = false }) {
     () => (year && ready.p && ready.s ? computeWrapped(year, players, sessions, whoamiId) : null),
     [year, ready, players, sessions, whoamiId]
   );
-  const slides = useMemo(() => (wrapped && wrapped.hasData ? buildSlides(wrapped) : []), [wrapped]);
+  const slides = useMemo(() => (wrapped && wrapped.hasData ? buildSlides(wrapped, preview || new Date().getMonth() === 11) : []), [wrapped, preview]);
 
   const last = slides.length - 1;
   const go = (d) => setI((n) => Math.max(0, Math.min(last, n + d)));

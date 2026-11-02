@@ -63,13 +63,13 @@ describe("computeWrapped", () => {
   });
 });
 
-describe("wrappedYear (Dec 25 gate)", () => {
-  it("is hidden before Dec 25", () => {
-    expect(wrappedYear(new Date(2026, 11, 24))).toBeNull();
+describe("wrappedYear (Dec 1 gate)", () => {
+  it("is hidden before Dec 1", () => {
+    expect(wrappedYear(new Date(2026, 10, 30))).toBeNull();
     expect(wrappedYear(new Date(2026, 5, 1))).toBeNull();
   });
-  it("opens Dec 25 and stays through January, covering the year just ended", () => {
-    expect(wrappedYear(new Date(2026, 11, 25))).toBe(2026);
+  it("opens Dec 1 and stays through January, covering the year just ended", () => {
+    expect(wrappedYear(new Date(2026, 11, 1))).toBe(2026);
     expect(wrappedYear(new Date(2026, 11, 31))).toBe(2026);
     expect(wrappedYear(new Date(2027, 0, 10))).toBe(2026);
     expect(wrappedYear(new Date(2027, 1, 1))).toBeNull();
@@ -77,9 +77,9 @@ describe("wrappedYear (Dec 25 gate)", () => {
 });
 
 describe("wrappedYears (archive)", () => {
-  it("is empty before the first Dec 25 and lists past years newest first afterward", () => {
-    expect(wrappedYears(new Date(2026, 11, 24))).toEqual([]);
-    expect(wrappedYears(new Date(2026, 11, 25))).toEqual([2026]);
+  it("is empty before the first Dec 1 and lists past years newest first afterward", () => {
+    expect(wrappedYears(new Date(2026, 10, 30))).toEqual([]);
+    expect(wrappedYears(new Date(2026, 11, 1))).toEqual([2026]);
     expect(wrappedYears(new Date(2027, 5, 1))).toEqual([2026]); // still reachable long after January
     expect(wrappedYears(new Date(2027, 11, 26))).toEqual([2027, 2026]);
   });
